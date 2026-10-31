@@ -82,4 +82,49 @@ describe('placePluginSidebarNavItems', () => {
       )
     ).toEqual(['0:box'])
   })
+
+  describe('when gates', () => {
+    const gate = { pluginKey: 'samples.a', setting: 'show', valueKey: 'samples.a/show' }
+    const gated = (
+      id: string,
+      initial: boolean,
+      parentKey?: string
+    ): ActivePluginSidebarNavItem => ({
+      ...child(id, parentKey ?? ''),
+      ...(parentKey ? {} : { parentKey: undefined }),
+      gate: { ...gate, default: initial }
+    })
+
+    it('shows an item only while its setting is true, and reads the default until loaded', () => {
+      const item = gated('graph', true)
+      expect(ids(placePluginSidebarNavItems([item], {}, [], {}))).toEqual(['0:graph'])
+      expect(ids(placePluginSidebarNavItems([item], {}, [], { [gate.valueKey]: false }))).toEqual(
+        []
+      )
+      expect(
+        ids(placePluginSidebarNavItems([gated('graph', false)], {}, [], { [gate.valueKey]: true }))
+      ).toEqual(['0:graph'])
+      expect(ids(placePluginSidebarNavItems([gated('graph', false)], {}, [], {}))).toEqual([])
+    })
+
+    it('needs both the toggle and its own gate for a child', () => {
+      const kid = { ...child('kid', parent.key), gate: { ...gate, default: false } }
+      const on = { [parent.valueKey]: true }
+      expect(ids(placePluginSidebarNavItems([parent, kid], on, [], {}))).toEqual(['0:parent'])
+      expect(
+        ids(placePluginSidebarNavItems([parent, kid], on, [], { [gate.valueKey]: true }))
+      ).toEqual(['0:parent', '1:kid'])
+      expect(
+        ids(placePluginSidebarNavItems([parent, kid], {}, [], { [gate.valueKey]: true }))
+      ).toEqual(['0:parent'])
+    })
+
+    it('takes the children with a gated toggle that is closed', () => {
+      const closed = { ...toggle('parent'), gate: { ...gate, default: false } }
+      const kid = child('kid', closed.key)
+      expect(
+        ids(placePluginSidebarNavItems([closed, kid], { [closed.valueKey]: true }, [], {}))
+      ).toEqual([])
+    })
+  })
 })

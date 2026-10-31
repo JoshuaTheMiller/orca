@@ -10,6 +10,11 @@ import {
   usePluginSidebarNavItems,
   type ActivePluginSidebarCommandItem
 } from '@/store/plugin-sidebar-nav-items'
+import {
+  loadPluginSettingValues,
+  pluginSettingValueKey,
+  usePluginSettingValuesStore
+} from '@/store/plugin-setting-values'
 import { isStateNavItem, placePluginSidebarNavItems } from '@/store/plugin-sidebar-nav-placement'
 import { resolvePluginPanelIcon } from '@/components/right-sidebar/plugin-panel-activity-items'
 import { HideSidebarMenu } from './sidebar-nav-controls'
@@ -68,12 +73,40 @@ function PluginSidebarCommandRow({
   )
 }
 
+/** Values of the plugin settings that nav items wait on (`when`), kept current as they change. */
+function usePluginNavGates(
+  items: readonly { gate?: { pluginKey: string } }[]
+): Readonly<Record<string, boolean>> {
+  const stored = usePluginSettingValuesStore((s) => s.values)
+  const gatedPlugins = [
+    ...new Set(items.flatMap((item) => (item.gate ? [item.gate.pluginKey] : [])))
+  ]
+  const gatedKey = gatedPlugins.join(' ')
+  React.useEffect(() => {
+    for (const pluginKey of gatedKey ? gatedKey.split(' ') : []) {
+      loadPluginSettingValues(pluginKey)
+    }
+  }, [gatedKey])
+  return React.useMemo(() => {
+    const gates: Record<string, boolean> = {}
+    for (const [pluginKey, values] of Object.entries(stored)) {
+      for (const [setting, value] of Object.entries(values)) {
+        if (typeof value === 'boolean') {
+          gates[pluginSettingValueKey(pluginKey, setting)] = value
+        }
+      }
+    }
+    return gates
+  }, [stored])
+}
+
 /** Left-sidebar nav entries that enabled plugins contribute: command buttons, toggles and checkboxes. */
 export function PluginSidebarNavItems(): React.JSX.Element | null {
   const items = usePluginSidebarNavItems()
   const hidden = useAppStore((s) => s.settings?.hiddenPluginSidebarNavItems ?? NO_HIDDEN_ITEMS)
   const values = useAppStore((s) => s.settings?.pluginSidebarNavValues ?? NO_VALUES)
   const updateSettings = useAppStore((s) => s.updateSettings)
+  const gates = usePluginNavGates(items)
   const hide = React.useCallback(
     (key: string) => {
       void updateSettings({ hiddenPluginSidebarNavItems: [...new Set([...hidden, key])] })
@@ -87,7 +120,7 @@ export function PluginSidebarNavItems(): React.JSX.Element | null {
     [values, updateSettings]
   )
   // Why placed here: a hidden or switched-off toggle takes its children with it.
-  const placed = placePluginSidebarNavItems(items, values, hidden)
+  const placed = placePluginSidebarNavItems(items, values, hidden, gates)
   if (placed.length === 0) {
     return null
   }
