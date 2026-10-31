@@ -34,6 +34,11 @@ function eventTitle(event: PluginEventName): string {
         'auto.components.settings.PluginContributionActionEvents.sidebarNavValueChanged',
         'When a sidebar toggle or checkbox changes'
       )
+    case 'settings.changed':
+      return translate(
+        'auto.components.settings.PluginContributionActionEvents.settingsChanged',
+        'When one of its settings changes'
+      )
   }
 }
 

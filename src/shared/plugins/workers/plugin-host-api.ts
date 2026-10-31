@@ -103,6 +103,8 @@ export type PluginHostMethodSpec<
   summary: string
   /** Host API minor the method appeared in (`0` for the first set); `api.minor` is the highest. */
   since: number
+  /** Minor in which the method grew without a new name: more surfaces, or a richer result. */
+  revisedIn?: number
   /** Minor that deprecated it; it keeps working until the next major. */
   deprecatedSince?: number
   /** Machine-readable resource boundary enforced by the host binding. */
@@ -227,18 +229,24 @@ export const PLUGIN_HOST_API = {
     result: secretsDeleteResult
   }),
   'settings.get': spec({
-    summary: 'Reads every setting the plugin owns.',
+    summary:
+      'Reads every setting the plugin owns: declared `contributes.settings` with defaults applied, plus keys written with `settings.set`.',
     since: 0,
+    // Why revised, not new: 1.4 lets panels and editors call it and merges declared defaults in.
+    revisedIn: 4,
     scope: 'plugin-private',
     capability: 'settings:own',
     mutation: false,
-    surfaces: WORKER_ONLY,
+    // Why every surface: a panel or custom editor shows itself by the user's choices; the values are the plugin's own.
+    surfaces: ALL_SURFACES,
     params: settingsGetParams,
     result: settingsGetResult
   }),
   'settings.set': spec({
-    summary: 'Writes one setting the plugin owns.',
+    summary:
+      'Writes one setting the plugin owns; a key declared in `contributes.settings` must match its type, options and length.',
     since: 0,
+    revisedIn: 4,
     scope: 'plugin-private',
     capability: 'settings:own',
     mutation: true,
@@ -303,7 +311,10 @@ export function getPluginHostMethodSpec(name: string): PluginHostMethodSpec | nu
 
 /** The minor this host implements: the newest `since` in the table. */
 export const PLUGIN_HOST_API_MINOR = Math.max(
-  ...PLUGIN_HOST_METHOD_NAMES.map((name) => PLUGIN_HOST_API[name].since)
+  ...PLUGIN_HOST_METHOD_NAMES.map((name) => {
+    const spec: PluginHostMethodSpec = PLUGIN_HOST_API[name]
+    return Math.max(spec.since, spec.revisedIn ?? 0)
+  })
 )
 
 /** Methods a surface may call, for `hello` and `host.has`. */

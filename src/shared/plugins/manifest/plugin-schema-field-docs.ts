@@ -9,6 +9,8 @@ export const PLUGIN_DERIVED_PUBLISHER_SINCE = '1.4.246'
 export const PLUGIN_SIDEBAR_NAV_ITEMS_SINCE = '1.4.247'
 /** First release with the `links:open` capability, which opens web links the way Orca's own links open. */
 export const PLUGIN_LINKS_OPEN_SINCE = '1.4.248'
+/** First release with `contributes.settings`, `settings.changed` and the nav item `when` field. */
+export const PLUGIN_SETTINGS_SINCE = '1.4.249'
 
 type PluginFieldDoc = {
   description: string

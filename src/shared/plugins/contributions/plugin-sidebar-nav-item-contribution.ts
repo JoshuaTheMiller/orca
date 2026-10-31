@@ -3,6 +3,7 @@ import { safePluginDisplayText } from '../manifest/plugin-display-text'
 import { pluginCommandIdSchema, pluginIdSchema } from '../manifest/plugin-manifest-fields'
 import {
   pluginFieldDoc,
+  PLUGIN_SETTINGS_SINCE,
   PLUGIN_SIDEBAR_NAV_ITEMS_SINCE
 } from '../manifest/plugin-schema-field-docs'
 import { PLUGIN_PANEL_ICONS } from './plugin-panel-contribution'
@@ -74,6 +75,15 @@ export const pluginSidebarNavItemContributionSchema = z
           'Value of a toggle or checkbox until the user flips it. Defaults to `false`.',
           PLUGIN_SIDEBAR_NAV_ITEMS_SINCE,
           [true]
+        )
+      ),
+    when: pluginIdSchema
+      .optional()
+      .meta(
+        pluginFieldDoc(
+          "Id of a `boolean` entry in this plugin's `contributes.settings`. The item shows only while that setting is true, and reacts when the user changes it. A child of a toggle needs both its toggle and this setting.",
+          PLUGIN_SETTINGS_SINCE,
+          ['show-graph']
         )
       ),
     parent: pluginIdSchema

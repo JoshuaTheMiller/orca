@@ -96,6 +96,12 @@ export function pluginContributionSummary(
       (item) => item.title,
       // Why a `kind:setting` pair for state items: a command id never holds a colon.
       (item) => item.command ?? `${item.kind}:${item.setting}`
+    ),
+    ...named(
+      'settings',
+      c.settings,
+      (setting) => setting.title,
+      (setting) => setting.type
     )
   ].slice(0, PLUGIN_CONTRIBUTION_SUMMARY_LIMIT)
 }

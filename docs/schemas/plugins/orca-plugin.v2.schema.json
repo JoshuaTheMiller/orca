@@ -208,9 +208,9 @@
         },
         "events": {
           "default": [],
-          "description": "Events delivered to the plugin worker. At most 4.",
+          "description": "Events delivered to the plugin worker. At most 5.",
           "x-orca-since": "1.4.160",
-          "maxItems": 4,
+          "maxItems": 5,
           "type": "array",
           "items": {
             "$ref": "#/$defs/EventContribution"
@@ -315,6 +315,16 @@
             "$ref": "#/$defs/SidebarNavItemContribution"
           }
         },
+        "settings": {
+          "default": [],
+          "description": "Typed settings that Orca shows in its own settings and stores with the plugin's other settings. At most 32.",
+          "x-orca-since": "1.4.249",
+          "maxItems": 32,
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SettingContribution"
+          }
+        },
         "agentHarnesses": {
           "description": "Reserved for coding-agent harness definitions; must be empty until their format is defined.",
           "x-orca-since": "1.4.245",
@@ -352,13 +362,6 @@
         },
         "connections": {
           "description": "Reserved for account connections; must be empty until their format is defined.",
-          "x-orca-since": "1.4.245",
-          "maxItems": 0,
-          "type": "array",
-          "items": {}
-        },
-        "settings": {
-          "description": "Reserved for plugin settings; must be empty until their format is defined.",
           "x-orca-since": "1.4.245",
           "maxItems": 0,
           "type": "array",
@@ -629,7 +632,8 @@
             "workspace.created",
             "workspace.removed",
             "agent.status.changed",
-            "sidebarNav.valueChanged"
+            "sidebarNav.valueChanged",
+            "settings.changed"
           ],
           "description": "Event delivered to the plugin worker.",
           "x-orca-since": "1.4.160",
@@ -637,7 +641,8 @@
             "workspace.created": "1.4.245",
             "workspace.removed": "1.4.245",
             "agent.status.changed": "1.4.160",
-            "sidebarNav.valueChanged": "1.4.247"
+            "sidebarNav.valueChanged": "1.4.247",
+            "settings.changed": "1.4.249"
           }
         }
       },
@@ -645,7 +650,7 @@
         "on"
       ],
       "additionalProperties": false,
-      "description": "An event subscription. Requires `main`, the `trusted-worker` execution profile and the capability of the event's domain: `workspace:read` for workspace events, `agent:read` for agent events, `settings:own` for sidebar nav value changes."
+      "description": "An event subscription. Requires `main`, the `trusted-worker` execution profile and the capability of the event's domain: `workspace:read` for workspace events, `agent:read` for agent events, `settings:own` for sidebar nav value and setting changes."
     },
     "LanguagePackContribution": {
       "type": "object",
@@ -1175,6 +1180,16 @@
           ],
           "type": "boolean"
         },
+        "when": {
+          "description": "Id of a `boolean` entry in this plugin's `contributes.settings`. The item shows only while that setting is true, and reacts when the user changes it. A child of a toggle needs both its toggle and this setting.",
+          "x-orca-since": "1.4.249",
+          "examples": [
+            "show-graph"
+          ],
+          "type": "string",
+          "maxLength": 64,
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
         "parent": {
           "description": "Id of a `toggle` nav item of this plugin. The entry shows indented under it, and only while the toggle is on. A parent cannot itself have a parent.",
           "x-orca-since": "1.4.247",
@@ -1192,6 +1207,121 @@
       ],
       "additionalProperties": false,
       "description": "An entry in the left sidebar nav list, under Search: a button that runs one of the same plugin's commands, or a toggle or checkbox holding a boolean. Requires the `declarative` execution profile or higher."
+    },
+    "SettingContribution": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 64,
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "description": "Setting key, unique among this plugin's settings. Stored in the same per-plugin store as `settings.set`. The reserved names `constructor` and `prototype` are refused.",
+          "x-orca-since": "1.4.249",
+          "examples": [
+            "show-graph"
+          ]
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "description": "Label shown in Orca's settings.",
+          "x-orca-since": "1.4.249",
+          "examples": [
+            "Show graph"
+          ]
+        },
+        "description": {
+          "description": "Help text shown under the label.",
+          "x-orca-since": "1.4.249",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "boolean",
+            "string",
+            "enum"
+          ],
+          "description": "Value type: `boolean` (a switch), `string` (a text field) or `enum` (a choice among `options`).",
+          "x-orca-since": "1.4.249",
+          "examples": [
+            "boolean"
+          ]
+        },
+        "default": {
+          "description": "Value until the user changes it. Must match `type`; for `enum` it must be one of the option values.",
+          "x-orca-since": "1.4.249",
+          "examples": [
+            false
+          ],
+          "type": [
+            "boolean",
+            "string"
+          ]
+        },
+        "options": {
+          "description": "Choices of an `enum` setting, 2 to 20, with distinct values. Required for `enum` and refused on other types.",
+          "x-orca-since": "1.4.249",
+          "minItems": 2,
+          "maxItems": 20,
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SettingOption"
+          }
+        },
+        "maxLength": {
+          "description": "Longest value of a `string` setting. Defaults to 200. Refused on other types.",
+          "x-orca-since": "1.4.249",
+          "examples": [
+            80
+          ],
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "type",
+        "default"
+      ],
+      "additionalProperties": false,
+      "description": "A typed setting that Orca shows in its own settings and stores with the plugin's other settings. Requires the `declarative` execution profile or higher; code reads it with `settings.get`, which needs the `settings:own` capability."
+    },
+    "SettingOption": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "description": "Value stored and returned when the option is chosen.",
+          "x-orca-since": "1.4.249",
+          "examples": [
+            "dark"
+          ]
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "description": "Text shown for the option.",
+          "x-orca-since": "1.4.249",
+          "examples": [
+            "Dark"
+          ]
+        }
+      },
+      "required": [
+        "value",
+        "label"
+      ],
+      "additionalProperties": false,
+      "description": "One choice of an `enum` setting."
     },
     "Capability": {
       "type": "object",

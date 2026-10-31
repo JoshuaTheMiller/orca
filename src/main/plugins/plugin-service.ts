@@ -1,3 +1,4 @@
+/* eslint-disable max-lines -- Why: PluginService is the one owner of discovery, approval, workers and host calls; plugin settings add a field and a wiring line, and splitting the class would spread its approval guards across files. */
 import type { PluginEventName } from '../../shared/plugins/manifest/plugin-manifest'
 import {
   capabilityKinds,
@@ -41,6 +42,7 @@ import {
 } from './plugin-activation-policy'
 import { PluginContentPackRegistry } from './contributions/plugin-content-pack-registry'
 import { readPluginSidebarNavValues } from './plugin-sidebar-nav-events'
+import { createPluginServiceSettings, type PluginSettingsAccess } from './plugin-settings-access'
 import type { PluginServiceOptions } from './plugin-service-options'
 import type { PluginChangeEvent } from '../../shared/plugins/events/plugin-change-event'
 import { waitForPluginRefreshSettlement } from './plugin-refresh-settlement'
@@ -55,6 +57,7 @@ export class PluginService {
   private readonly contentVerifier = new PluginContentVerifier()
   readonly contentPacks: PluginContentPackRegistry
   readonly panels: PluginPanelController
+  readonly settings: PluginSettingsAccess
   private readonly changeListeners = new Set<(event: PluginChangeEvent) => void>()
   private readonly housekeeping = new PluginServiceHousekeeping()
   private runtimeDelegate: PluginRuntimeDelegate | null = null
@@ -74,6 +77,7 @@ export class PluginService {
       Boolean(this.options.getPluginKillListEntry?.(pluginKey))
     )
     this.audit = new PluginAuditLog(getPluginsDataDir(options.userDataPath))
+    this.settings = createPluginServiceSettings(this)
     const resolveApproved = (pluginKey: string, allowRefreshPause = false) =>
       this.findApprovedPlugin(pluginKey, allowRefreshPause)
     this.panels = new PluginPanelController({
@@ -262,7 +266,8 @@ export class PluginService {
               delegate: this.runtimeDelegate,
               pluginsDataDir: getPluginsDataDir(this.options.userDataPath),
               sidebarNavValues: (key) => readPluginSidebarNavValues(this, key),
-              openLink: this.options.openLink
+              openLink: this.options.openLink,
+              settings: this.settings
             })
           : null,
         audit: this.audit

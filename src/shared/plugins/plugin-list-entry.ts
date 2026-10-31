@@ -59,6 +59,18 @@ export type PluginHostSidebarNavItem = {
   default?: boolean
   /** Id of the toggle this item shows under. */
   parent?: string
+  /** Id of a boolean entry in `settings` that must be true for the item to show. */
+  when?: string
+}
+
+export type PluginHostSetting = {
+  id: string
+  title: string
+  description?: string
+  type: 'boolean' | 'string' | 'enum'
+  default: boolean | string
+  options?: { value: string; label: string }[]
+  maxLength?: number
 }
 
 export type PluginHostListEntry = {
@@ -93,6 +105,8 @@ export type PluginHostListEntry = {
   newFiles?: PluginHostNewFile[]
   /** Absent on hosts that predate sidebar nav items. */
   sidebarNavItems?: PluginHostSidebarNavItem[]
+  /** Absent on hosts that predate plugin settings. */
+  settings?: PluginHostSetting[]
   commands: {
     id: string
     title: string

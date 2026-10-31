@@ -96,6 +96,7 @@ export async function buildPluginList(
           customEditors: [],
           newFiles: [],
           sidebarNavItems: [],
+          settings: [],
           commands: [],
           hasWorker: false,
           vmRecipes: [],
@@ -196,7 +197,17 @@ export async function buildPluginList(
           ...(item.command === undefined ? {} : { command: item.command }),
           ...(item.setting === undefined ? {} : { setting: item.setting }),
           ...(item.setting === undefined ? {} : { default: item.default ?? false }),
-          ...(item.parent === undefined ? {} : { parent: item.parent })
+          ...(item.parent === undefined ? {} : { parent: item.parent }),
+          ...(item.when === undefined ? {} : { when: item.when })
+        })),
+        settings: plugin.manifest.contributes.settings.map((setting) => ({
+          id: setting.id,
+          title: setting.title,
+          ...(setting.description === undefined ? {} : { description: setting.description }),
+          type: setting.type,
+          default: setting.default,
+          ...(setting.options === undefined ? {} : { options: setting.options }),
+          ...(setting.maxLength === undefined ? {} : { maxLength: setting.maxLength })
         })),
         commands: service.contentPacks.commands.preview(plugin.pluginKey).map((command) => ({
           id: command.id,

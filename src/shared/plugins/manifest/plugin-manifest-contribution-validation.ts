@@ -5,6 +5,7 @@ import {
   PLUGIN_EVENT_CAPABILITY,
   type PluginEventName
 } from '../contributions/plugin-event-contribution'
+import type { PluginSettingContribution } from '../contributions/plugin-setting-contribution'
 import type { PluginSidebarNavItemContribution } from '../contributions/plugin-sidebar-nav-item-contribution'
 import { validatePluginSidebarNavItems } from '../contributions/plugin-sidebar-nav-item-validation'
 import type { PluginFileMatch } from '../contributions/plugin-file-match'
@@ -28,6 +29,7 @@ type ContributionValidationManifest = {
     customEditors: (IdentifiedContribution & PluginFileMatch)[]
     newFiles: IdentifiedContribution[]
     sidebarNavItems: PluginSidebarNavItemContribution[]
+    settings: PluginSettingContribution[]
   }
   capabilities: { kind: string }[]
 }
@@ -66,7 +68,8 @@ export function validatePluginManifestContributions(
     'syntaxes',
     'customEditors',
     'newFiles',
-    'sidebarNavItems'
+    'sidebarNavItems',
+    'settings'
   ] as const) {
     rejectDuplicateValues(
       manifest.contributes[path],
@@ -145,7 +148,12 @@ export function validatePluginManifestContributions(
       })
     }
   }
-  validatePluginSidebarNavItems(manifest.contributes.sidebarNavItems, new Set(commands.keys()), ctx)
+  validatePluginSidebarNavItems(
+    manifest.contributes.sidebarNavItems,
+    new Set(commands.keys()),
+    manifest.contributes.settings,
+    ctx
+  )
   for (const [index, keybinding] of manifest.contributes.keybindings.entries()) {
     const command = commands.get(keybinding.command)
     if (!command) {

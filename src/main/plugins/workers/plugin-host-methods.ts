@@ -1,4 +1,8 @@
-import { getBoundPluginHostMethod, type PluginHostServices } from './plugin-host-method-bindings'
+import {
+  getBoundPluginHostMethod,
+  PluginHostInvalidParamsError,
+  type PluginHostServices
+} from './plugin-host-method-bindings'
 import { isQualifiedPluginKey } from '../../../shared/plugins/manifest/plugin-manifest'
 import { gatePluginHostCall as decidePluginHostCall } from '../../../shared/plugins/capabilities/plugin-capability-gate'
 import type { PluginCapabilityKind } from '../../../shared/plugins/capabilities/plugin-capabilities'
@@ -103,7 +107,7 @@ export async function executePluginHostCall(
     await auditMutation('error').catch(() => undefined)
     return {
       ok: false,
-      code: 'action_failed',
+      code: error instanceof PluginHostInvalidParamsError ? 'invalid_params' : 'action_failed',
       error: error instanceof Error ? error.message : String(error)
     }
   }

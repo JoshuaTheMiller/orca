@@ -53,7 +53,7 @@ describe('window.orca', () => {
     expect(Object.isFrozen(orca)).toBe(true)
     expect(Object.isFrozen(orca.host)).toBe(true)
     expect(posted()).toEqual([{ orca: 1, kind: 'evt', event: 'ready', payload: { protocol: 1 } }])
-    expect(orca.api).toEqual({ major: 1, minor: 3 })
+    expect(orca.api).toEqual({ major: 1, minor: 4 })
     expect(orca.host.has('workspace.readContext')).toBe(true)
     expect(orca.host.has('terminal.sendText')).toBe(false)
     expect(orca.host.has('editor.openFile')).toBe(true)
@@ -67,9 +67,9 @@ describe('window.orca', () => {
       orca: 1,
       kind: 'evt',
       event: 'hello',
-      payload: { api: { major: 1, minor: 3 }, methods: ['future.method'], theme: null }
+      payload: { api: { major: 1, minor: 4 }, methods: ['future.method'], theme: null }
     })
-    expect(orca.api).toEqual({ major: 1, minor: 3 })
+    expect(orca.api).toEqual({ major: 1, minor: 4 })
     expect(orca.host.has('future.method')).toBe(true)
     expect(orca.host.has('workspace.readContext')).toBe(false)
   })

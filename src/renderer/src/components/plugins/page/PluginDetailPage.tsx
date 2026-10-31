@@ -12,6 +12,8 @@ import { usePluginPageModel } from '../state/use-plugin-page-model'
 import type { usePluginInstallAction } from '../state/use-plugin-install-action'
 import { PluginDetailInfo, PluginReleaseNotes } from './PluginDetailInfo'
 import { PluginAddsSection } from './PluginAddsSection'
+import { PluginSettingsSection } from './PluginSettingsSection'
+import { isLivePlugin } from '@/store/plugin-panels'
 import { PluginAccessSection, PluginLogsSection } from './PluginDetailSections'
 import { installedPluginControls, type InstalledRowHandlers } from '../list/PluginManagerRows'
 import { PluginChips } from '../list/PluginChips'
@@ -293,6 +295,7 @@ export function PluginDetailPage({
             types={entry.types}
             onOpenShortcuts={onOpenShortcuts}
           />
+          {plugin && isLivePlugin(plugin) ? <PluginSettingsSection plugin={plugin} /> : null}
           {/* Why installed only: before install, and while it waits for review, the consent above says this. */}
           {plugin && controls?.kind !== 'review' ? (
             <PluginAccessSection capabilities={plugin.capabilities} trust={model.trust} />

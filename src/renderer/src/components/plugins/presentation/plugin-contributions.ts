@@ -1,13 +1,10 @@
-import type { PluginCatalogType } from '../../../../../shared/plugins/catalog/plugin-catalog-release'
 import { PLUGIN_LANGUAGE_PACK_MIN_COVERAGE } from '../../../../../shared/plugins/languages/plugin-language-pack-coverage'
 import type { PluginContributionSummaryItem } from '../../../../../shared/plugins/contributions/plugin-contribution-summary'
-import {
-  PLUGIN_CONTRIBUTION_POINT_POLICY,
-  type PluginContributionPoint
-} from '../../../../../shared/plugins/contributions/plugin-contribution-points'
+import type { PluginContributionPoint } from '../../../../../shared/plugins/contributions/plugin-contribution-points'
 import type { PluginManifest } from '../../../../../shared/plugins/manifest/plugin-manifest'
 import { getIntlLocale, translate } from '@/i18n/i18n'
 import { describeSidebarNavItemRows, navItemFromSummary } from './plugin-sidebar-nav-item-rows'
+import { describeSettingRows, type SettingSource } from './plugin-setting-rows'
 
 /** The manifest points shown as named rows; commands, shortcuts and events have their own lists. */
 export type PluginContributionKind = Exclude<
@@ -47,6 +44,7 @@ export type PluginContributionSource = {
   vmRecipes: readonly string[]
   newFiles: readonly { title: string; extension: string }[]
   sidebarNavItems: readonly { title: string; kind?: 'command' | 'toggle' | 'checkbox' }[]
+  settings: readonly SettingSource[]
 }
 
 export const EMPTY_CONTRIBUTION_SOURCE: PluginContributionSource = {
@@ -59,7 +57,8 @@ export const EMPTY_CONTRIBUTION_SOURCE: PluginContributionSource = {
   customEditors: [],
   vmRecipes: [],
   newFiles: [],
-  sidebarNavItems: []
+  sidebarNavItems: [],
+  settings: []
 }
 
 const FILE_LIST_LIMIT = 4
@@ -99,7 +98,8 @@ export function manifestContributionSource(manifest: PluginManifest): PluginCont
     customEditors: contributes.customEditors,
     vmRecipes: contributes.vmRecipes.map((recipe) => nameFromContributionPath(recipe.path)),
     newFiles: contributes.newFiles,
-    sidebarNavItems: contributes.sidebarNavItems
+    sidebarNavItems: contributes.sidebarNavItems,
+    settings: contributes.settings
   }
 }
 
@@ -138,7 +138,8 @@ export function summaryContributionSource(
     })),
     vmRecipes: of('vmRecipes').map((item) => nameFromContributionPath(item.name)),
     newFiles: of('newFiles').map((item) => ({ title: item.name, extension: item.detail ?? '' })),
-    sidebarNavItems: of('sidebarNavItems').map(navItemFromSummary)
+    sidebarNavItems: of('sidebarNavItems').map(navItemFromSummary),
+    settings: of('settings').map((item) => ({ title: item.name }))
   }
 }
 
@@ -294,6 +295,7 @@ export function describePluginContributions(
     })
   }
   rows.push(...describeSidebarNavItemRows(source.sidebarNavItems))
+  rows.push(...describeSettingRows(source.settings))
   for (const [index, title] of source.vmRecipes.entries()) {
     rows.push({
       key: `vmRecipes:${index}`,
@@ -306,18 +308,4 @@ export function describePluginContributions(
   return rows
 }
 
-/** Catalog types no named row (or command) covers, e.g. a disabled plugin's theme. */
-export function uncoveredCatalogTypes(
-  types: readonly PluginCatalogType[],
-  rows: readonly PluginContribution[],
-  hasCommands: boolean
-): PluginCatalogType[] {
-  const covered = new Set<PluginCatalogType>(
-    rows.flatMap((row) => PLUGIN_CONTRIBUTION_POINT_POLICY[row.kind].catalogType ?? [])
-  )
-  if (hasCommands) {
-    covered.add('instructions')
-  }
-  // Why: background code isn't something it adds; access covers it.
-  return types.filter((type) => type !== 'worker' && !covered.has(type))
-}
+export { uncoveredCatalogTypes } from './plugin-uncovered-catalog-types'

@@ -1,13 +1,16 @@
 import type { RefinementCtx } from 'zod'
+import type { PluginSettingContribution } from './plugin-setting-contribution'
 import type { PluginSidebarNavItemContribution } from './plugin-sidebar-nav-item-contribution'
 
 /**
- * Rules that span several nav items: command references, unique settings and the parent chain.
+ * Rules that span several nav items: command references, unique settings, the parent chain and
+ * the boolean setting a `when` names.
  * Per-item rules (which fields a kind requires) live in the item schema.
  */
 export function validatePluginSidebarNavItems(
   items: readonly PluginSidebarNavItemContribution[],
   commandIds: ReadonlySet<string>,
+  settings: readonly Pick<PluginSettingContribution, 'id' | 'type'>[],
   ctx: RefinementCtx
 ): void {
   const byId = new Map(items.map((item) => [item.id, item]))
@@ -21,6 +24,14 @@ export function validatePluginSidebarNavItems(
       })
     if (item.command !== undefined && !commandIds.has(item.command)) {
       issue('command', `unknown contributed command: ${item.command}`)
+    }
+    if (item.when !== undefined) {
+      const gate = settings.find((setting) => setting.id === item.when)
+      if (!gate) {
+        issue('when', `unknown contributed setting: ${item.when}`)
+      } else if (gate.type !== 'boolean') {
+        issue('when', `setting ${item.when} must be a boolean`)
+      }
     }
     if (item.setting !== undefined) {
       if (seenSettings.has(item.setting)) {

@@ -42,6 +42,8 @@ export function bindPluginHostServices(input: {
   /** One plugin's toggle and checkbox values, defaults applied. */
   sidebarNavValues: (pluginKey: string) => Record<string, boolean>
   openLink?: (request: PluginOpenLinkRequest) => boolean
+  /** Reads and writes the plugin's settings, declared defaults and validation included. */
+  settings: PluginHostServices['settings']
 }): PluginHostServices {
   const { delegate, pluginsDataDir, openLink } = input
   return {
@@ -101,10 +103,6 @@ export function bindPluginHostServices(input: {
       set: (key, itemKey, value) => new PluginSecretsStore(pluginsDataDir, key).set(itemKey, value),
       delete: (key, itemKey) => new PluginSecretsStore(pluginsDataDir, key).delete(itemKey)
     },
-    settings: {
-      getAll: (key) => new PluginKvStore(pluginsDataDir, key, 'settings.json').getAll(),
-      set: (key, itemKey, value) =>
-        new PluginKvStore(pluginsDataDir, key, 'settings.json').set(itemKey, value)
-    }
+    settings: input.settings
   }
 }

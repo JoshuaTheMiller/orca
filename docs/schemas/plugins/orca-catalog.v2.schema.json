@@ -565,7 +565,8 @@
             "syntaxes",
             "customEditors",
             "newFiles",
-            "sidebarNavItems"
+            "sidebarNavItems",
+            "settings"
           ],
           "description": "Contribution point.",
           "x-orca-since": "1.4.245",

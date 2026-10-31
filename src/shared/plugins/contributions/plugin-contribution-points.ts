@@ -35,11 +35,16 @@ import {
   PLUGIN_SIDEBAR_NAV_ITEM_LIMIT,
   pluginSidebarNavItemContributionSchema
 } from './plugin-sidebar-nav-item-contribution'
+import {
+  PLUGIN_SETTING_LIMIT,
+  pluginSettingContributionSchema
+} from './plugin-setting-contribution'
 import { PLUGIN_PANEL_LIMIT, pluginPanelContributionSchema } from './plugin-panel-contribution'
 import {
   pluginFieldDoc,
   PLUGIN_MANIFEST_V2_SINCE,
   PLUGIN_SCHEMA_SINCE_V1,
+  PLUGIN_SETTINGS_SINCE,
   PLUGIN_SIDEBAR_NAV_ITEMS_SINCE
 } from '../manifest/plugin-schema-field-docs'
 
@@ -57,7 +62,8 @@ export const PLUGIN_CONTRIBUTION_POINTS = [
   'syntaxes',
   'customEditors',
   'newFiles',
-  'sidebarNavItems'
+  'sidebarNavItems',
+  'settings'
 ] as const
 
 export type PluginContributionPoint = (typeof PLUGIN_CONTRIBUTION_POINTS)[number]
@@ -73,7 +79,6 @@ export const PLUGIN_RESERVED_CONTRIBUTION_POINTS = {
   hooks: 'agent hooks',
   taskSources: 'task sources',
   connections: 'account connections',
-  settings: 'plugin settings',
   statusBarItems: 'status bar items',
   sidebarCards: 'sidebar cards'
 } as const
@@ -96,8 +101,7 @@ export const PLUGIN_PLANNED_CONTRIBUTION_POINTS: Readonly<
   mcpServers: 'MCP server definitions that Orca offers to the agents it launches.',
   skills: 'Agent skills shipped as files that Orca installs for the agents it launches.',
   hooks:
-    'Agent lifecycle hooks, such as before and after a tool call, for the agents Orca launches.',
-  settings: 'Typed plugin settings that Orca renders in its own settings UI.'
+    'Agent lifecycle hooks, such as before and after a tool call, for the agents Orca launches.'
 }
 
 function reservedList(purpose: string) {
@@ -209,6 +213,12 @@ export const pluginContributesFields = {
     PLUGIN_SIDEBAR_NAV_ITEM_LIMIT,
     'Entries in the left sidebar nav list that run a command of this plugin.',
     PLUGIN_SIDEBAR_NAV_ITEMS_SINCE
+  ),
+  settings: contributionList(
+    pluginSettingContributionSchema,
+    PLUGIN_SETTING_LIMIT,
+    "Typed settings that Orca shows in its own settings and stores with the plugin's other settings.",
+    PLUGIN_SETTINGS_SINCE
   )
 } satisfies Record<PluginContributionPoint, z.ZodType>
 
@@ -219,7 +229,6 @@ export const pluginReservedContributesFields = {
   hooks: reservedList(PLUGIN_RESERVED_CONTRIBUTION_POINTS.hooks),
   taskSources: reservedList(PLUGIN_RESERVED_CONTRIBUTION_POINTS.taskSources),
   connections: reservedList(PLUGIN_RESERVED_CONTRIBUTION_POINTS.connections),
-  settings: reservedList(PLUGIN_RESERVED_CONTRIBUTION_POINTS.settings),
   statusBarItems: reservedList(PLUGIN_RESERVED_CONTRIBUTION_POINTS.statusBarItems),
   sidebarCards: reservedList(PLUGIN_RESERVED_CONTRIBUTION_POINTS.sidebarCards)
 } satisfies Record<PluginReservedContributionPoint, z.ZodType>
@@ -256,5 +265,8 @@ export const PLUGIN_CONTRIBUTION_POINT_POLICY: Record<
   newFiles: { execution: 'data', catalogType: null, bindsContent: false },
   // Why declarative with no catalog type: it only names a command the plugin already declares,
   // which carries the execution profile and catalog type of its own.
-  sidebarNavItems: { execution: 'declarative', catalogType: null, bindsContent: false }
+  sidebarNavItems: { execution: 'declarative', catalogType: null, bindsContent: false },
+  // Why declarative with no catalog type: a setting is inert typed data Orca renders and stores;
+  // reading it from code needs `settings:own` and a surface that can call the host API.
+  settings: { execution: 'declarative', catalogType: null, bindsContent: false }
 }

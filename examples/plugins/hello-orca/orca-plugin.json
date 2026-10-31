@@ -5,8 +5,8 @@
   "publisher": "your-github-user",
   "name": "Hello Orca",
   "version": "1.0.0",
-  "description": "Sample plugin combining a panel, a worker command, sidebar nav items (a command, a toggle and a checkbox), and event subscriptions.",
-  "engines": { "orca": ">=1.4.247" },
+  "description": "Sample plugin combining a panel, a worker command, sidebar nav items (a command, a toggle and a checkbox), a setting, and event subscriptions.",
+  "engines": { "orca": ">=1.4.249" },
   "pluginApi": 1,
   "main": "main.mjs",
   "contributes": {
@@ -23,10 +23,20 @@
         "parent": "chatty"
       }
     ],
+    "settings": [
+      {
+        "id": "excited",
+        "title": "Excited pongs",
+        "description": "End each pong with exclamation marks.",
+        "type": "boolean",
+        "default": false
+      }
+    ],
     "events": [
       { "on": "workspace.created" },
       { "on": "agent.status.changed" },
-      { "on": "sidebarNav.valueChanged" }
+      { "on": "sidebarNav.valueChanged" },
+      { "on": "settings.changed" }
     ]
   },
   "capabilities": [

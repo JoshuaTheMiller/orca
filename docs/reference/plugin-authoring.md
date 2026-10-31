@@ -12,10 +12,10 @@ A plugin is a folder (in practice its own Git repository) with `orca-plugin.json
 Start from `examples/plugins/orca-gleam-syntax`, which carries the JSON Schema for editor
 completion, or from one of:
 
-| Example                              | Execution        | Shows                                                    |
-| ------------------------------------ | ---------------- | -------------------------------------------------------- |
-| `examples/plugins/orca-gleam-syntax` | `data`           | A syntax, no code                                        |
-| `examples/plugins/hello-orca`        | `trusted-worker` | A panel, a worker command, a sidebar nav item and events |
+| Example                              | Execution        | Shows                                                              |
+| ------------------------------------ | ---------------- | ------------------------------------------------------------------ |
+| `examples/plugins/orca-gleam-syntax` | `data`           | A syntax, no code                                                  |
+| `examples/plugins/hello-orca`        | `trusted-worker` | A panel, a worker command, sidebar nav items, a setting and events |
 
 Leave `publisher` out. Orca names the publisher after where the plugin comes from, the way a
 [Go module path](https://go.dev/ref/mod#module-path) is its repository path: the owner of the
@@ -112,6 +112,12 @@ parent of its own (one level of nesting), and a parent that is missing, not a to
 nested is a manifest error. Right-click an entry to hide it from the sidebar; hiding a toggle
 hides its children too. Items show only while the plugin is enabled.
 
+Any item may also carry `when`, the id of a `boolean` entry in the same plugin's
+[`contributes.settings`](#settings) (below). It shows only while that setting is true and appears or
+disappears the moment the user changes it. A child of a toggle needs both its toggle and its own
+`when`. A `when` that names no setting, or a setting that is not a boolean, is a manifest error
+(host 1.4.249 or later).
+
 ```json
 {
   "contributes": {
@@ -151,6 +157,72 @@ orca.events.on('sidebarNav.valueChanged', ({ setting, value }) => {
   // Only this plugin's own settings arrive; a flip back to the same value sends nothing.
 })
 ```
+
+### Settings
+
+`contributes.settings` declares typed settings (at most 32) that Orca shows in its own Settings,
+on the plugin's page under the plugin list, while the plugin is enabled. It needs only the
+`declarative` execution profile; reading a value from code needs `settings:own` and a surface that
+can call the host API. Each entry is `{ id, title, description?, type, default, options?, maxLength? }`:
+
+- `boolean`: a switch. `default` is `true` or `false`.
+- `string`: a text field. `default` is a string; `maxLength` (default 200, at most 1000) bounds it.
+- `enum`: a menu. `options` is 2 to 20 `{ value, label }` entries with distinct values, and `default`
+  must be one of the values.
+
+```json
+{
+  "engines": { "orca": ">=1.4.249" },
+  "contributes": {
+    "commands": [{ "id": "graph.open", "title": "Graph: Open" }],
+    "settings": [
+      { "id": "show-graph", "title": "Show the graph entry", "type": "boolean", "default": true },
+      {
+        "id": "layout",
+        "title": "Layout",
+        "description": "How nodes are arranged.",
+        "type": "enum",
+        "default": "tree",
+        "options": [
+          { "value": "tree", "label": "Tree" },
+          { "value": "radial", "label": "Radial" }
+        ]
+      }
+    ],
+    "sidebarNavItems": [
+      {
+        "id": "graph",
+        "title": "Graph",
+        "icon": "database",
+        "command": "graph.open",
+        "when": "show-graph"
+      }
+    ]
+  },
+  "capabilities": [{ "kind": "settings:own" }]
+}
+```
+
+Values live in the same per-plugin store as `settings.set`, so declared and untyped settings sit
+together. The user edits them in Settings (a changed value is saved at once, and **Reset** restores
+the default). A code path reads them with `settings.get`, which now answers from a worker, panel or
+custom editor (host API 1.4) and returns the declared defaults merged with stored values:
+
+```js
+const { settings } = await orca.host.call('settings.get') // { "show-graph": true, "layout": "tree" }
+await orca.host.call('settings.set', { key: 'layout', value: 'radial' }) // worker only
+orca.events.on('settings.changed', ({ key, value }) => {
+  // Fired for a change from Settings or from settings.set, for this plugin only.
+})
+```
+
+`settings.set` on a declared key must match its type (and options, and `maxLength`); otherwise it
+fails with `invalid_params`. Keys that are not declared stay free-form JSON. A stored value that no
+longer fits its declaration (an update removed an option) reads as the default. `settings.changed`
+needs a worker with `main`, a `settings.changed` entry in `contributes.events` and `settings:own`,
+and carries the value now in force; resetting to the default delivers the default. A new setting
+is not extra access: it holds no authority, and the plugin can read it only through
+`settings:own`, so an update that adds settings keeps its approval.
 
 ### Opening files
 
@@ -365,7 +437,6 @@ arbitrary plugin UI:
 - `mcpServers`: MCP server definitions offered to the agents Orca launches.
 - `skills`: agent skills shipped as files.
 - `hooks`: agent lifecycle hooks for the agents Orca launches.
-- `settings`: typed plugin settings shown in Orca's settings UI.
 
 `skills`, `mcpServers` and `hooks` will mean what they mean in agent-plugin formats such as
 Claude Code's. Orca does not reserve `agents`, because those formats use it for subagent files.
@@ -396,7 +467,6 @@ Experimental; these may still change without a new format:
   get best-effort coverage per release;
 - `pnpm validate:plugin` output; only its exit codes (`0` valid, `1` invalid, `2` usage) are
   stable;
-- `settings:own`, which stores untyped values until plugins can declare settings;
 - manifest format 1, which is deprecated. Catalogs need format 2.
 
 Data folders, `orca-plugin-image://` URLs, tab keys and the `pluginRoot` a worker receives are

@@ -68,9 +68,12 @@ export type PluginHostServices = {
       pluginId: string,
       key: string,
       value: PluginJsonValue
-    ): { ok: true } | { ok: false; error: string }
+    ): { ok: true } | { ok: false; error: string; invalid?: boolean }
   }
 }
+
+/** A value the host refuses by declaration; answered as `invalid_params`, not as a failed action. */
+export class PluginHostInvalidParamsError extends Error {}
 
 type PluginHostMethodContext = { pluginId: string; services: PluginHostServices }
 
@@ -202,9 +205,11 @@ const HANDLERS: Record<PluginHostMethodName, BoundPluginHostMethod> = {
   }))
 }
 
-function okOrThrow(result: { ok: true } | { ok: false; error: string }): typeof OK {
+function okOrThrow(
+  result: { ok: true } | { ok: false; error: string; invalid?: boolean }
+): typeof OK {
   if (!result.ok) {
-    throw new Error(result.error)
+    throw result.invalid ? new PluginHostInvalidParamsError(result.error) : new Error(result.error)
   }
   return OK
 }

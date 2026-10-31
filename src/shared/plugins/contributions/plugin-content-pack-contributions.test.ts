@@ -84,7 +84,8 @@ describe('content-pack manifest contributions', () => {
       syntaxes: [],
       customEditors: [],
       newFiles: [],
-      sidebarNavItems: []
+      sidebarNavItems: [],
+      settings: []
     })
   })
 
