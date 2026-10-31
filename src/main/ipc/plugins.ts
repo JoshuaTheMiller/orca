@@ -28,6 +28,7 @@ import { resolvePluginGitSource } from '../plugins/installation/plugin-git-ref-r
 import { registerPluginSettingsHandlers } from './plugin-settings'
 import { registerPluginSidebarCardHandlers } from './plugin-sidebar-cards'
 import { registerPluginProjectItemHandlers } from './plugin-project-items'
+import { createElectronPluginFolderPicker } from '../plugins/dialogs/plugin-folder-picker-electron'
 import {
   registerPluginMarketplaceHandlers,
   type PluginMarketplaceHandlerServices
@@ -117,6 +118,7 @@ export function registerPluginHandlers(
   if (runtime) {
     pluginService.setRuntimeDelegate(runtime)
   }
+  pluginService.folderPicker = createElectronPluginFolderPicker(store, runtime)
 
   store.onSettingsChanged((updates) => {
     if ('pluginSystemEnabled' in updates || 'devPluginPaths' in updates) {

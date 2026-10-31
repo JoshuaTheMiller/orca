@@ -2,6 +2,7 @@ import { satisfiesOrcaEngineRange } from '../manifest/plugin-manifest-engine-ran
 import {
   PLUGIN_DERIVED_PUBLISHER_SINCE,
   PLUGIN_LINKS_OPEN_SINCE,
+  PLUGIN_DIALOGS_SINCE,
   PLUGIN_MANIFEST_V2_SINCE,
   PLUGIN_PROJECT_ITEMS_SINCE,
   PLUGIN_SCHEMA_SINCE_V1,
@@ -19,7 +20,8 @@ export const PLUGIN_SCHEMA_NEWEST_SINCE = [
   PLUGIN_LINKS_OPEN_SINCE,
   PLUGIN_SETTINGS_SINCE,
   PLUGIN_SIDEBAR_CARDS_SINCE,
-  PLUGIN_PROJECT_ITEMS_SINCE
+  PLUGIN_PROJECT_ITEMS_SINCE,
+  PLUGIN_DIALOGS_SINCE
 ].reduce((newest, version) => (satisfiesOrcaEngineRange(version, `>=${newest}`) ? version : newest))
 
 /**

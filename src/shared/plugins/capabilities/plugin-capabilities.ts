@@ -3,6 +3,7 @@ import { PLUGIN_ENUM_SINCE_KEY } from '../manifest/plugin-engine-floor-keys'
 import {
   pluginFieldDoc,
   PLUGIN_LINKS_OPEN_SINCE,
+  PLUGIN_DIALOGS_SINCE,
   PLUGIN_MANIFEST_V2_SINCE,
   PLUGIN_SCHEMA_SINCE_V1,
   PLUGIN_SIDEBAR_NAV_ITEMS_SINCE
@@ -20,7 +21,8 @@ export const PLUGIN_CAPABILITY_KINDS = [
   'secrets:own',
   'settings:own',
   'editor:open',
-  'links:open'
+  'links:open',
+  'dialogs:open'
 ] as const
 
 export type PluginCapabilityKind = (typeof PLUGIN_CAPABILITY_KINDS)[number]
@@ -35,7 +37,8 @@ export const PLUGIN_CAPABILITY_SINCE: Record<PluginCapabilityKind, string> = {
   'secrets:own': PLUGIN_MANIFEST_V2_SINCE,
   'settings:own': PLUGIN_SCHEMA_SINCE_V1,
   'editor:open': PLUGIN_SIDEBAR_NAV_ITEMS_SINCE,
-  'links:open': PLUGIN_LINKS_OPEN_SINCE
+  'links:open': PLUGIN_LINKS_OPEN_SINCE,
+  'dialogs:open': PLUGIN_DIALOGS_SINCE
 }
 
 /** Format 1 capability names and what each now grants. `events:subscribe` split by event domain. */
@@ -71,7 +74,8 @@ export const PLUGIN_CAPABILITY_DESCRIPTIONS: Record<PluginCapabilityKind, string
   'secrets:own': "Store and read secrets in the plugin's own encrypted file",
   'settings:own': "Read and change the plugin's own settings",
   'editor:open': "Open files in Orca's editor",
-  'links:open': "Open web links in Orca's browser or your system browser"
+  'links:open': "Open web links in Orca's browser or your system browser",
+  'dialogs:open': 'Show folder pickers so you can choose a folder for the plugin to know about'
 }
 
 /** Canonicalize order, duplicates and field order so equivalent grants preserve consent across manifest formatting changes. */

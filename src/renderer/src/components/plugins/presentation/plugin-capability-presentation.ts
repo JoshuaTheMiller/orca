@@ -59,6 +59,11 @@ export function pluginCapabilityDescription(kind: string, fallback: string): str
         'auto.components.settings.PluginConsentDialog.capability.linksOpen',
         'Open web links'
       )
+    case 'dialogs:open':
+      return translate(
+        'auto.components.settings.PluginConsentDialog.capability.dialogsOpen',
+        'Show folder pickers'
+      )
     default:
       return fallback
   }

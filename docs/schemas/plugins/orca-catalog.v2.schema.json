@@ -349,7 +349,7 @@
               "notifications:show"
             ]
           ],
-          "maxItems": 9,
+          "maxItems": 10,
           "type": "array",
           "items": {
             "type": "string",
@@ -362,7 +362,8 @@
               "secrets:own",
               "settings:own",
               "editor:open",
-              "links:open"
+              "links:open",
+              "dialogs:open"
             ]
           }
         },

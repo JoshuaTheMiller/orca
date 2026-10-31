@@ -12,6 +12,7 @@ import {
   type PluginJsonValue
 } from '../../../shared/plugins/workers/plugin-host-api'
 import type { PluginEditorPlacement } from '../../../shared/plugins/workers/plugin-host-editor-api'
+import { PluginHostError } from './plugin-host-error'
 import { shortPluginBranchName } from '../../../shared/plugins/events/plugin-events'
 
 export type PluginWorktreeContext = {
@@ -58,6 +59,13 @@ export type PluginHostServices = {
       input: { itemId: string; projectId: string; text: string }
     ): { ok: true } | { ok: false; error: string; invalid?: boolean }
   }
+  /** Absent where no window can show a dialog, e.g. headless serve. */
+  pickFolder?(input: {
+    pluginId: string
+    title?: string
+    defaultPath?: string
+    createIfMissing?: boolean
+  }): Promise<{ path: string | null }>
   storage: {
     get(pluginId: string, key: string): PluginJsonValue | undefined
     set(
@@ -173,6 +181,12 @@ const HANDLERS: Record<PluginHostMethodName, BoundPluginHostMethod> = {
   'links.open': bind(api['links.open'], async ({ url, external, alternate }, { services }) =>
     services.openLink({ url, external: external === true, alternate: alternate === true })
   ),
+  'dialogs.pickFolder': bind(api['dialogs.pickFolder'], async (params, { pluginId, services }) => {
+    if (!services.pickFolder) {
+      throw new PluginHostError('unavailable', 'folder pickers are not available on this host')
+    }
+    return services.pickFolder({ pluginId, ...params })
+  }),
   'storage.get': bind(api['storage.get'], async ({ key }, { pluginId, services }) => ({
     value: services.storage.get(pluginId, key) ?? null
   })),

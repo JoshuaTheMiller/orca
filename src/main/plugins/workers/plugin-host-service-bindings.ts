@@ -48,8 +48,9 @@ export function bindPluginHostServices(input: {
   settings: PluginHostServices['settings']
   /** Keeps the detail text of project item rows. */
   projectItems: PluginHostServices['projectItems']
+  pickFolder?: PluginHostServices['pickFolder']
 }): PluginHostServices {
-  const { delegate, pluginsDataDir, openLink } = input
+  const { delegate, pluginsDataDir, openLink, pickFolder } = input
   return {
     resolveActiveWorktreeContext: async () => {
       const context = await delegate.resolveActiveWorktreeContext()
@@ -96,6 +97,7 @@ export function bindPluginHostServices(input: {
     openLink: async (request) => ({ opened: openLink?.(request) ?? false }),
     setSidebarCardItems: input.setSidebarCardItems,
     projectItems: input.projectItems,
+    pickFolder,
     storage: {
       get: (key, itemKey) => new PluginKvStore(pluginsDataDir, key, 'storage.json').get(itemKey),
       set: (key, itemKey, value) =>

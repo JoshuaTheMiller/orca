@@ -1,3 +1,4 @@
+/* eslint-disable max-lines -- Why: this table is the single source of truth for every host method (schemas, capability, surfaces); each plugin extension point adds one entry, and splitting it would scatter the capability gate across files. */
 import { z } from 'zod'
 import type { PluginCapabilityKind } from '../capabilities/plugin-capabilities'
 import type { PluginSurface } from '../frames/plugin-protocol'
@@ -12,6 +13,7 @@ import {
 } from './plugin-host-project-items-api'
 import { sidebarNavGetValuesParams, sidebarNavGetValuesResult } from './plugin-host-sidebar-nav-api'
 import { linksOpenParams, linksOpenResult } from './plugin-host-links-schema'
+import { dialogsPickFolderParams, dialogsPickFolderResult } from './plugin-host-api-dialogs'
 
 /**
  * Host API 1 (`pluginApi: 1`) — the separately-versioned public facade plugins call. Every
@@ -121,6 +123,8 @@ export type PluginHostMethodSpec<
   capability: PluginCapabilityKind | null
   /** Mutations are audit-logged with actor `plugin:<id>`. */
   mutation: boolean
+  /** Also audit-logged though it changes nothing, e.g. a prompt that reaches the user. */
+  audited?: boolean
   /** Where plugin code may call it; any other surface gets `not_permitted`. */
   surfaces: readonly PluginSurface[]
   params: P
@@ -328,6 +332,18 @@ export const PLUGIN_HOST_API = {
     surfaces: WORKER_ONLY,
     params: projectItemsSetDetailParams,
     result: projectItemsSetDetailResult
+  }),
+  'dialogs.pickFolder': spec({
+    summary:
+      "Shows Orca's native folder picker and returns the chosen path, or null when cancelled. Local workspaces only.",
+    since: 7,
+    scope: 'desktop',
+    capability: 'dialogs:open',
+    mutation: false,
+    audited: true,
+    surfaces: ALL_SURFACES,
+    params: dialogsPickFolderParams,
+    result: dialogsPickFolderResult
   })
 }
 

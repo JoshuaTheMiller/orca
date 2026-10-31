@@ -11,6 +11,7 @@ import type {
   PluginHostCallOutcome,
   PluginSurface
 } from '../../../shared/plugins/frames/plugin-protocol'
+import { PluginHostError } from './plugin-host-error'
 import type { PluginAuditLog } from '../plugin-audit-log'
 
 /**
@@ -61,7 +62,7 @@ export async function executePluginHostCall(
     return { ok: false, code: 'unavailable', error: 'runtime is not available' }
   }
   const auditMutation = async (outcome: 'attempt' | 'ok' | 'error'): Promise<void> => {
-    if (bound.spec.mutation && input.audit) {
+    if ((bound.spec.mutation || bound.spec.audited) && input.audit) {
       await input.audit.record({
         ts: Date.now(),
         actor: `plugin:${input.pluginId}`,
@@ -107,7 +108,12 @@ export async function executePluginHostCall(
     await auditMutation('error').catch(() => undefined)
     return {
       ok: false,
-      code: error instanceof PluginHostInvalidParamsError ? 'invalid_params' : 'action_failed',
+      code:
+        error instanceof PluginHostError
+          ? error.code
+          : error instanceof PluginHostInvalidParamsError
+            ? 'invalid_params'
+            : 'action_failed',
       error: error instanceof Error ? error.message : String(error)
     }
   }
@@ -132,6 +138,8 @@ function summarizeParams(method: string, params: unknown): string {
     case 'links.open':
       // Why host only: a full URL can carry tokens or private paths the audit log should not keep.
       return `host=${urlHost(record.url)} external=${record.external === true} alternate=${record.alternate === true}`
+    case 'dialogs.pickFolder':
+      return typeof record.title === 'string' ? `title=${JSON.stringify(record.title)}` : ''
     case 'storage.set':
     case 'storage.delete':
     case 'secrets.set':

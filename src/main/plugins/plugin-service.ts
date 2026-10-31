@@ -21,6 +21,7 @@ import {
 } from './plugin-discovery'
 import { PluginAuditLog, type PluginAuditEntry } from './plugin-audit-log'
 import { executePluginHostCallRequest } from './workers/plugin-host-call-adapter'
+import type { PluginHostServices } from './workers/plugin-host-methods'
 import { PluginContentVerifier } from './plugin-content-integrity'
 import {
   bindPluginHostServices,
@@ -66,6 +67,8 @@ export class PluginService {
   private readonly changeListeners = new Set<(event: PluginChangeEvent) => void>()
   private readonly housekeeping = new PluginServiceHousekeeping()
   private runtimeDelegate: PluginRuntimeDelegate | null = null
+  /** Set by the Electron shell; absent where no window can show a dialog. */
+  folderPicker: PluginHostServices['pickFolder']
   private initPromise: Promise<void> | null = null
   private refreshChain: Promise<void> = Promise.resolve()
   private contentPacksReady = false
@@ -296,7 +299,8 @@ export class PluginService {
               setSidebarCardItems: (key, cardId, items) =>
                 this.sidebarCards.setItems(key, cardId, items),
               settings: this.settings,
-              projectItems: this.projectItems
+              projectItems: this.projectItems,
+              pickFolder: this.folderPicker
             })
           : null,
         audit: this.audit

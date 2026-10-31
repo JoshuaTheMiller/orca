@@ -1542,7 +1542,8 @@
             "secrets:own",
             "settings:own",
             "editor:open",
-            "links:open"
+            "links:open",
+            "dialogs:open"
           ],
           "description": "Capability granted on user consent.",
           "x-orca-since": "1.4.160",
@@ -1555,7 +1556,8 @@
             "secrets:own": "1.4.245",
             "settings:own": "1.4.160",
             "editor:open": "1.4.247",
-            "links:open": "1.4.248"
+            "links:open": "1.4.248",
+            "dialogs:open": "1.4.252"
           }
         }
       },
