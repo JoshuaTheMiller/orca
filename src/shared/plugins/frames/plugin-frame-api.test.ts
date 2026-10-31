@@ -209,6 +209,16 @@ describe('window.orca on a page', () => {
   it('offers the page surface methods, with a document only a path-opened page receives', async () => {
     const { orca, fromHost, posted } = mountShell('page')
     expect(orca.host.has('pages.open')).toBe(true)
+    for (const method of [
+      'editor.openFile',
+      'links.open',
+      'settings.get',
+      'dialogs.pickFolder',
+      'agentSessions.open',
+      'sidebarNav.getValues'
+    ]) {
+      expect(orca.host.has(method)).toBe(true)
+    }
     expect(orca.host.has('workspace.readContext')).toBe(true)
     expect(orca.host.has('terminal.sendText')).toBe(false)
     const document = orca.document!

@@ -48,7 +48,13 @@ describe('page surface', () => {
     expect(pluginHostMethodsFor('page')).toEqual([
       'workspace.readContext',
       'pages.open',
-      'notifications.show'
+      'agentSessions.open',
+      'notifications.show',
+      'settings.get',
+      'editor.openFile',
+      'sidebarNav.getValues',
+      'links.open',
+      'dialogs.pickFolder'
     ])
   })
 

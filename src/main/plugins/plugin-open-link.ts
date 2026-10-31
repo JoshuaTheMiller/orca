@@ -3,6 +3,8 @@ import {
   type PluginOpenLinkRequest
 } from '../../shared/plugins/workers/plugin-host-links-schema'
 
+import type { PluginPageOpenRequest } from '../../shared/plugins/frames/plugin-page-document-bridge'
+
 type LinkWindow = {
   isDestroyed(): boolean
   webContents: { send(channel: string, ...args: unknown[]): void }
@@ -27,11 +29,16 @@ export function createPluginLinkOpener(
   }
 }
 
-/** Sends one request to a window; false when there is none to take it. */
-export function sendToPluginWindow(window: LinkWindow | null, channel: string, payload: unknown): boolean {
-  if (!window || window.isDestroyed()) {
-    return false
+/** Hands a page request to the window the caller is using; false when no window can take it. */
+export function createPluginPageOpener(
+  getWindow: () => LinkWindow | null
+): (request: PluginPageOpenRequest) => boolean {
+  return (request) => {
+    const window = getWindow()
+    if (!window || window.isDestroyed()) {
+      return false
+    }
+    window.webContents.send('plugins:openPageRequested', request)
+    return true
   }
-  window.webContents.send(channel, payload)
-  return true
 }

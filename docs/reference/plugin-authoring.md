@@ -613,7 +613,8 @@ the title), like the built-in Tasks and Automations pages. Declare up to four un
 `icon` takes the same names as a panel icon. A page runs in the same sandboxed frame as a panel
 (no Node, no network, no file system) with the same `--orca-*` colors, and its `window.orca` is the
 frame API above with the host methods whose surfaces list `page`: `workspace.readContext`,
-`notifications.show` and `pages.open`. A page has no tab or shortcut of its own, so it is opened
+`notifications.show`, `settings.get`, `sidebarNav.getValues`, `editor.openFile`, `links.open`,
+`dialogs.pickFolder`, `agentSessions.open` and `pages.open`. A page has no tab or shortcut of its own, so it is opened
 by code: a worker command, a panel, a custom editor or another page calls `pages.open`, which
 shows the page in the focused window or focuses it if it is already the current view:
 
