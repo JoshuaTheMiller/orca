@@ -51,7 +51,7 @@ async function createService(stored: Record<string, boolean>) {
     commands: [],
     invokeCommand: vi.fn(async () => null),
     deliverEvent,
-    lastActivityAt: () => Date.now(),
+    lastActivityAt: () => 0,
     inFlightCount: () => 0,
     dispose: vi.fn(async () => undefined),
     kill: vi.fn(),
@@ -101,12 +101,15 @@ describe('PluginService sidebar nav values', () => {
     const { service, deliverEvent } = await createService({})
     const payload = { setting: 'show-details', value: true }
 
-    service.emitEvent('sidebarNav.valueChanged', payload, 'samples.other')
-    await new Promise((resolve) => setTimeout(resolve, 0))
-    expect(deliverEvent).not.toHaveBeenCalled()
-
+    // Both are queued in order, so the one for this plugin arriving alone proves the other was skipped.
+    service.emitEvent(
+      'sidebarNav.valueChanged',
+      { setting: 'show-details', value: false },
+      'samples.other'
+    )
     service.emitEvent('sidebarNav.valueChanged', payload, pluginKey)
-    await vi.waitFor(() => expect(deliverEvent).toHaveBeenCalledOnce())
+    await vi.waitFor(() => expect(deliverEvent).toHaveBeenCalled())
+    expect(deliverEvent).toHaveBeenCalledOnce()
     expect(deliverEvent).toHaveBeenCalledWith('sidebarNav.valueChanged', payload)
   })
 })
