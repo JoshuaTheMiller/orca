@@ -7,6 +7,7 @@ import {
   PET_SIZE_MIN,
   type CustomPet
 } from '../../../../../shared/pet-types'
+import { isPluginSidebarCardBody } from '../../../../../shared/plugins/contributions/plugin-sidebar-card-items'
 import { clampPetSize } from './ui-slice-hydration-sanitizers'
 import { readPersistedFloatingTerminalPanelViewState } from '../../../components/floating-terminal/floating-terminal-panel-view-state'
 
@@ -152,7 +153,7 @@ export function createUiSurfaceActions(set: UISliceSet, _get: UISliceGet): Parti
     // Activity view unmounts workspaces; incidental activation must not switch bodies or queue a surprise reveal.
     revealWorktreeInSidebar: (worktreeId, options) =>
       set((state) =>
-        state.sidebarBody === 'agents'
+        state.sidebarBody === 'agents' || isPluginSidebarCardBody(state.sidebarBody)
           ? state
           : {
               pendingRevealSidebarRow: null,
@@ -168,7 +169,7 @@ export function createUiSurfaceActions(set: UISliceSet, _get: UISliceGet): Parti
       ),
     revealSidebarRow: (rowKey, options) =>
       set((state) =>
-        state.sidebarBody === 'agents'
+        state.sidebarBody === 'agents' || isPluginSidebarCardBody(state.sidebarBody)
           ? state
           : {
               pendingRevealWorktree: null,

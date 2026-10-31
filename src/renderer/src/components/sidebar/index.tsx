@@ -17,6 +17,7 @@ import { ActivityThreadCollapseContext } from '@/components/activity/activity-th
 import { useSidebarProjectDrop } from './useSidebarProjectDrop'
 import { useWorkspaceBoardPanel } from './useWorkspaceBoardPanel'
 import { useWorkspaceRevealBodyRedirect } from './use-workspace-reveal-body-redirect'
+import { usePluginSidebarCardBody } from './use-plugin-sidebar-card-body'
 import { resolveLeftSidebarStyleVariables } from '@/lib/left-sidebar-appearance'
 import { useSystemPrefersDark } from '@/components/terminal-pane/use-system-prefers-dark'
 import { lazyWithRetry } from '@/lib/lazy-with-retry'
@@ -27,6 +28,8 @@ import { StartupWorktreeRefreshStatus } from './StartupWorktreeRefreshStatus'
 
 // Keep the Agents activity pipeline out of the workspace view’s initial bundle.
 const SidebarAgentsList = lazyWithRetry(() => import('./SidebarAgentsList'))
+
+const PluginSidebarCardBody = lazyWithRetry(() => import('./PluginSidebarCardBody'))
 
 const WorktreeMetaDialog = lazyWithRetry(() => import('./WorktreeMetaDialog'))
 const RemoveFolderDialog = lazyWithRetry(() => import('./RemoveFolderDialog'))
@@ -146,7 +149,9 @@ function Sidebar({
     onDraftWidthChange: setSidebarLiveWidth
   })
 
-  useWorkspaceRevealBodyRedirect(sidebarOpen && sidebarBody === 'agents')
+  const { cards: pluginCards, current: pluginCard } = usePluginSidebarCardBody(sidebarOpen)
+  // Why not just Agents: a plugin card also hides the list a reveal request needs.
+  useWorkspaceRevealBodyRedirect(sidebarOpen && sidebarBody !== 'workspaces')
   // A collapsed sidebar takes no drops.
   const sidebarRef = React.useCallback(
     (node: HTMLDivElement | null) => {
@@ -170,10 +175,16 @@ function Sidebar({
             <SidebarHeader
               onWorkspaceBoardMenuOpenChange={setWorkspaceBoardMenuOpen}
               activityOptionsTarget={setAgentOptionsTarget}
+              pluginCards={pluginCards}
+              pluginCard={pluginCard}
             />
             <SeveredTerminalDaemonBanner />
             <StalledTerminalDaemonBanner />
-            {sidebarBody === 'agents' ? (
+            {pluginCard ? (
+              <React.Suspense fallback={<div className="min-h-0 flex-1" />}>
+                <PluginSidebarCardBody card={pluginCard} />
+              </React.Suspense>
+            ) : sidebarBody === 'agents' ? (
               <React.Suspense fallback={<div className="min-h-0 flex-1" />}>
                 <ActivityThreadCollapseContext.Provider value={agentsCollapseState}>
                   <SidebarAgentsList

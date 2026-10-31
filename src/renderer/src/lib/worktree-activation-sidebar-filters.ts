@@ -1,5 +1,6 @@
 import type { Worktree } from '../../../shared/worktree/types'
 import { useAppStore } from '@/store'
+import { isPluginSidebarCardBody } from '../../../shared/plugins/contributions/plugin-sidebar-card-items'
 import {
   isAutomationGeneratedWorkspace,
   isCliCreatedWorkspace,
@@ -11,7 +12,7 @@ import { revealRepoInProjectFilter } from '@/components/sidebar/project-filter-r
 export function liftSidebarFiltersHidingWorktree(wt: Worktree): void {
   const state = useAppStore.getState()
   // Not in the activity view: the reveal is skipped there, so lifting would only discard filters.
-  if (state.sidebarBody === 'agents') {
+  if (state.sidebarBody === 'agents' || isPluginSidebarCardBody(state.sidebarBody)) {
     return
   }
   revealRepoInProjectFilter(state, wt.repoId)

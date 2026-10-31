@@ -10,15 +10,25 @@ import { Sparkles, Bell } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { AgentQuestionIcon } from '@/components/AgentQuestionIcon'
 import { useAgentBucketCounts } from '@/components/dashboard/useAgentBucketCounts'
+import type { ActivePluginSidebarCard } from '@/store/plugin-sidebar-cards'
+import { PluginSidebarViewSwitcher } from './PluginSidebarViewSwitcher'
 
 type SidebarHeaderProps = {
   onWorkspaceBoardMenuOpenChange: (open: boolean) => void
   activityOptionsTarget?: React.Ref<HTMLDivElement>
+  /** Cards plugins offer as alternative bodies; the switcher shows only when there are some. */
+  pluginCards?: readonly ActivePluginSidebarCard[]
+  /** The card being shown, if the body is one. */
+  pluginCard?: ActivePluginSidebarCard | null
 }
+
+const NO_CARDS: readonly ActivePluginSidebarCard[] = []
 
 const SidebarHeader = React.memo(function SidebarHeader({
   onWorkspaceBoardMenuOpenChange,
-  activityOptionsTarget
+  activityOptionsTarget,
+  pluginCards = NO_CARDS,
+  pluginCard = null
 }: SidebarHeaderProps) {
   // Subscribe this memoized header to locale changes before using translate().
   useTranslation()
@@ -58,13 +68,22 @@ const SidebarHeader = React.memo(function SidebarHeader({
   return (
     <div className="mt-2 flex h-8 min-w-0 shrink-0 items-center justify-between gap-1.5 px-2">
       <div className="flex min-w-0 items-center gap-1">
-        <span
-          // Truncate localized titles because fixed-width actions cannot shrink inside the short header row.
-          className="min-w-0 truncate select-none pl-2 pr-0.5 text-xs font-semibold text-muted-foreground/80"
-          data-sidebar-section-title={groupBy === 'repo' ? 'projects' : 'workspaces'}
-        >
-          {sidebarTitle}
-        </span>
+        {pluginCards.length > 0 ? (
+          <PluginSidebarViewSwitcher
+            cards={pluginCards}
+            current={pluginCard}
+            projectsTitle={sidebarTitle}
+            projectsKey={groupBy === 'repo' ? 'projects' : 'workspaces'}
+          />
+        ) : (
+          <span
+            // Truncate localized titles because fixed-width actions cannot shrink inside the short header row.
+            className="min-w-0 truncate select-none pl-2 pr-0.5 text-xs font-semibold text-muted-foreground/80"
+            data-sidebar-section-title={groupBy === 'repo' ? 'projects' : 'workspaces'}
+          >
+            {sidebarTitle}
+          </span>
+        )}
       </div>
       <div className="flex shrink-0 items-center gap-1">
         <Popover
@@ -166,7 +185,7 @@ const SidebarHeader = React.memo(function SidebarHeader({
         </Popover>
         <SidebarHeaderActions
           onWorkspaceBoardMenuOpenChange={onWorkspaceBoardMenuOpenChange}
-          agentsViewActive={agentsViewActive}
+          agentsViewActive={agentsViewActive || pluginCard !== null}
           activityOptionsTarget={activityOptionsTarget}
         />
       </div>

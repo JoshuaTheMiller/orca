@@ -4,6 +4,7 @@ import React, { act } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import SidebarHeader from './SidebarHeader'
+import type { ActivePluginSidebarCard } from '@/store/plugin-sidebar-cards'
 
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true })
 
@@ -199,5 +200,76 @@ describe('SidebarHeader', () => {
 
     expect(mockState.openModal).toHaveBeenCalledWith('add-repo')
     expect(mocks.openWorkspaceCreationComposerWithTourHandoff).not.toHaveBeenCalled()
+  })
+})
+
+describe('SidebarHeader plugin view switcher', () => {
+  const issues = {
+    id: 'issues',
+    title: 'Issues',
+    body: 'plugin:samples.tracker/issues',
+    pluginKey: 'samples.tracker',
+    pluginName: 'Tracker'
+  } satisfies ActivePluginSidebarCard
+  const switcher = (): HTMLElement | null =>
+    container.querySelector<HTMLElement>('[data-sidebar-view-switcher]')
+  const title = (): HTMLElement | null =>
+    container.querySelector<HTMLElement>('[data-sidebar-section-title]')
+
+  it('keeps the plain Projects title while no plugin offers a card', () => {
+    act(() => root.render(<SidebarHeader onWorkspaceBoardMenuOpenChange={vi.fn()} />))
+    expect(switcher()).toBeNull()
+    expect(title()?.textContent).toBe('Projects')
+
+    act(() =>
+      root.render(<SidebarHeader onWorkspaceBoardMenuOpenChange={vi.fn()} pluginCards={[]} />)
+    )
+    expect(switcher()).toBeNull()
+  })
+
+  it('swaps the title for a switcher naming the shown view once a card is available', () => {
+    act(() =>
+      root.render(<SidebarHeader onWorkspaceBoardMenuOpenChange={vi.fn()} pluginCards={[issues]} />)
+    )
+    expect(switcher()?.textContent).toBe('Projects')
+    expect(switcher()?.getAttribute('aria-label')).toBe('Switch sidebar view')
+
+    act(() =>
+      root.render(
+        <SidebarHeader
+          onWorkspaceBoardMenuOpenChange={vi.fn()}
+          pluginCards={[issues]}
+          pluginCard={issues}
+        />
+      )
+    )
+    expect(switcher()?.textContent).toBe('Issues')
+    expect(title()?.getAttribute('data-sidebar-section-title')).toBe('plugin-card')
+  })
+
+  it('goes back to the plain title when the card disappears', () => {
+    const render = (cards: ActivePluginSidebarCard[]) =>
+      act(() =>
+        root.render(<SidebarHeader onWorkspaceBoardMenuOpenChange={vi.fn()} pluginCards={cards} />)
+      )
+    render([issues])
+    expect(switcher()).not.toBeNull()
+    render([])
+    expect(switcher()).toBeNull()
+    expect(title()?.textContent).toBe('Projects')
+  })
+
+  it('hides the workspace options menu while a card is shown, as Activity does', () => {
+    act(() =>
+      root.render(
+        <SidebarHeader
+          onWorkspaceBoardMenuOpenChange={vi.fn()}
+          pluginCards={[issues]}
+          pluginCard={issues}
+        />
+      )
+    )
+    expect(container.querySelector('[aria-label="Workspace options"]')).toBeNull()
+    expect(container.querySelector('[aria-label="Add project"]')).not.toBeNull()
   })
 })
