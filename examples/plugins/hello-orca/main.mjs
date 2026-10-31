@@ -1,5 +1,15 @@
 // Sample plugin runs in a lazily forked plain-Node worker; its default export receives commands, events and capability-gated host API.
+import { fileURLToPath } from 'node:url'
+
 export default function activate(orca) {
+  // pages.open shows a page the manifest declares; with a path, the page gets that file as a
+  // read-only document and live updates while it stays open. Edit notes.txt to watch it change.
+  orca.commands.register('hello-open-notes', async () => {
+    const path = fileURLToPath(new URL('./notes.txt', import.meta.url))
+    await orca.host.call('pages.open', { pageId: 'notes', path })
+    return 'Opened the notes page.'
+  })
+
   orca.commands.register('hello-ping', async () => {
     const stored = await orca.host.call('storage.get', { key: 'pings' })
     const count = (typeof stored?.value === 'number' ? stored.value : 0) + 1

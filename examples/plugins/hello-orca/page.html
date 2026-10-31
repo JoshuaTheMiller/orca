@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      body {
+        margin: 0;
+        padding: 16px;
+        font-family: system-ui, sans-serif;
+        font-size: 13px;
+        color: var(--orca-foreground, #ddd);
+        background: var(--orca-background, transparent);
+      }
+      h1 {
+        font-size: 14px;
+        margin: 0 0 8px;
+      }
+      pre {
+        margin: 0;
+        padding: 10px;
+        border: 1px solid var(--orca-border, #555);
+        border-radius: 6px;
+        white-space: pre-wrap;
+      }
+      .hint {
+        color: var(--orca-muted-foreground, #999);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Hello Notes</h1>
+    <p class="hint" id="hint">
+      Run "Hello: Open notes page" from the command palette to open this page with a file.
+    </p>
+    <pre id="text" hidden></pre>
+    <script>
+      'use strict'
+      // On a page opened with a path, orca.document is a read-only text document that Orca keeps
+      // current; a page opened without one never receives a document.
+      var textEl = document.getElementById('text')
+      var hintEl = document.getElementById('hint')
+      orca.document.onDidChange(function (doc) {
+        textEl.hidden = false
+        hintEl.hidden = true
+        textEl.textContent = doc.content.text
+      })
+    </script>
+  </body>
+</html>

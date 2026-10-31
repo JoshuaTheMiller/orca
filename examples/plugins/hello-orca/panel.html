@@ -40,6 +40,7 @@
     <p>Panel + worker command + events, gated by consent.</p>
     <button id="ctx">Read workspace context</button>
     <button id="notify">Show a notification</button>
+    <button id="page">Open the notes page</button>
     <p class="status" id="status"></p>
     <script>
       'use strict'
@@ -61,6 +62,13 @@
             statusEl.textContent = `context failed: ${error.code}: ${error.message}`
           }
         )
+      })
+
+      document.getElementById('page').addEventListener('click', function () {
+        // A panel does not know a file path; run "Hello: Open notes page" to open the page with one.
+        orca.host.call('pages.open', { pageId: 'notes' }).catch(function (error) {
+          statusEl.textContent = `page failed: ${error.code}: ${error.message}`
+        })
       })
 
       document.getElementById('notify').addEventListener('click', function () {
