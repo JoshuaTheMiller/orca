@@ -11,6 +11,7 @@ function createHarness(openLink: (request: { url: string; external: boolean }) =
   const services: PluginHostServices = bindPluginHostServices({
     delegate,
     pluginsDataDir: 'unused',
+    sidebarNavValues: () => ({}),
     openLink
   })
   const audit = { record: vi.fn().mockResolvedValue(undefined) }

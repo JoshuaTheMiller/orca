@@ -53,6 +53,7 @@ export function pluginCapabilityDescription(kind: string, fallback: string): str
       return translate(
         'auto.components.settings.PluginConsentDialog.capability.editorOpen',
         "Open files in Orca's editor"
+      )
     case 'links:open':
       return translate(
         'auto.components.settings.PluginConsentDialog.capability.linksOpen',
