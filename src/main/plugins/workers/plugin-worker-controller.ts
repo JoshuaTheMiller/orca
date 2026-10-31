@@ -16,6 +16,7 @@ export type PluginWorkerControllerOptions = {
   entryPath: string
   maxActive?: number
   idleReapMs?: number
+  isKeptAlive?: (pluginKey: string) => boolean
   workerFactory?: PluginWorkerFactory
   contentVerifier: PluginContentVerifier
   capabilities: (pluginKey: string) => readonly PluginCapabilityKind[] | null
@@ -42,6 +43,7 @@ export class PluginWorkerController {
       entryPath: options.entryPath,
       maxActive: options.maxActive,
       idleReapMs: options.idleReapMs,
+      isKeptAlive: options.isKeptAlive,
       workerFactory: options.workerFactory,
       executeHostCall: options.executeHostCall,
       log: options.log,

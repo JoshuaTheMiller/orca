@@ -14,6 +14,7 @@ import type {
   PluginHostListEntry,
   PluginHostLogLine,
   PluginSettingChangedEvent,
+  PluginSidebarCardRef,
   PreloadApi
 } from '../api-types'
 
@@ -95,6 +96,17 @@ export const pluginsApi = {
     ipcRenderer.on('plugins:settingChanged', listener)
     return () => {
       ipcRenderer.removeListener('plugins:settingChanged', listener)
+    }
+  },
+  getSidebarCardItems: (args) => ipcRenderer.invoke('plugins:getSidebarCardItems', args),
+  setSidebarCardShown: (card) => ipcRenderer.invoke('plugins:setSidebarCardShown', card),
+  openSidebarCardFile: (args) => ipcRenderer.invoke('plugins:openSidebarCardFile', args),
+  onSidebarCardItemsChanged: (callback): (() => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, change: PluginSidebarCardRef): void =>
+      callback(change)
+    ipcRenderer.on('plugins:sidebarCardItemsChanged', listener)
+    return () => {
+      ipcRenderer.removeListener('plugins:sidebarCardItemsChanged', listener)
     }
   },
   getAutoUpdateState: () => ipcRenderer.invoke('plugins:getAutoUpdateState'),

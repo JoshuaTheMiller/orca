@@ -42,7 +42,7 @@ const SPECIFIC_PLUGIN_ROUTES = [
     [
       `${UI}(?:catalog\\/|list\\/|page\\/|PluginContributionIcon|dialogs\\/Plugin(?:Install|CatalogLink|MarketplaceSource)Dialog)`,
       `${UI}state\\/use-plugin-(?:catalog|install-link|install-action|marketplace-lifecycle|page-navigation|page-model|hover-prefetch|in-use|art-palettes|contribution-source)`,
-      `${UI}(?:state\\/plugin-preview-cache|presentation\\/plugin-(?:status-presentation|install-source|release-date|contributions|error-presentation))`,
+      `${UI}(?:state\\/plugin-preview-cache|presentation\\/plugin-(?:status-presentation|install-source|release-date|contributions|sidebar-card-rows|error-presentation))`,
       `${STORE}content-list-store`,
       'src\\/main\\/plugins\\/(?:installation\\/|catalog\\/plugin-(?:marketplace-|catalog-|one-click-enable|community-marketplace-seed|kill-list-))',
       'src\\/main\\/plugins\\/plugin-(?:list-projection|client-list|image-)',
@@ -108,9 +108,9 @@ const SPECIFIC_PLUGIN_ROUTES = [
     ['plugin-demo', 'plugin-panel-containment'],
     [
       `${UI}(?:page\\/PluginContributionAction(?:Panel|Command|Events)|state\\/use-plugin-logs)`,
-      `${STORE}(?:panels|sidebar-nav-)`,
-      'src\\/main\\/plugins\\/(?:panels\\/|workers\\/|plugin-(?:command-|event-delivery|agent-status-event|sidebar-nav-events|storage-store|secrets-store|log-buffer))',
-      'src\\/shared\\/plugins\\/(?:frames\\/|workers\\/|events\\/|capabilities\\/|contributions\\/plugin-(?:command-|event-|panel-|sidebar-nav-|execution-profile))'
+      `${STORE}(?:panels|sidebar-nav-|sidebar-cards)`,
+      'src\\/main\\/plugins\\/(?:panels\\/|workers\\/|plugin-(?:command-|event-delivery|agent-status-event|sidebar-nav-events|sidebar-cards|storage-store|secrets-store|log-buffer))',
+      'src\\/shared\\/plugins\\/(?:frames\\/|workers\\/|events\\/|capabilities\\/|contributions\\/plugin-(?:command-|event-|panel-|sidebar-nav-|sidebar-card-|execution-profile))'
     ].join('|'),
     'plugin-panel-navigation-observer'
   ),

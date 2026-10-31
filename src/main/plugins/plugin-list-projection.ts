@@ -97,6 +97,7 @@ export async function buildPluginList(
           newFiles: [],
           sidebarNavItems: [],
           settings: [],
+          sidebarCards: [],
           commands: [],
           hasWorker: false,
           vmRecipes: [],
@@ -208,6 +209,13 @@ export async function buildPluginList(
           default: setting.default,
           ...(setting.options === undefined ? {} : { options: setting.options }),
           ...(setting.maxLength === undefined ? {} : { maxLength: setting.maxLength })
+        })),
+        sidebarCards: plugin.manifest.contributes.sidebarCards.map((card) => ({
+          id: card.id,
+          title: card.title,
+          ...(card.icon ? { icon: card.icon } : {}),
+          ...(card.emptyText === undefined ? {} : { emptyText: card.emptyText }),
+          ...(card.when === undefined ? {} : { when: card.when })
         })),
         commands: service.contentPacks.commands.preview(plugin.pluginKey).map((command) => ({
           id: command.id,

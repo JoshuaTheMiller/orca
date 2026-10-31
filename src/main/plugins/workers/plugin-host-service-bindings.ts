@@ -42,6 +42,8 @@ export function bindPluginHostServices(input: {
   /** One plugin's toggle and checkbox values, defaults applied. */
   sidebarNavValues: (pluginKey: string) => Record<string, boolean>
   openLink?: (request: PluginOpenLinkRequest) => boolean
+  /** Replaces the rows of one of the plugin's declared sidebar cards. */
+  setSidebarCardItems: PluginHostServices['setSidebarCardItems']
   /** Reads and writes the plugin's settings, declared defaults and validation included. */
   settings: PluginHostServices['settings']
 }): PluginHostServices {
@@ -90,6 +92,7 @@ export function bindPluginHostServices(input: {
     },
     sidebarNavValues: input.sidebarNavValues,
     openLink: async (request) => ({ opened: openLink?.(request) ?? false }),
+    setSidebarCardItems: input.setSidebarCardItems,
     storage: {
       get: (key, itemKey) => new PluginKvStore(pluginsDataDir, key, 'storage.json').get(itemKey),
       set: (key, itemKey, value) =>

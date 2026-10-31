@@ -30,6 +30,8 @@ export type PluginWorkerManagerOptions = {
   entryPath: string
   maxActive?: number
   idleReapMs?: number
+  /** A worker whose plugin shows something live is never reaped as idle. */
+  isKeptAlive?: (pluginKey: string) => boolean
   workerFactory?: PluginWorkerFactory
   executeHostCall: (
     pluginKey: string,
@@ -239,6 +241,7 @@ export class PluginWorkerManager {
   reapIdle(now = Date.now()): void {
     for (const [pluginKey, record] of this.workers) {
       if (
+        this.options.isKeptAlive?.(pluginKey) ||
         record.handle.inFlightCount() !== 0 ||
         now - record.handle.lastActivityAt() <= this.idleReapMs
       ) {

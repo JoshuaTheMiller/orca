@@ -14,6 +14,7 @@ function createServices(storageSet: PluginHostServices['storage']['set']): Plugi
     openEditorFile: vi.fn().mockResolvedValue({ opened: true }),
     sidebarNavValues: vi.fn().mockReturnValue({}),
     openLink: vi.fn().mockResolvedValue({ opened: true }),
+    setSidebarCardItems: vi.fn().mockReturnValue({ ok: true }),
     storage: {
       get: vi.fn(),
       set: storageSet,
@@ -145,6 +146,7 @@ function createTerminalHarness(terminalHandles: string[]): {
       delegate,
       pluginsDataDir: join(tmpdir(), 'plugin-host-methods-test'),
       sidebarNavValues: () => ({}),
+      setSidebarCardItems: () => ({ ok: true }),
       settings: { getAll: () => ({}), set: () => ({ ok: true }) }
     })
   }
@@ -336,7 +338,10 @@ describe('editor.openFile', () => {
       column: 2
     })
 
-    await expect(outcome).resolves.toEqual({ ok: true, value: { opened: true } })
+    await expect(outcome).resolves.toEqual({
+      ok: true,
+      value: { opened: true }
+    })
     expect(services.openEditorFile).toHaveBeenCalledWith('/Users/private/notes/graph.json', {
       line: 4,
       column: 2
@@ -346,7 +351,10 @@ describe('editor.openFile', () => {
   })
 
   it('passes the placement on and rejects an unknown one', async () => {
-    const { outcome, services } = openFile({ path: '/a.md', placement: 'active-workspace' })
+    const { outcome, services } = openFile({
+      path: '/a.md',
+      placement: 'active-workspace'
+    })
 
     await outcome
     expect(services.openEditorFile).toHaveBeenCalledWith('/a.md', undefined, 'active-workspace')
@@ -356,7 +364,10 @@ describe('editor.openFile', () => {
   })
 
   it('ignores a column given without a line', async () => {
-    const { outcome, services } = openFile({ path: String.raw`C:\notes\a.md`, column: 3 })
+    const { outcome, services } = openFile({
+      path: String.raw`C:\notes\a.md`,
+      column: 3
+    })
 
     await outcome
     expect(services.openEditorFile).toHaveBeenCalledWith(String.raw`C:\notes\a.md`, undefined)
@@ -402,7 +413,9 @@ describe('editor.openFile', () => {
       ok: true,
       value: { opened: true }
     })
-    expect(delegate.openLocalAbsoluteFile).toHaveBeenCalledWith('/w/a.md', { line: 1 })
+    expect(delegate.openLocalAbsoluteFile).toHaveBeenCalledWith('/w/a.md', {
+      line: 1
+    })
   })
 
   it('opens in the active workspace when asked and refuses when none is active', async () => {
@@ -443,7 +456,10 @@ describe('sidebarNav.getValues', () => {
     params: unknown = {}
   ) => {
     const services = createServices(vi.fn())
-    vi.mocked(services.sidebarNavValues).mockReturnValue({ 'show-details': true, verbose: false })
+    vi.mocked(services.sidebarNavValues).mockReturnValue({
+      'show-details': true,
+      verbose: false
+    })
     return {
       services,
       outcome: executePluginHostCall({
@@ -476,5 +492,126 @@ describe('sidebarNav.getValues', () => {
     await expect(
       getValues('worker', ['settings:own'], { plugin: 'other' }).outcome
     ).resolves.toMatchObject({ ok: false, code: 'invalid_params' })
+  })
+})
+
+describe('sidebarCards.setItems', () => {
+  const setItems = (
+    params: unknown,
+    options: {
+      surface?: 'worker' | 'panel'
+      granted?: never[]
+      result?: unknown
+    } = {}
+  ) => {
+    const services = createServices(vi.fn())
+    if (options.result) {
+      vi.mocked(services.setSidebarCardItems).mockReturnValue(
+        options.result as ReturnType<PluginHostServices['setSidebarCardItems']>
+      )
+    }
+    const audit = { record: vi.fn().mockResolvedValue(undefined) }
+    return {
+      services,
+      audit,
+      outcome: executePluginHostCall({
+        pluginId: 'samples.demo',
+        method: 'sidebarCards.setItems',
+        params,
+        surface: options.surface ?? 'worker',
+        grantedCapabilities: options.granted ?? [],
+        services,
+        audit
+      })
+    }
+  }
+
+  it('needs no capability and is not audited as a mutation', async () => {
+    const { outcome, services, audit } = setItems({
+      cardId: 'issues',
+      items: [
+        {
+          id: 'a',
+          title: 'First',
+          action: { kind: 'command', command: 'open' }
+        }
+      ]
+    })
+    await expect(outcome).resolves.toEqual({ ok: true, value: { ok: true } })
+    expect(services.setSidebarCardItems).toHaveBeenCalledWith('samples.demo', 'issues', [
+      {
+        id: 'a',
+        title: 'First',
+        action: { kind: 'command', command: 'open' }
+      }
+    ])
+    expect(audit.record).not.toHaveBeenCalled()
+  })
+
+  it('answers invalid_params for a card the plugin did not declare', async () => {
+    const { outcome } = setItems(
+      { cardId: 'other', items: [] },
+      {
+        result: {
+          ok: false,
+          error: 'other is not a declared sidebar card',
+          invalid: true
+        }
+      }
+    )
+    await expect(outcome).resolves.toMatchObject({
+      ok: false,
+      code: 'invalid_params'
+    })
+  })
+
+  it('refuses frames, duplicate row ids, unknown fields and more than 500 rows', async () => {
+    await expect(
+      setItems({ cardId: 'issues', items: [] }, { surface: 'panel' }).outcome
+    ).resolves.toMatchObject({
+      ok: false,
+      code: 'not_permitted'
+    })
+    const bad: unknown[] = [
+      {
+        cardId: 'issues',
+        items: [
+          { id: 'a', title: 'A' },
+          { id: 'a', title: 'B' }
+        ]
+      },
+      { cardId: 'issues', items: [{ id: 'a', title: 'A', color: 'red' }] },
+      {
+        cardId: 'issues',
+        items: [
+          {
+            id: 'a',
+            title: 'A',
+            action: { kind: 'openFile', path: 'relative.txt' }
+          }
+        ]
+      },
+      { cardId: 'issues', items: [{ id: 'a', title: 'x'.repeat(161) }] },
+      {
+        cardId: 'issues',
+        items: Array.from({ length: 501 }, (_, index) => ({
+          id: `row-${index}`,
+          title: 'Row'
+        }))
+      }
+    ]
+    for (const params of bad) {
+      await expect(setItems(params).outcome).resolves.toMatchObject({
+        ok: false,
+        code: 'invalid_params'
+      })
+    }
+    const full = Array.from({ length: 500 }, (_, index) => ({
+      id: `row-${index}`,
+      title: 'Row'
+    }))
+    await expect(setItems({ cardId: 'issues', items: full }).outcome).resolves.toMatchObject({
+      ok: true
+    })
   })
 })

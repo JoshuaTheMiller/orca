@@ -39,12 +39,17 @@ import {
   PLUGIN_SETTING_LIMIT,
   pluginSettingContributionSchema
 } from './plugin-setting-contribution'
+import {
+  PLUGIN_SIDEBAR_CARD_LIMIT,
+  pluginSidebarCardContributionSchema
+} from './plugin-sidebar-card-contribution'
 import { PLUGIN_PANEL_LIMIT, pluginPanelContributionSchema } from './plugin-panel-contribution'
 import {
   pluginFieldDoc,
   PLUGIN_MANIFEST_V2_SINCE,
   PLUGIN_SCHEMA_SINCE_V1,
   PLUGIN_SETTINGS_SINCE,
+  PLUGIN_SIDEBAR_CARDS_SINCE,
   PLUGIN_SIDEBAR_NAV_ITEMS_SINCE
 } from '../manifest/plugin-schema-field-docs'
 
@@ -63,7 +68,8 @@ export const PLUGIN_CONTRIBUTION_POINTS = [
   'customEditors',
   'newFiles',
   'sidebarNavItems',
-  'settings'
+  'settings',
+  'sidebarCards'
 ] as const
 
 export type PluginContributionPoint = (typeof PLUGIN_CONTRIBUTION_POINTS)[number]
@@ -79,8 +85,7 @@ export const PLUGIN_RESERVED_CONTRIBUTION_POINTS = {
   hooks: 'agent hooks',
   taskSources: 'task sources',
   connections: 'account connections',
-  statusBarItems: 'status bar items',
-  sidebarCards: 'sidebar cards'
+  statusBarItems: 'status bar items'
 } as const
 
 export type PluginReservedContributionPoint = keyof typeof PLUGIN_RESERVED_CONTRIBUTION_POINTS
@@ -97,7 +102,6 @@ export const PLUGIN_PLANNED_CONTRIBUTION_POINTS: Readonly<
     'New coding-agent harnesses described as data: how to launch them and read their status.',
   statusBarItems:
     'Declarative status bar widgets (label, icon, tooltip) whose values a worker updates.',
-  sidebarCards: 'Declarative left-sidebar cards with fixed layouts whose values a worker updates.',
   mcpServers: 'MCP server definitions that Orca offers to the agents it launches.',
   skills: 'Agent skills shipped as files that Orca installs for the agents it launches.',
   hooks:
@@ -219,6 +223,12 @@ export const pluginContributesFields = {
     PLUGIN_SETTING_LIMIT,
     "Typed settings that Orca shows in its own settings and stores with the plugin's other settings.",
     PLUGIN_SETTINGS_SINCE
+  ),
+  sidebarCards: contributionList(
+    pluginSidebarCardContributionSchema,
+    PLUGIN_SIDEBAR_CARD_LIMIT,
+    'Alternative left-sidebar views, switched to from the Projects header, whose rows the plugin worker sets.',
+    PLUGIN_SIDEBAR_CARDS_SINCE
   )
 } satisfies Record<PluginContributionPoint, z.ZodType>
 
@@ -229,8 +239,7 @@ export const pluginReservedContributesFields = {
   hooks: reservedList(PLUGIN_RESERVED_CONTRIBUTION_POINTS.hooks),
   taskSources: reservedList(PLUGIN_RESERVED_CONTRIBUTION_POINTS.taskSources),
   connections: reservedList(PLUGIN_RESERVED_CONTRIBUTION_POINTS.connections),
-  statusBarItems: reservedList(PLUGIN_RESERVED_CONTRIBUTION_POINTS.statusBarItems),
-  sidebarCards: reservedList(PLUGIN_RESERVED_CONTRIBUTION_POINTS.sidebarCards)
+  statusBarItems: reservedList(PLUGIN_RESERVED_CONTRIBUTION_POINTS.statusBarItems)
 } satisfies Record<PluginReservedContributionPoint, z.ZodType>
 
 type ContributionPointPolicy = {
@@ -268,5 +277,8 @@ export const PLUGIN_CONTRIBUTION_POINT_POLICY: Record<
   sidebarNavItems: { execution: 'declarative', catalogType: null, bindsContent: false },
   // Why declarative with no catalog type: a setting is inert typed data Orca renders and stores;
   // reading it from code needs `settings:own` and a surface that can call the host API.
-  settings: { execution: 'declarative', catalogType: null, bindsContent: false }
+  settings: { execution: 'declarative', catalogType: null, bindsContent: false },
+  // Why trusted-worker with no catalog type: the rows come from the plugin's worker, which `main`
+  // already declares; the card itself is inert data.
+  sidebarCards: { execution: 'trusted-worker', catalogType: null, bindsContent: false }
 }

@@ -19,7 +19,7 @@ type ActiveNavItemBase = Omit<
   /** Key of the toggle this item shows under, when it has a parent. */
   parentKey?: string
   /** The boolean plugin setting that must be true for the item to show; `default` holds until its value loads. */
-  gate?: { valueKey: string; pluginKey: string; setting: string; default: boolean }
+  gate?: PluginSettingGate
 }
 
 /** A nav item that runs one of the plugin's commands. */
@@ -40,7 +40,15 @@ export type ActivePluginSidebarNavItem =
   | ActivePluginSidebarCommandItem
   | ActivePluginSidebarStateItem
 
-function gateFor(plugin: PluginHostListEntry, setting: string): ActiveNavItemBase['gate'] {
+/** The boolean plugin setting a contribution waits on (`when`); `default` holds until its value loads. */
+export type PluginSettingGate = {
+  valueKey: string
+  pluginKey: string
+  setting: string
+  default: boolean
+}
+
+export function gateFor(plugin: PluginHostListEntry, setting: string): PluginSettingGate {
   const declared = plugin.settings?.find((candidate) => candidate.id === setting)
   // Why a closed gate when undeclared: an item that waits on a setting the plugin lacks must not show.
   return {

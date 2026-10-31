@@ -41,13 +41,18 @@ function spec(pluginKey: string): PluginWorkerSpawnSpec {
 
 function manager(
   factory: PluginWorkerFactory,
-  options: { maxActive?: number; idleReapMs?: number } = {}
+  options: {
+    maxActive?: number
+    idleReapMs?: number
+    isKeptAlive?: (pluginKey: string) => boolean
+  } = {}
 ): PluginWorkerManager {
   return new PluginWorkerManager({
     entryPath: '/host.js',
     workerFactory: factory,
     maxActive: options.maxActive,
     idleReapMs: options.idleReapMs,
+    isKeptAlive: options.isKeptAlive,
     executeHostCall: async () => ({ ok: true, value: null }),
     log: () => vi.fn(),
     onWorkerStateChange: vi.fn()
@@ -341,6 +346,27 @@ describe('PluginWorkerManager idle reap', () => {
 
     expect(busy.dispose).not.toHaveBeenCalled()
     expect(subject.runState('demo')).toBe('running')
+    await subject.disposeAll()
+  })
+
+  it('never reaps a worker its plugin keeps alive, and reaps it once that ends', async () => {
+    const idle = worker(100)
+    let kept = true
+    const subject = manager(vi.fn<PluginWorkerFactory>().mockResolvedValue(idle), {
+      idleReapMs: 100,
+      isKeptAlive: (pluginKey) => kept && pluginKey === 'demo'
+    })
+    await subject.ensureActive(spec('demo'))
+
+    subject.reapIdle(10_000)
+    await flush()
+    expect(idle.dispose).not.toHaveBeenCalled()
+    expect(subject.runState('demo')).toBe('running')
+
+    kept = false
+    subject.reapIdle(10_000)
+    await flush()
+    expect(idle.dispose).toHaveBeenCalledOnce()
     await subject.disposeAll()
   })
 

@@ -5,8 +5,8 @@
   "publisher": "your-github-user",
   "name": "Hello Orca",
   "version": "1.0.0",
-  "description": "Sample plugin combining a panel, a worker command, sidebar nav items (a command, a toggle and a checkbox), a setting, and event subscriptions.",
-  "engines": { "orca": ">=1.4.249" },
+  "description": "Sample plugin combining a panel, a worker command, sidebar nav items (a command, a toggle and a checkbox), a setting, a setting-gated sidebar card, and event subscriptions.",
+  "engines": { "orca": ">=1.4.250" },
   "pluginApi": 1,
   "main": "main.mjs",
   "contributes": {
@@ -32,11 +32,21 @@
         "default": false
       }
     ],
+    "sidebarCards": [
+      {
+        "id": "pings",
+        "title": "Pings",
+        "icon": "activity",
+        "emptyText": "No pings yet.",
+        "when": "excited"
+      }
+    ],
     "events": [
       { "on": "workspace.created" },
       { "on": "agent.status.changed" },
       { "on": "sidebarNav.valueChanged" },
-      { "on": "settings.changed" }
+      { "on": "settings.changed" },
+      { "on": "sidebarCards.visibilityChanged" }
     ]
   },
   "capabilities": [
@@ -44,6 +54,7 @@
     { "kind": "notifications:show" },
     { "kind": "storage:own" },
     { "kind": "agent:read" },
-    { "kind": "settings:own" }
+    { "kind": "settings:own" },
+    { "kind": "editor:open" }
   ]
 }

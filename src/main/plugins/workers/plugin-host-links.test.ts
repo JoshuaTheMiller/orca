@@ -14,6 +14,7 @@ function createHarness(
     delegate,
     pluginsDataDir: 'unused',
     sidebarNavValues: () => ({}),
+    setSidebarCardItems: () => ({ ok: true }),
     settings: { getAll: () => ({}), set: () => ({ ok: true }) },
     openLink
   })

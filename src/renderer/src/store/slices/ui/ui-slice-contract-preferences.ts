@@ -21,12 +21,13 @@ import type { CustomPet } from '../../../../../shared/pet-types'
 import type { ReleaseChannel } from '../../../../../shared/release-channel'
 import type { ChangelogData, UpdateStatus } from '../../../../../shared/update-status-types'
 import type { StatusBarUsageMode } from '../../../../../shared/status-bar-usage-mode'
+import type { PluginSidebarCardBody } from '../../../../../shared/plugins/contributions/plugin-sidebar-card-items'
 import type { PersistedUIWriteBaseline } from '../persisted-ui-write-baseline'
 import type { UISliceCore } from './ui-slice-contract-core'
 
 export type UISlicePreferences = {
-  /** Which list the sidebar body shows. Navigator-only; does not change the active view. */
-  sidebarBody: 'workspaces' | 'agents'
+  /** Which list the sidebar body shows, or a plugin's card (`plugin:<pluginKey>/<cardId>`). Navigator-only; does not change the active view and is not persisted. */
+  sidebarBody: 'workspaces' | 'agents' | PluginSidebarCardBody
   setSidebarBody: (body: UISlicePreferences['sidebarBody']) => void
   groupBy: 'none' | 'workspace-status' | 'repo' | 'pr-status'
   setGroupBy: (g: UISlicePreferences['groupBy']) => void

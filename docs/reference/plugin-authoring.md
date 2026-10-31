@@ -224,6 +224,107 @@ and carries the value now in force; resetting to the default delivers the defaul
 is not extra access: it holds no authority, and the plugin can read it only through
 `settings:own`, so an update that adds settings keeps its approval.
 
+### Sidebar cards
+
+`contributes.sidebarCards` adds alternative views (at most 4) to the left sidebar. When at least
+one card is available, the title in the sidebar header becomes a small menu that switches the
+body between **Projects** and each card's title; the choice lasts until the window reloads, and
+the sidebar returns to Projects if the card goes away (the plugin is turned off, or its `when`
+turns false). A card needs a worker: it requires `main` and the `trusted-worker` execution
+profile, because its rows come from the worker. Each entry is `{ id, title, icon?, emptyText?, when? }`:
+
+- `id`: kebab-case, unique among the plugin's cards.
+- `title`: up to 32 characters, shown in the switcher.
+- `icon`: from the same closed set as panel icons (default `plug`).
+- `emptyText`: shown while the worker has set no rows.
+- `when`: the id of a `boolean` entry in the same plugin's [`contributes.settings`](#settings).
+  The card is offered only while that setting is true. A `when` that names no setting, or one that
+  is not a boolean, is a manifest error.
+
+The worker fills the card with `sidebarCards.setItems` (host API 1.4), which replaces all rows of
+one of the plugin's own cards and answers `{ ok: true }`:
+
+| Row field   | Meaning                                                                                                                                                                                                                                                                                                                                |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`        | Unique among the rows, up to 256 characters.                                                                                                                                                                                                                                                                                           |
+| `title`     | The row's main line, up to 160 characters.                                                                                                                                                                                                                                                                                             |
+| `subtitle?` | A quieter second line, up to 240 characters.                                                                                                                                                                                                                                                                                           |
+| `badges?`   | Up to 4 `{ label, tone? }`; `label` is up to 24 characters and `tone` is `neutral` (default), `info`, `warning`, `danger` or `success`.                                                                                                                                                                                                |
+| `icon?`     | An icon from the panel icon set.                                                                                                                                                                                                                                                                                                       |
+| `action?`   | What a click does: `{ kind: "command", command, args? }` runs one of the plugin's own commands (worker commands receive `args`, up to 4096 bytes of JSON), or `{ kind: "openFile", path, placement? }` opens an absolute path like `editor.openFile` and needs the `editor:open` capability. A row without an action is not clickable. |
+
+A card holds at most 500 rows; one past that, or a repeated row id, an unknown field or an
+over-long string, fails the whole call with `invalid_params`. Orca keeps the rows last set in
+memory, per plugin and card, so reopening a card shows them at once; they are dropped when the
+plugin is disabled or removed. A card with more than 100 rows renders only the rows in view.
+Calling `setItems` for a card the plugin did not declare fails with `invalid_params`. A click on
+an `openFile` row from a plugin without `editor:open` is refused with a toast, and a successful
+open is recorded in the audit log like any `editor.openFile` call.
+
+`sidebarCards.setItems` is worker only and needs **no capability**. Declaring the card is the
+grant: the user approves it with the plugin like any other contribution, the rows are held in
+memory and shown only inside that card, and nothing the user owns changes. Adding a card in an
+update counts as new access, like a new panel, so the update asks for review again; renaming one
+does not.
+
+A worker learns when the user is looking at a card. Subscribe with a
+`sidebarCards.visibilityChanged` entry in `contributes.events` (it needs no capability, only a
+declared card) and it receives `{ cardId, visible }` when the first window shows the card
+(`visible: true`) and when no window shows it any more (`visible: false`). Only the owning plugin
+is told. Showing a card starts the plugin's worker if it is not running, even if the plugin did
+not subscribe, and a worker is never stopped for being idle while one of its cards is shown.
+
+```json
+{
+  "engines": { "orca": ">=1.4.250" },
+  "main": "main.mjs",
+  "contributes": {
+    "commands": [{ "id": "issues.open", "title": "Issues: Open" }],
+    "settings": [
+      { "id": "show-issues", "title": "Show the Issues view", "type": "boolean", "default": false }
+    ],
+    "sidebarCards": [
+      {
+        "id": "issues",
+        "title": "Issues",
+        "icon": "bug",
+        "emptyText": "No open issues.",
+        "when": "show-issues"
+      }
+    ],
+    "events": [{ "on": "sidebarCards.visibilityChanged" }]
+  },
+  "capabilities": [{ "kind": "editor:open" }]
+}
+```
+
+```js
+export default async function activate(orca) {
+  async function refresh() {
+    const issues = await fetchOpenIssues() // the plugin's own code
+    await orca.host.call('sidebarCards.setItems', {
+      cardId: 'issues',
+      items: issues.map((issue) => ({
+        id: String(issue.number),
+        title: issue.title,
+        subtitle: `#${issue.number} opened by ${issue.author}`,
+        badges: issue.labels.slice(0, 2).map((label) => ({ label, tone: 'info' })),
+        action: { kind: 'command', command: 'issues.open', args: { number: issue.number } }
+      }))
+    })
+  }
+  orca.commands.register('issues.open', async (args) => {
+    /* open the issue */
+  })
+  // Rows stay in Orca while the card is closed, so refresh only when the user comes back to it.
+  orca.events.on('sidebarCards.visibilityChanged', ({ cardId, visible }) => {
+    if (cardId === 'issues' && visible) {
+      void refresh()
+    }
+  })
+}
+```
+
 ### Opening files
 
 With the `editor:open` capability, a worker, panel or custom editor calls
@@ -433,7 +534,6 @@ arbitrary plugin UI:
 - `connections`: account providers with a host-run sign-in.
 - `agentHarnesses`: new coding-agent harnesses described as data.
 - `statusBarItems`: declarative status bar widgets whose values a worker updates.
-- `sidebarCards`: declarative left-sidebar cards whose values a worker updates.
 - `mcpServers`: MCP server definitions offered to the agents Orca launches.
 - `skills`: agent skills shipped as files.
 - `hooks`: agent lifecycle hooks for the agents Orca launches.

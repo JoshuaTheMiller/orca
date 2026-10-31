@@ -71,12 +71,20 @@ export const settingsChangedPayloadSchema = z.object({
   value: z.json()
 })
 
+export const sidebarCardsVisibilityChangedPayloadSchema = z.object({
+  /** The `id` of the plugin's own card. */
+  cardId: z.string().min(1).max(64),
+  /** True while at least one window shows the card; false once none does. */
+  visible: z.boolean()
+})
+
 export const PLUGIN_EVENT_PAYLOAD_SCHEMAS = {
   'workspace.created': workspaceCreatedPayloadSchema,
   'workspace.removed': workspaceRemovedPayloadSchema,
   'agent.status.changed': agentStatusChangedPayloadSchema,
   'sidebarNav.valueChanged': sidebarNavValueChangedPayloadSchema,
-  'settings.changed': settingsChangedPayloadSchema
+  'settings.changed': settingsChangedPayloadSchema,
+  'sidebarCards.visibilityChanged': sidebarCardsVisibilityChangedPayloadSchema
 } satisfies Record<PluginEventName, z.ZodType>
 
 export type PluginEventPayload<E extends PluginEventName> = z.infer<

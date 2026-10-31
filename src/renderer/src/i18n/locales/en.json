@@ -7329,6 +7329,13 @@
         },
         "PluginSidebarNavItems": {
           "failed": "{{value0}} failed"
+        },
+        "PluginSidebarCard": {
+          "failed": "{{value0}} failed",
+          "empty": "Nothing to show yet."
+        },
+        "PluginSidebarViewSwitcher": {
+          "label": "Switch sidebar view"
         }
       },
       "shared": {
@@ -13272,7 +13279,8 @@
           "sidebarNavCheckbox": "Adds a checkbox to the left sidebar",
           "settingsTitle": "Settings",
           "settingsOne": "Adds 1 setting",
-          "settingsMany": "Adds {{value0}} settings"
+          "settingsMany": "Adds {{value0}} settings",
+          "sidebarCard": "Adds a left sidebar view"
         },
         "PluginCardAction": {
           "installed": "Installed",
@@ -13354,7 +13362,8 @@
           "agentStatusChanged": "When an agent’s status changes",
           "detail": "Background code runs",
           "sidebarNavValueChanged": "When a sidebar toggle or checkbox changes",
-          "settingsChanged": "When one of its settings changes"
+          "settingsChanged": "When one of its settings changes",
+          "sidebarCardsVisibilityChanged": "When a sidebar card is shown or hidden"
         },
         "pluginInstallAction": {
           "installed": "{{value0}} installed",

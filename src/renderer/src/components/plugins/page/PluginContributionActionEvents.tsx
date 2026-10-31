@@ -39,6 +39,11 @@ function eventTitle(event: PluginEventName): string {
         'auto.components.settings.PluginContributionActionEvents.settingsChanged',
         'When one of its settings changes'
       )
+    case 'sidebarCards.visibilityChanged':
+      return translate(
+        'auto.components.settings.PluginContributionActionEvents.sidebarCardsVisibilityChanged',
+        'When a sidebar card is shown or hidden'
+      )
   }
 }
 

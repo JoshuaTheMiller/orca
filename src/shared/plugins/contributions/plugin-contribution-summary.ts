@@ -102,7 +102,8 @@ export function pluginContributionSummary(
       c.settings,
       (setting) => setting.title,
       (setting) => setting.type
-    )
+    ),
+    ...named('sidebarCards', c.sidebarCards, (card) => card.title)
   ].slice(0, PLUGIN_CONTRIBUTION_SUMMARY_LIMIT)
 }
 

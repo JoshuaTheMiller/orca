@@ -3,7 +3,14 @@ import { stripUnsafeDisplayCharacters } from '../../display-text-safety'
 
 const LINE_BREAKS = /[\t\n\v\f\r\u0085\u2028\u2029]+/g
 /** Manifest and catalog keys whose strings Orca shows as plugin names, titles and listing text. */
-const DISPLAY_TEXT_KEYS = new Set(['name', 'title', 'displayName', 'description', 'label'])
+const DISPLAY_TEXT_KEYS = new Set([
+  'name',
+  'title',
+  'displayName',
+  'description',
+  'label',
+  'emptyText'
+])
 
 /** Plugin text as Orca may show it: one line, with nothing that reorders or hides characters. */
 export function sanitizePluginDisplayText(value: string): string {

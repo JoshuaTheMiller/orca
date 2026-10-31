@@ -8,10 +8,50 @@ export default async function activate(orca) {
     }
   })
 
+  // The "Pings" sidebar card shows while "Excited pongs" is on. Orca keeps the rows between visits,
+  // so the worker sets them when the card opens and again whenever the count changes.
+  let cardVisible = false
+  async function updateCard() {
+    const stored = await orca.host.call('storage.get', { key: 'pings' })
+    const count = typeof stored?.value === 'number' ? stored.value : 0
+    await orca.host.call('sidebarCards.setItems', {
+      cardId: 'pings',
+      items: [
+        {
+          id: 'count',
+          title: 'Ping once more',
+          subtitle: count === 1 ? '1 ping so far' : `${count} pings so far`,
+          icon: 'activity',
+          badges: [{ label: String(count), tone: count > 0 ? 'success' : 'neutral' }],
+          action: { kind: 'command', command: 'hello-ping' }
+        },
+        {
+          id: 'source',
+          title: 'Open this worker',
+          subtitle: 'main.mjs',
+          icon: 'code',
+          action: { kind: 'openFile', path: import.meta.filename }
+        },
+        { id: 'note', title: 'Rows without an action are not clickable', icon: 'book' }
+      ]
+    })
+  }
+  orca.events.on('sidebarCards.visibilityChanged', ({ cardId, visible }) => {
+    if (cardId === 'pings') {
+      cardVisible = visible
+      if (visible) {
+        void updateCard()
+      }
+    }
+  })
+
   orca.commands.register('hello-ping', async () => {
     const stored = await orca.host.call('storage.get', { key: 'pings' })
     const count = (typeof stored?.value === 'number' ? stored.value : 0) + 1
     await orca.host.call('storage.set', { key: 'pings', value: count })
+    if (cardVisible) {
+      await updateCard()
+    }
     // A string result is shown as-is in Orca; objects are shown as JSON.
     const ending = excited ? '!!!' : '.'
     return count === 1 ? `Pong! First ping${ending}` : `Pong! ${count} pings so far${ending}`

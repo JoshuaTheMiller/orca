@@ -2,6 +2,10 @@ import { z } from 'zod'
 import type { PluginCapabilityKind } from '../capabilities/plugin-capabilities'
 import type { PluginSurface } from '../frames/plugin-protocol'
 import { editorOpenFileParams, editorOpenFileResult } from './plugin-host-editor-api'
+import {
+  sidebarCardsSetItemsParams,
+  sidebarCardsSetItemsResult
+} from './plugin-host-sidebar-cards-api'
 import { sidebarNavGetValuesParams, sidebarNavGetValuesResult } from './plugin-host-sidebar-nav-api'
 import { linksOpenParams, linksOpenResult } from './plugin-host-links-schema'
 
@@ -109,7 +113,8 @@ export type PluginHostMethodSpec<
   deprecatedSince?: number
   /** Machine-readable resource boundary enforced by the host binding. */
   scope: 'active-workspace' | 'explicit-terminal' | 'plugin-private' | 'desktop'
-  capability: PluginCapabilityKind
+  /** Null when declaring the contribution the method serves is the whole grant. */
+  capability: PluginCapabilityKind | null
   /** Mutations are audit-logged with actor `plugin:<id>`. */
   mutation: boolean
   /** Where plugin code may call it; any other surface gets `not_permitted`. */
@@ -290,6 +295,20 @@ export const PLUGIN_HOST_API = {
     surfaces: ALL_SURFACES,
     params: linksOpenParams,
     result: linksOpenResult
+  }),
+  'sidebarCards.setItems': spec({
+    summary:
+      "Replaces the rows of one of the plugin's own `contributes.sidebarCards`; refused for a card the plugin did not declare.",
+    since: 5,
+    scope: 'plugin-private',
+    // Why no capability: the plugin declared the card, which the user approved with the plugin; the
+    // rows live in memory, are shown only in that card, and change nothing the user owns.
+    capability: null,
+    mutation: false,
+    // Why worker only: rows are the worker's output, and a frame has no card to feed.
+    surfaces: WORKER_ONLY,
+    params: sidebarCardsSetItemsParams,
+    result: sidebarCardsSetItemsResult
   })
 }
 
