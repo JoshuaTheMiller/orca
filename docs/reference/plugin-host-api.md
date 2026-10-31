@@ -22,7 +22,7 @@ Every call is checked against the capabilities the user approved, and params are
 | [`secrets.delete`](#secretsdelete) | `secrets:own` | worker | yes | 1.0 | Removes a secret from the plugin's encrypted secrets file. |
 | [`settings.get`](#settingsget) | `settings:own` | worker | no | 1.0 | Reads every setting the plugin owns. |
 | [`settings.set`](#settingsset) | `settings:own` | worker | yes | 1.0 | Writes one setting the plugin owns. |
-| [`links.open`](#linksopen) | `links:open` | worker, panel, editor | yes | 1.1 | Opens a web link the way Orca opens a link the user clicks: the user's link setting picks Orca's browser or the system browser, and `external` forces the system browser. |
+| [`links.open`](#linksopen) | `links:open` | worker, panel, editor | yes | 1.1 | Opens a web link the way Orca opens a link the user clicks: the user's link setting picks Orca's browser or the system browser, `alternate` picks the other target as Shift with the platform modifier does, and `external` forces the system browser. |
 
 ### `workspace.readContext`
 
@@ -122,10 +122,10 @@ Writes one setting the plugin owns.
 
 ### `links.open`
 
-Opens a web link the way Orca opens a link the user clicks: the user's link setting picks Orca's browser or the system browser, and `external` forces the system browser.
+Opens a web link the way Orca opens a link the user clicks: the user's link setting picks Orca's browser or the system browser, `alternate` picks the other target as Shift with the platform modifier does, and `external` forces the system browser.
 
 ```ts
-(params: { url: string; external?: boolean }) => { opened: boolean }
+(params: { url: string; external?: boolean; alternate?: boolean }) => { opened: boolean }
 ```
 
 ## Errors

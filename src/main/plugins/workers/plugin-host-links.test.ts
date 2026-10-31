@@ -4,7 +4,9 @@ import { createPluginLinkOpener } from '../plugin-open-link'
 import { bindPluginHostServices, type PluginRuntimeDelegate } from './plugin-host-service-bindings'
 import { executePluginHostCall, type PluginHostServices } from './plugin-host-methods'
 
-function createHarness(openLink: (request: { url: string; external: boolean }) => boolean) {
+function createHarness(
+  openLink: (request: { url: string; external: boolean; alternate: boolean }) => boolean
+) {
   // SAFETY: links.open touches only the openLink binding; the runtime delegate is never called.
   // oxlint-disable-next-line typescript/consistent-type-assertions
   const delegate = {} as PluginRuntimeDelegate
@@ -16,7 +18,10 @@ function createHarness(openLink: (request: { url: string; external: boolean }) =
   const audit = { record: vi.fn().mockResolvedValue(undefined) }
   const call = (
     params: unknown,
-    options: { surface?: 'worker' | 'panel' | 'editor'; granted?: 'links:open'[] } = {}
+    options: {
+      surface?: 'worker' | 'panel' | 'editor'
+      granted?: 'links:open'[]
+    } = {}
   ) =>
     executePluginHostCall({
       pluginId: 'samples.demo',
@@ -38,14 +43,42 @@ describe('links.open', () => {
       ok: true,
       value: { opened: true }
     })
-    expect(openLink).toHaveBeenCalledWith({ url: 'https://example.com/a?b=1', external: false })
+    expect(openLink).toHaveBeenCalledWith({
+      url: 'https://example.com/a?b=1',
+      external: false,
+      alternate: false
+    })
   })
 
   it('passes external through so the window forces the system browser', async () => {
     const openLink = vi.fn().mockReturnValue(true)
     const { call } = createHarness(openLink)
     await call({ url: 'http://localhost:3000', external: true })
-    expect(openLink).toHaveBeenCalledWith({ url: 'http://localhost:3000', external: true })
+    expect(openLink).toHaveBeenCalledWith({
+      url: 'http://localhost:3000',
+      external: true,
+      alternate: false
+    })
+  })
+
+  it('passes alternate through so the window applies the Shift routing', async () => {
+    const openLink = vi.fn().mockReturnValue(true)
+    const { call } = createHarness(openLink)
+    await call({ url: 'https://example.com', alternate: true })
+    expect(openLink).toHaveBeenCalledWith({
+      url: 'https://example.com',
+      external: false,
+      alternate: true
+    })
+  })
+
+  it('refuses external and alternate together', async () => {
+    const openLink = vi.fn().mockReturnValue(true)
+    const { call } = createHarness(openLink)
+    await expect(
+      call({ url: 'https://example.com', external: true, alternate: true })
+    ).resolves.toMatchObject({ ok: false, code: 'invalid_params' })
+    expect(openLink).not.toHaveBeenCalled()
   })
 
   it('reports opened false when no window can take the link', async () => {
@@ -61,7 +94,10 @@ describe('links.open', () => {
     async (url) => {
       const openLink = vi.fn().mockReturnValue(true)
       const { call, audit } = createHarness(openLink)
-      await expect(call({ url })).resolves.toMatchObject({ ok: false, code: 'invalid_params' })
+      await expect(call({ url })).resolves.toMatchObject({
+        ok: false,
+        code: 'invalid_params'
+      })
       expect(openLink).not.toHaveBeenCalled()
       expect(audit.record).not.toHaveBeenCalled()
     }
@@ -97,9 +133,15 @@ describe('links.open', () => {
 
   it('audits the host and flags, never the full URL', async () => {
     const { call, audit } = createHarness(vi.fn().mockReturnValue(true))
-    await call({ url: 'https://example.com/private/path?token=secret', external: true })
+    await call({
+      url: 'https://example.com/private/path?token=secret',
+      external: true
+    })
     const summaries = audit.record.mock.calls.map(([entry]) => entry.summary)
-    expect(summaries).toEqual(['host=example.com external=true', 'host=example.com external=true'])
+    expect(summaries).toEqual([
+      'host=example.com external=true alternate=false',
+      'host=example.com external=true alternate=false'
+    ])
     expect(JSON.stringify(audit.record.mock.calls)).not.toContain('secret')
   })
 })
@@ -107,16 +149,24 @@ describe('links.open', () => {
 describe('createPluginLinkOpener', () => {
   it('sends the request to the window on the plugin open-link channel', () => {
     const send = vi.fn()
-    const open = createPluginLinkOpener(() => ({ isDestroyed: () => false, webContents: { send } }))
-    expect(open({ url: 'https://example.com', external: true })).toBe(true)
+    const open = createPluginLinkOpener(() => ({
+      isDestroyed: () => false,
+      webContents: { send }
+    }))
+    expect(open({ url: 'https://example.com', external: true, alternate: false })).toBe(true)
     expect(send).toHaveBeenCalledWith(PLUGIN_OPEN_LINK_CHANNEL, {
       url: 'https://example.com',
-      external: true
+      external: true,
+      alternate: false
     })
   })
 
   it('returns false without a live window or when the send throws', () => {
-    const request = { url: 'https://example.com', external: false }
+    const request = {
+      url: 'https://example.com',
+      external: false,
+      alternate: false
+    }
     expect(createPluginLinkOpener(() => null)(request)).toBe(false)
     expect(
       createPluginLinkOpener(() => ({

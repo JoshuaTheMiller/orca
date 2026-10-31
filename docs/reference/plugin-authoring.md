@@ -96,18 +96,27 @@ and `done`.
 With the `links:open` capability, `orca.host.call('links.open', { url })` opens a web link the way Orca
 opens one the user clicks: their link setting decides between Orca's built-in browser and the
 system browser. Only `http` and `https` URLs are accepted; anything else is refused with
-`invalid_params`. `{ external: true }` always uses the system browser. `opened` is `true` once Orca
-has handed the link to its window, not once the page has loaded.
+`invalid_params`. `opened` is `true` once Orca has handed the link to its window, not once the
+page has loaded.
+
+Two optional flags change the target. `alternate` means the user held Shift with the platform
+modifier: Orca routes it exactly as it does for its own links, so the user's settings decide
+which target that is. By default it is the system browser. If the user turned on the Shift
+inversion option in Settings > Browser, it is the other target than their default: the system
+browser when "Open http(s) links from anywhere in Orca in its built-in browser" is on, Orca's
+built-in browser when it is off. `external: true` forces the system browser whatever the
+settings say; use it only when a plugin must leave Orca. Passing both is refused with
+`invalid_params`. Both are optional additions to the same method, so older plugins are unaffected.
 
 Follow the same modifier convention for links in your own UI, so they feel like Orca's: a plain
 click opens the link as above, the platform modifier (Cmd on macOS, Ctrl elsewhere) also opens it,
-and the modifier plus Shift passes `external: true`.
+and the modifier plus Shift passes `alternate: true`.
 
 ```js
 link.addEventListener('click', (event) => {
   event.preventDefault()
   const mod = navigator.platform.startsWith('Mac') ? event.metaKey : event.ctrlKey
-  orca.host.call('links.open', { url: link.href, external: mod && event.shiftKey })
+  orca.host.call('links.open', { url: link.href, alternate: mod && event.shiftKey })
 })
 ```
 
