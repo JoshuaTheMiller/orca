@@ -32,7 +32,7 @@ Add `"$schema": "https://raw.githubusercontent.com/stablyai/orca/main/docs/schem
 | `contributes` | object | no | 1.4.160 | What the plugin adds to Orca. Every point defaults to empty. |
 | `contributes.panels` | [PanelContribution](#panelcontribution)[] | no | 1.4.160 | Sidebar panels. At most 64. |
 | `contributes.commands` | [CommandContribution](#commandcontribution)[] | no | 1.4.160 | Command palette entries. At most 256. |
-| `contributes.events` | [EventContribution](#eventcontribution)[] | no | 1.4.160 | Events delivered to the plugin worker. At most 3. |
+| `contributes.events` | [EventContribution](#eventcontribution)[] | no | 1.4.160 | Events delivered to the plugin worker. At most 4. |
 | `contributes.languagePacks` | [LanguagePackContribution](#languagepackcontribution)[] | no | 1.4.160 | Interface translations. At most 16. |
 | `contributes.keybindings` | [KeybindingContribution](#keybindingcontribution)[] | no | 1.4.160 | Keyboard shortcuts for contributed commands. At most 256. |
 | `contributes.vmRecipes` | [VmRecipeContribution](#vmrecipecontribution)[] | no | 1.4.160 | Virtual machine environment recipes. At most 64. |
@@ -83,11 +83,11 @@ A command palette entry. Requires the `declarative` execution profile or higher.
 
 ## EventContribution
 
-An event subscription. Requires `main`, the `trusted-worker` execution profile and the capability of the event's domain: `workspace:read` for workspace events, `agent:read` for agent events.
+An event subscription. Requires `main`, the `trusted-worker` execution profile and the capability of the event's domain: `workspace:read` for workspace events, `agent:read` for agent events, `settings:own` for sidebar nav value changes.
 
 | Field | Type | Required | Since | Description |
 | --- | --- | --- | --- | --- |
-| `on` | `"workspace.created"` \| `"workspace.removed"` \| `"agent.status.changed"` | yes | 1.4.160 | Event delivered to the plugin worker. |
+| `on` | `"workspace.created"` \| `"workspace.removed"` \| `"agent.status.changed"` \| `"sidebarNav.valueChanged"` | yes | 1.4.160 | Event delivered to the plugin worker. |
 
 ## LanguagePackContribution
 
@@ -170,14 +170,18 @@ A kind of untitled file the user can create from the tab bar + menu or the comma
 
 ## SidebarNavItemContribution
 
-An entry in the left sidebar nav list, under Search, that runs one of the same plugin's commands. Requires the `declarative` execution profile or higher.
+An entry in the left sidebar nav list, under Search: a button that runs one of the same plugin's commands, or a toggle or checkbox holding a boolean. Requires the `declarative` execution profile or higher.
 
 | Field | Type | Required | Since | Description |
 | --- | --- | --- | --- | --- |
 | `id` | string | yes | 1.4.247 | Nav item id, unique among this plugin's nav items. The reserved names `constructor` and `prototype` are refused. Example: `"open-graph"` |
 | `title` | string | yes | 1.4.247 | Label of the entry in the left sidebar nav list. Example: `"Graph"` |
 | `icon` | `"activity"` \| `"bar-chart-3"` \| `"bell"` \| `"blocks"` \| `"book"` \| `"bot"` \| `"bug"` \| `"calendar"` \| `"cloud"` \| `"code"` \| `"database"` \| `"file-text"` \| `"flag"` \| `"folder"` \| `"gauge"` \| `"globe"` \| `"hammer"` \| `"layers"` \| `"lightbulb"` \| `"package"` \| `"plug"` \| `"puzzle"` \| `"rocket"` \| `"star"` \| `"terminal"` \| `"wrench"` \| `"zap"` | no | 1.4.247 | Icon shown beside the label. Defaults to `plug`. Example: `"database"` |
-| `command` | string | yes | 1.4.247 | Id of one of this plugin's `contributes.commands`. Clicking the item runs it as the command palette would. Example: `"graph.open"` |
+| `kind` | `"command"` \| `"toggle"` \| `"checkbox"` | no | 1.4.247 | What the entry is: `command` (default) runs a command, `toggle` is a switch and `checkbox` a checkbox. The last two hold a boolean the plugin reads with `sidebarNav.getValues`. Example: `"toggle"` |
+| `command` | string | no | 1.4.247 | Id of one of this plugin's `contributes.commands`. Clicking the item runs it as the command palette would. Required for `command` entries and refused on toggles and checkboxes. Example: `"graph.open"` |
+| `setting` | string | no | 1.4.247 | Key of the boolean a toggle or checkbox holds, unique among this plugin's nav items. Required for toggles and checkboxes and refused on commands. Example: `"show-details"` |
+| `default` | boolean | no | 1.4.247 | Value of a toggle or checkbox until the user flips it. Defaults to `false`. Example: `true` |
+| `parent` | string | no | 1.4.247 | Id of a `toggle` nav item of this plugin. The entry shows indented under it, and only while the toggle is on. A parent cannot itself have a parent. Example: `"show-details"` |
 
 ## Capability
 

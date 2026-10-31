@@ -94,7 +94,8 @@ export function pluginContributionSummary(
       'sidebarNavItems',
       c.sidebarNavItems,
       (item) => item.title,
-      (item) => item.command
+      // Why a `kind:setting` pair for state items: a command id never holds a colon.
+      (item) => item.command ?? `${item.kind}:${item.setting}`
     )
   ].slice(0, PLUGIN_CONTRIBUTION_SUMMARY_LIMIT)
 }

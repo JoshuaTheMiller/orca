@@ -62,4 +62,39 @@ describe('collectActivePluginSidebarNavItems', () => {
       ])
     ).toEqual([])
   })
+
+  it('collects toggles and checkboxes with their value key, default and parent, needing no command', () => {
+    const items = collectActivePluginSidebarNavItems([
+      plugin('samples.a', 'idle', {
+        commands: [],
+        sidebarNavItems: [
+          { id: 'details', title: 'Details', kind: 'toggle', setting: 'show-details' },
+          {
+            id: 'labels',
+            title: 'Labels',
+            kind: 'checkbox',
+            setting: 'show-labels',
+            default: true,
+            parent: 'details'
+          }
+        ]
+      })
+    ])
+    expect(items).toMatchObject([
+      {
+        key: 'samples.a/details',
+        kind: 'toggle',
+        valueKey: 'samples.a/show-details',
+        default: false
+      },
+      {
+        key: 'samples.a/labels',
+        kind: 'checkbox',
+        valueKey: 'samples.a/show-labels',
+        default: true,
+        parentKey: 'samples.a/details'
+      }
+    ])
+    expect(items[0]).not.toHaveProperty('runnable')
+  })
 })

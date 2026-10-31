@@ -208,9 +208,9 @@
         },
         "events": {
           "default": [],
-          "description": "Events delivered to the plugin worker. At most 3.",
+          "description": "Events delivered to the plugin worker. At most 4.",
           "x-orca-since": "1.4.160",
-          "maxItems": 3,
+          "maxItems": 4,
           "type": "array",
           "items": {
             "$ref": "#/$defs/EventContribution"
@@ -628,14 +628,16 @@
           "enum": [
             "workspace.created",
             "workspace.removed",
-            "agent.status.changed"
+            "agent.status.changed",
+            "sidebarNav.valueChanged"
           ],
           "description": "Event delivered to the plugin worker.",
           "x-orca-since": "1.4.160",
           "x-orca-enum-since": {
             "workspace.created": "1.4.245",
             "workspace.removed": "1.4.245",
-            "agent.status.changed": "1.4.160"
+            "agent.status.changed": "1.4.160",
+            "sidebarNav.valueChanged": "1.4.247"
           }
         }
       },
@@ -643,7 +645,7 @@
         "on"
       ],
       "additionalProperties": false,
-      "description": "An event subscription. Requires `main`, the `trusted-worker` execution profile and the capability of the event's domain: `workspace:read` for workspace events, `agent:read` for agent events."
+      "description": "An event subscription. Requires `main`, the `trusted-worker` execution profile and the capability of the event's domain: `workspace:read` for workspace events, `agent:read` for agent events, `settings:own` for sidebar nav value changes."
     },
     "LanguagePackContribution": {
       "type": "object",
@@ -1131,25 +1133,65 @@
             "zap"
           ]
         },
-        "command": {
+        "kind": {
+          "description": "What the entry is: `command` (default) runs a command, `toggle` is a switch and `checkbox` a checkbox. The last two hold a boolean the plugin reads with `sidebarNav.getValues`.",
+          "x-orca-since": "1.4.247",
+          "examples": [
+            "toggle"
+          ],
           "type": "string",
-          "minLength": 1,
-          "maxLength": 256,
-          "pattern": "^[A-Za-z0-9]+(?:[._-][A-Za-z0-9]+)*$",
-          "description": "Id of one of this plugin's `contributes.commands`. Clicking the item runs it as the command palette would.",
+          "enum": [
+            "command",
+            "toggle",
+            "checkbox"
+          ]
+        },
+        "command": {
+          "description": "Id of one of this plugin's `contributes.commands`. Clicking the item runs it as the command palette would. Required for `command` entries and refused on toggles and checkboxes.",
           "x-orca-since": "1.4.247",
           "examples": [
             "graph.open"
-          ]
+          ],
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z0-9]+(?:[._-][A-Za-z0-9]+)*$"
+        },
+        "setting": {
+          "description": "Key of the boolean a toggle or checkbox holds, unique among this plugin's nav items. Required for toggles and checkboxes and refused on commands.",
+          "x-orca-since": "1.4.247",
+          "examples": [
+            "show-details"
+          ],
+          "type": "string",
+          "maxLength": 64,
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "default": {
+          "description": "Value of a toggle or checkbox until the user flips it. Defaults to `false`.",
+          "x-orca-since": "1.4.247",
+          "examples": [
+            true
+          ],
+          "type": "boolean"
+        },
+        "parent": {
+          "description": "Id of a `toggle` nav item of this plugin. The entry shows indented under it, and only while the toggle is on. A parent cannot itself have a parent.",
+          "x-orca-since": "1.4.247",
+          "examples": [
+            "show-details"
+          ],
+          "type": "string",
+          "maxLength": 64,
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
         }
       },
       "required": [
         "id",
-        "title",
-        "command"
+        "title"
       ],
       "additionalProperties": false,
-      "description": "An entry in the left sidebar nav list, under Search, that runs one of the same plugin's commands. Requires the `declarative` execution profile or higher."
+      "description": "An entry in the left sidebar nav list, under Search: a button that runs one of the same plugin's commands, or a toggle or checkbox holding a boolean. Requires the `declarative` execution profile or higher."
     },
     "Capability": {
       "type": "object",

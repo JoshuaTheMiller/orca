@@ -75,6 +75,93 @@ describe('contributes.sidebarNavItems', () => {
     expect(parsePluginManifest(manifest({ sidebarNavItems: many(9) })).ok).toBe(false)
   })
 
+  describe('toggles, checkboxes and parents', () => {
+    const toggle = { id: 'details', title: 'Details', kind: 'toggle', setting: 'show-details' }
+    const checkbox = {
+      id: 'labels',
+      title: 'Labels',
+      kind: 'checkbox',
+      setting: 'show-labels',
+      default: true,
+      parent: 'details'
+    }
+    const issue = (items: unknown[]) => {
+      const result = parsePluginManifest(manifest({ sidebarNavItems: items }))
+      return result.ok ? null : result.error
+    }
+
+    it('accepts a toggle with a child command and a child checkbox', () => {
+      const child = { ...item, id: 'open', parent: 'details' }
+      const items = parsed({ sidebarNavItems: [item, toggle, child, checkbox] }).contributes
+        .sidebarNavItems
+      expect(items).toEqual([item, toggle, child, checkbox])
+    })
+
+    it('requires a command on command items and a setting on toggles and checkboxes', () => {
+      const { command: _command, ...noCommand } = item
+      expect(issue([noCommand])).toContain('required for a command item')
+      expect(issue([{ ...noCommand, kind: 'command' }])).toContain('required for a command item')
+      const { setting: _setting, ...noSetting } = toggle
+      expect(issue([noSetting])).toContain('required for a toggle')
+      expect(issue([{ ...noSetting, kind: 'checkbox' }])).toContain('required for a checkbox')
+    })
+
+    it('forbids a command on stateful items and a setting or default on commands', () => {
+      expect(issue([{ ...toggle, command: 'graph.open' }])).toContain('not allowed on a toggle')
+      expect(issue([{ ...item, setting: 'show-details' }])).toContain(
+        'only for a toggle or checkbox'
+      )
+      expect(issue([{ ...item, default: true }])).toContain('only for a toggle or checkbox')
+    })
+
+    it('refuses an unsafe setting key and a duplicate one', () => {
+      expect(issue([{ ...toggle, setting: 'Show Details' }])).toContain('kebab-case')
+      expect(issue([{ ...toggle, setting: 'constructor' }])).toContain('reserved name')
+      expect(
+        issue([toggle, { ...checkbox, parent: undefined, setting: 'show-details' }])
+      ).toContain('duplicate setting: show-details')
+    })
+
+    it('refuses a parent that is missing, not a toggle, or the item itself', () => {
+      expect(issue([toggle, { ...checkbox, parent: 'nope' }])).toContain(
+        'unknown sidebar nav item: nope'
+      )
+      expect(issue([item, { ...checkbox, parent: 'graph' }])).toContain('must be a toggle')
+      expect(
+        issue([toggle, { ...checkbox, id: 'more', setting: 'more', parent: 'labels' }, checkbox])
+      ).toContain('must be a toggle')
+      expect(issue([{ ...toggle, parent: 'details' }])).toContain('its own parent')
+    })
+
+    it('refuses nesting deeper than one level, including a cycle', () => {
+      const inner = {
+        id: 'inner',
+        title: 'Inner',
+        kind: 'toggle',
+        setting: 'inner',
+        parent: 'details'
+      }
+      expect(issue([toggle, inner, { ...checkbox, parent: 'inner' }])).toContain(
+        'only one level is allowed'
+      )
+      expect(
+        issue([
+          { ...toggle, parent: 'inner' },
+          { ...inner, parent: 'details' }
+        ])
+      ).toContain('parent cycle')
+    })
+
+    it('summarizes a toggle by kind and setting, and counts it as access growth', () => {
+      const plugin = parsed({ sidebarNavItems: [toggle] })
+      expect(
+        pluginContributionSummary(plugin).filter((entry) => entry.kind === 'sidebarNavItems')
+      ).toEqual([{ kind: 'sidebarNavItems', name: 'Details', detail: 'toggle:show-details' }])
+      const before = parsed({ sidebarNavItems: [] })
+      expect(pluginUpdateAccessGrowth(before, plugin).contributions).toContain('sidebarNavItems')
+    })
+  })
+
   it('refuses a data execution profile', () => {
     expect(parsePluginManifest({ ...manifest(), execution: 'data' })).toMatchObject({ ok: false })
   })

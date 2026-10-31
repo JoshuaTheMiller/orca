@@ -2,6 +2,7 @@ import { z } from 'zod'
 import type { PluginCapabilityKind } from '../capabilities/plugin-capabilities'
 import type { PluginSurface } from '../frames/plugin-protocol'
 import { editorOpenFileParams, editorOpenFileResult } from './plugin-host-editor-api'
+import { sidebarNavGetValuesParams, sidebarNavGetValuesResult } from './plugin-host-sidebar-nav-api'
 
 /**
  * Host API 1 (`pluginApi: 1`) — the separately-versioned public facade plugins call. Every
@@ -255,6 +256,20 @@ export const PLUGIN_HOST_API = {
     surfaces: ALL_SURFACES,
     params: editorOpenFileParams,
     result: editorOpenFileResult
+  }),
+  'sidebarNav.getValues': spec({
+    summary:
+      "Reads the plugin's own sidebar toggles and checkboxes, keyed by `setting`, with defaults applied.",
+    since: 2,
+    scope: 'plugin-private',
+    // Why settings:own: the values are the plugin's own settings, kept by the host instead of the
+    // plugin; a nav toggle needs no consent of its own, and a new capability would only add a prompt.
+    capability: 'settings:own',
+    mutation: false,
+    // Why every surface: a panel or custom editor shows or hides parts of itself by these values.
+    surfaces: ALL_SURFACES,
+    params: sidebarNavGetValuesParams,
+    result: sidebarNavGetValuesResult
   })
 }
 

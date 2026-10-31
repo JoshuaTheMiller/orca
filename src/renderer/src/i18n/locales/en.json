@@ -13266,7 +13266,9 @@
           "languageIncomplete": "{{value0}}% translated, too incomplete to use as Orca’s language",
           "languageCoverage": "Interface language · {{value0}}% translated",
           "newFileMenu": "Adds to the + menu",
-          "sidebarNavItem": "Adds to the left sidebar"
+          "sidebarNavItem": "Adds to the left sidebar",
+          "sidebarNavToggle": "Adds a toggle to the left sidebar",
+          "sidebarNavCheckbox": "Adds a checkbox to the left sidebar"
         },
         "PluginCardAction": {
           "installed": "Installed",
@@ -13346,7 +13348,8 @@
           "worktreeCreated": "When a workspace is created",
           "worktreeRemoved": "When a workspace is removed",
           "agentStatusChanged": "When an agent’s status changes",
-          "detail": "Background code runs"
+          "detail": "Background code runs",
+          "sidebarNavValueChanged": "When a sidebar toggle or checkbox changes"
         },
         "pluginInstallAction": {
           "installed": "{{value0}} installed",

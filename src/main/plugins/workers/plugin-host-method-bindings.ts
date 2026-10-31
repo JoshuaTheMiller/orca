@@ -10,6 +10,7 @@ import {
   type PluginHostMethodSpec,
   type PluginJsonValue
 } from '../../../shared/plugins/workers/plugin-host-api'
+import type { PluginEditorPlacement } from '../../../shared/plugins/workers/plugin-host-editor-api'
 import { shortPluginBranchName } from '../../../shared/plugins/events/plugin-events'
 
 export type PluginWorktreeContext = {
@@ -30,11 +31,14 @@ export type PluginHostServices = {
     title: string
     body?: string
   }): Promise<{ delivered: boolean }>
-  /** Opens a local absolute file in an editor tab; rejects when it is missing or not a file. */
+  /** Opens a local absolute file in an editor tab; rejects when it is missing, not a file, or `active-workspace` has no workspace to open in. */
   openEditorFile(
     absolutePath: string,
-    position?: { line: number; column?: number }
+    position?: { line: number; column?: number },
+    placement?: PluginEditorPlacement
   ): Promise<{ opened: boolean }>
+  /** The plugin's sidebar toggle and checkbox values, defaults applied. */
+  sidebarNavValues(pluginId: string): Record<string, boolean>
   storage: {
     get(pluginId: string, key: string): PluginJsonValue | undefined
     set(
@@ -181,9 +185,13 @@ const HANDLERS: Record<PluginHostMethodName, BoundPluginHostMethod> = {
     services.openEditorFile(
       params.path,
       // Why: a column alone names no place in the file.
-      params.line === undefined ? undefined : { line: params.line, column: params.column }
+      params.line === undefined ? undefined : { line: params.line, column: params.column },
+      ...(params.placement ? [params.placement] : [])
     )
-  )
+  ),
+  'sidebarNav.getValues': bind(api['sidebarNav.getValues'], async (_params, ctx) => ({
+    values: ctx.services.sidebarNavValues(ctx.pluginId)
+  }))
 }
 
 function okOrThrow(result: { ok: true } | { ok: false; error: string }): typeof OK {

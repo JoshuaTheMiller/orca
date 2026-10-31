@@ -49,8 +49,16 @@ export type PluginHostSidebarNavItem = {
   title: string
   /** Lucide icon name from the closed panel icon set; absent means the default. */
   icon?: string
-  /** Id of one of the plugin's own commands. */
-  command: string
+  /** `command` when absent: older hosts only sent command items. */
+  kind?: 'command' | 'toggle' | 'checkbox'
+  /** Id of one of the plugin's own commands; set on command items only. */
+  command?: string
+  /** Key of the boolean a toggle or checkbox holds; set on those kinds only. */
+  setting?: string
+  /** Initial value of a toggle or checkbox. */
+  default?: boolean
+  /** Id of the toggle this item shows under. */
+  parent?: string
 }
 
 export type PluginHostListEntry = {

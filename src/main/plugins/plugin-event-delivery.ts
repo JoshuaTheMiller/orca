@@ -14,6 +14,8 @@ export function deliverPluginEvent(options: {
   event: PluginEventName
   payload: unknown
   plugins: readonly DiscoveredPlugin[]
+  /** Limits delivery to one plugin, for events about that plugin's own state. */
+  onlyPluginKey?: string
   workerController: PluginWorkerController
   isRuntimeApproved: (plugin: ValidDiscoveredPlugin) => boolean
   grantedCapabilities: (pluginKey: string) => readonly PluginCapabilityKind[] | null
@@ -27,6 +29,7 @@ export function deliverPluginEvent(options: {
   const required = PLUGIN_EVENT_CAPABILITY[options.event]
   for (const plugin of options.plugins) {
     if (
+      (options.onlyPluginKey !== undefined && plugin.pluginKey !== options.onlyPluginKey) ||
       isInvalidDiscoveredPlugin(plugin) ||
       !plugin.manifest.main ||
       !options.isRuntimeApproved(plugin) ||

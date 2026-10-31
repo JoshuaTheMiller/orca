@@ -12,6 +12,7 @@ function createServices(storageSet: PluginHostServices['storage']['set']): Plugi
     sendTerminalText: vi.fn().mockResolvedValue({ accepted: true }),
     dispatchPluginNotification: vi.fn().mockResolvedValue({ delivered: true }),
     openEditorFile: vi.fn().mockResolvedValue({ opened: true }),
+    sidebarNavValues: vi.fn().mockReturnValue({}),
     storage: {
       get: vi.fn(),
       set: storageSet,
@@ -141,7 +142,8 @@ function createTerminalHarness(terminalHandles: string[]): {
     delegate,
     services: bindPluginHostServices({
       delegate,
-      pluginsDataDir: join(tmpdir(), 'plugin-host-methods-test')
+      pluginsDataDir: join(tmpdir(), 'plugin-host-methods-test'),
+      sidebarNavValues: () => ({})
     })
   }
 }
@@ -341,6 +343,16 @@ describe('editor.openFile', () => {
     expect(summaries).toEqual(['file=graph.json', 'file=graph.json'])
   })
 
+  it('passes the placement on and rejects an unknown one', async () => {
+    const { outcome, services } = openFile({ path: '/a.md', placement: 'active-workspace' })
+
+    await outcome
+    expect(services.openEditorFile).toHaveBeenCalledWith('/a.md', undefined, 'active-workspace')
+    await expect(openFile({ path: '/a.md', placement: 'floating' }).outcome).resolves.toMatchObject(
+      { ok: false, code: 'invalid_params' }
+    )
+  })
+
   it('ignores a column given without a line', async () => {
     const { outcome, services } = openFile({ path: String.raw`C:\notes\a.md`, column: 3 })
 
@@ -389,5 +401,78 @@ describe('editor.openFile', () => {
       value: { opened: true }
     })
     expect(delegate.openLocalAbsoluteFile).toHaveBeenCalledWith('/w/a.md', { line: 1 })
+  })
+
+  it('opens in the active workspace when asked and refuses when none is active', async () => {
+    const { delegate, services } = createTerminalHarness([])
+
+    await expect(
+      openFile({ path: '/w/a.md', placement: 'active-workspace' }, { services }).outcome
+    ).resolves.toEqual({ ok: true, value: { opened: true } })
+    expect(delegate.openLocalAbsoluteFile).toHaveBeenCalledWith('/w/a.md', undefined, {
+      activeWorktreeId: 'worktree-1'
+    })
+
+    vi.mocked(delegate.resolveActiveWorktreeContext).mockResolvedValue(null)
+    vi.mocked(delegate.openLocalAbsoluteFile).mockClear()
+    await expect(
+      openFile({ path: '/w/a.md', placement: 'active-workspace' }, { services }).outcome
+    ).resolves.toEqual({
+      ok: false,
+      code: 'action_failed',
+      error: 'no active workspace is available to open the file in'
+    })
+    expect(delegate.openLocalAbsoluteFile).not.toHaveBeenCalled()
+  })
+
+  it('keeps auto placement on the default route', async () => {
+    const { delegate, services } = createTerminalHarness([])
+
+    await openFile({ path: '/w/a.md', placement: 'auto' }, { services }).outcome
+    expect(delegate.openLocalAbsoluteFile).toHaveBeenCalledWith('/w/a.md', undefined)
+    expect(delegate.resolveActiveWorktreeContext).not.toHaveBeenCalled()
+  })
+})
+
+describe('sidebarNav.getValues', () => {
+  const getValues = (
+    surface: 'worker' | 'panel' | 'editor',
+    granted: 'settings:own'[] = ['settings:own'],
+    params: unknown = {}
+  ) => {
+    const services = createServices(vi.fn())
+    vi.mocked(services.sidebarNavValues).mockReturnValue({ 'show-details': true, verbose: false })
+    return {
+      services,
+      outcome: executePluginHostCall({
+        pluginId: 'samples.demo',
+        method: 'sidebarNav.getValues',
+        params,
+        surface,
+        grantedCapabilities: granted,
+        services
+      })
+    }
+  }
+
+  it('returns the plugin own values on every surface, scoped to its key', async () => {
+    for (const surface of ['worker', 'panel', 'editor'] as const) {
+      const { outcome, services } = getValues(surface)
+      await expect(outcome).resolves.toEqual({
+        ok: true,
+        value: { values: { 'show-details': true, verbose: false } }
+      })
+      expect(services.sidebarNavValues).toHaveBeenCalledWith('samples.demo')
+    }
+  })
+
+  it('needs settings:own and takes no params', async () => {
+    await expect(getValues('worker', []).outcome).resolves.toMatchObject({
+      ok: false,
+      code: 'capability_denied'
+    })
+    await expect(
+      getValues('worker', ['settings:own'], { plugin: 'other' }).outcome
+    ).resolves.toMatchObject({ ok: false, code: 'invalid_params' })
   })
 })

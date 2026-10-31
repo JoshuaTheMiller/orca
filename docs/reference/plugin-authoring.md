@@ -94,33 +94,80 @@ and `done`.
 ### Sidebar nav items
 
 `contributes.sidebarNavItems` adds entries (at most 8) to the left sidebar's nav list, under
-Search and beside Tasks and Automations. Each is `{ id, title, icon?, command }`: `icon` comes
-from the same closed set as panel icons (default `plug`), and `command` must be the id of one of
-the plugin's own `contributes.commands`, which Orca checks when it reads the manifest. A click
-runs that command exactly as the command palette does, so it can be a built-in action or a worker
-command. Right-click an entry to hide it from the sidebar. Items show only while the plugin is
-enabled.
+Search and beside Tasks and Automations. An entry's `kind` is one of:
+
+- `command` (the default): `{ id, title, icon?, command }`. `icon` comes from the same closed set
+  as panel icons (default `plug`), and `command` must be the id of one of the plugin's own
+  `contributes.commands`, which Orca checks when it reads the manifest. A click runs that command
+  exactly as the command palette does, so it can be a built-in action or a worker command.
+- `toggle`: a switch. `{ id, title, icon?, kind: "toggle", setting, default? }`.
+- `checkbox`: a checkbox with the same fields.
+
+A toggle or checkbox holds a boolean named by `setting` (kebab-case, unique among the plugin's
+items; `default` is `false` unless given) and takes no `command`; a command item takes no
+`setting` or `default`. Clicking anywhere on the row flips the value, and Orca keeps it in the
+user's settings. Any item may name a `toggle` of the same plugin as its `parent`: it then shows
+indented under that toggle, and only while the toggle is on. A parent must be a toggle that has no
+parent of its own (one level of nesting), and a parent that is missing, not a toggle, or itself
+nested is a manifest error. Right-click an entry to hide it from the sidebar; hiding a toggle
+hides its children too. Items show only while the plugin is enabled.
 
 ```json
 {
   "contributes": {
     "commands": [{ "id": "graph.open", "title": "Graph: Open" }],
     "sidebarNavItems": [
-      { "id": "graph", "title": "Graph", "icon": "database", "command": "graph.open" }
+      { "id": "graph", "title": "Graph", "icon": "database", "command": "graph.open" },
+      { "id": "details", "title": "Details", "kind": "toggle", "setting": "show-details" },
+      {
+        "id": "details-open",
+        "title": "Open details",
+        "icon": "database",
+        "command": "graph.open",
+        "parent": "details"
+      },
+      {
+        "id": "details-labels",
+        "title": "Show labels",
+        "kind": "checkbox",
+        "setting": "show-labels",
+        "default": true,
+        "parent": "details"
+      }
     ]
   }
 }
 ```
 
+A plugin reads its values with `sidebarNav.getValues` (host API 1.2), which needs the
+`settings:own` capability because the values are the plugin's own settings. It answers
+`{ values: { "show-details": false, "show-labels": true } }`, defaults applied, from a worker,
+panel or custom editor. A worker with `main` and a `sidebarNav.valueChanged` entry in
+`contributes.events` (also `settings:own`) is told when the user flips one:
+
+```js
+const { values } = await orca.host.call('sidebarNav.getValues')
+orca.events.on('sidebarNav.valueChanged', ({ setting, value }) => {
+  // Only this plugin's own settings arrive; a flip back to the same value sends nothing.
+})
+```
+
 ### Opening files
 
 With the `editor:open` capability, a worker, panel or custom editor calls
-`orca.host.call('editor.openFile', { path, line?, column? })` and gets `{ opened }`. `path` is
-absolute. A file inside one of the user's workspaces opens in an editor tab there, so a matching
-custom editor applies; any other file opens in the floating workspace, the way a file opened from
-the operating system does. A path that does not exist, or is not a file, fails with
-`action_failed`. `column` is used only together with `line`. Each call is recorded in the audit
-log by file name.
+`orca.host.call('editor.openFile', { path, line?, column?, placement? })` and gets `{ opened }`.
+`path` is absolute. With the default `placement: "auto"`, a file inside one of the user's
+workspaces opens in an editor tab there, so a matching custom editor applies; any other file opens
+in the floating workspace, the way a file opened from the operating system does.
+
+`placement: "active-workspace"` (host API 1.2) opens the file as an editor tab of the workspace
+that is focused now, even when the file lives outside it, so it sits beside that workspace's
+terminals and editors. It is saved and reloaded in place like any file the user opened by name.
+It fails with `action_failed` when no workspace is focused, or when the focused workspace is
+remote (SSH or a paired host), because the path names a file on this computer. A file that is
+inside the focused workspace opens there as usual. A path that does not exist, or is not a file,
+fails with `action_failed`. `column` is used only together with `line`. Each call is recorded in
+the audit log by file name.
 
 ### Custom editors
 

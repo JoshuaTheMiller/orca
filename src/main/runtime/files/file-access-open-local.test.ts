@@ -78,4 +78,113 @@ describe('RuntimeFileAccess.openLocalAbsoluteFile', () => {
 
     expect(openFile).toHaveBeenCalledWith('wt-1', file, 'src/a.md', null, undefined)
   })
+
+  describe('with an active workspace', () => {
+    const resolveRuntimeFileTarget = vi.fn()
+    const activeAccess = (): RuntimeFileAccess =>
+      // SAFETY: the open path touches only these host members.
+      // oxlint-disable-next-line typescript/consistent-type-assertions
+      new RuntimeFileAccess({
+        openFile,
+        resolveKnownWorkspaceFileTarget,
+        resolveRuntimeFileTarget
+      } as never)
+
+    beforeEach(() => {
+      resolveRuntimeFileTarget.mockResolvedValue({
+        worktree: { id: 'wt-active', path: join(dir, 'repo') },
+        executionHostId: LOCAL_EXECUTION_HOST_ID
+      })
+    })
+
+    it('opens a file outside every workspace as a tab of the active one, by absolute path', async () => {
+      const file = join(dir, 'notes', 'graph.json')
+      await mkdir(join(dir, 'notes'))
+      await writeFile(file, '{}')
+
+      const result = await activeAccess().openLocalAbsoluteFile(
+        file,
+        { line: 2 },
+        { activeWorktreeId: 'wt-active' }
+      )
+
+      expect(resolveRuntimeFileTarget).toHaveBeenCalledWith('id:wt-active')
+      // Why relativePath equals filePath: that is the shape of Orca's other external-file tabs.
+      expect(openFile).toHaveBeenCalledWith('wt-active', file, file, null, undefined, { line: 2 })
+      expect(result).toEqual({ worktree: 'wt-active' })
+    })
+
+    it('also moves a file owned by another workspace into the active one', async () => {
+      const file = join(dir, 'other', 'a.md')
+      await mkdir(join(dir, 'other'))
+      await writeFile(file, '#')
+      resolveKnownWorkspaceFileTarget.mockResolvedValue({
+        worktree: { id: 'wt-other', path: join(dir, 'other') },
+        executionHostId: LOCAL_EXECUTION_HOST_ID,
+        relativePath: 'a.md'
+      })
+
+      await activeAccess().openLocalAbsoluteFile(file, undefined, { activeWorktreeId: 'wt-active' })
+
+      expect(openFile).toHaveBeenCalledWith('wt-active', file, file, null, undefined)
+    })
+
+    it('keeps a file inside the active workspace on its relative path', async () => {
+      const file = join(dir, 'repo', 'a.md')
+      resolveKnownWorkspaceFileTarget.mockResolvedValue({
+        worktree: { id: 'wt-active', path: join(dir, 'repo') },
+        executionHostId: LOCAL_EXECUTION_HOST_ID,
+        relativePath: 'a.md'
+      })
+      const files = activeAccess()
+      // SAFETY: the existence check needs a real provider; only the routing is under test.
+      // oxlint-disable-next-line typescript/consistent-type-assertions
+      const internals = files as unknown as { assertOpenTargetIsFile: () => Promise<void> }
+      vi.spyOn(internals, 'assertOpenTargetIsFile').mockResolvedValue()
+
+      await files.openLocalAbsoluteFile(file, undefined, { activeWorktreeId: 'wt-active' })
+
+      expect(openFile).toHaveBeenCalledWith('wt-active', file, 'a.md', null, undefined)
+    })
+
+    it('refuses a remote active workspace and a missing file without opening', async () => {
+      const file = join(dir, 'graph.json')
+      await writeFile(file, '{}')
+      resolveRuntimeFileTarget.mockResolvedValue({
+        worktree: { id: 'wt-ssh', path: '/srv/repo' },
+        executionHostId: 'ssh:box'
+      })
+      await expect(
+        activeAccess().openLocalAbsoluteFile(file, undefined, { activeWorktreeId: 'wt-ssh' })
+      ).rejects.toThrow('the active workspace is not on this computer')
+
+      resolveRuntimeFileTarget.mockResolvedValue({
+        worktree: { id: 'wt-active', path: dir },
+        executionHostId: LOCAL_EXECUTION_HOST_ID
+      })
+      await expect(
+        activeAccess().openLocalAbsoluteFile(join(dir, 'gone.json'), undefined, {
+          activeWorktreeId: 'wt-active'
+        })
+      ).rejects.toThrow('file not found: gone.json')
+      expect(openFile).not.toHaveBeenCalled()
+    })
+
+    it('falls back to the floating route when the active workspace is the floating one', async () => {
+      const file = join(dir, 'graph.json')
+      await writeFile(file, '{}')
+
+      await activeAccess().openLocalAbsoluteFile(file, undefined, {
+        activeWorktreeId: FLOATING_TERMINAL_WORKTREE_ID
+      })
+
+      expect(openFile).toHaveBeenCalledWith(
+        FLOATING_TERMINAL_WORKTREE_ID,
+        file,
+        'graph.json',
+        null,
+        undefined
+      )
+    })
+  })
 })

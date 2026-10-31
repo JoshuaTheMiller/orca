@@ -10,6 +10,8 @@ export type PluginServiceOptions = {
   getPluginConsents: () => Record<string, string>
   getDevPluginPaths: () => string[]
   getKeybindings?: () => KeybindingOverrides
+  /** The user's stored sidebar toggle and checkbox values, keyed `<pluginKey>/<setting>`. */
+  getSidebarNavValues?: () => Record<string, boolean>
   getPluginKillListEntry?: (pluginKey: string) => PluginKillListEntry | null
   hostEntryPath?: string
   workerFactory?: PluginWorkerFactory
