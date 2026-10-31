@@ -210,7 +210,7 @@ One choice of an `enum` setting.
 
 ## ProjectItemContribution
 
-A row shown first under every project in the left sidebar Projects list: a button that runs one of the same plugin's commands with the project as its argument. Requires the `declarative` execution profile or higher.
+A row shown first under every top-level project (git repo or folder project) in the left sidebar Projects list: a button that runs one of the same plugin's commands with the project as its argument. Requires the `declarative` execution profile or higher.
 
 | Field | Type | Required | Since | Description |
 | --- | --- | --- | --- | --- |

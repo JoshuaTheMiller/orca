@@ -16,11 +16,7 @@ import { useReportVisiblePluginProjectItems } from './use-report-visible-plugin-
 const NO_HIDDEN_PLUGIN_ITEMS: readonly string[] = []
 
 /** The rows the virtualizer lays out: the section rows with lineage grouped, plus enabled plugins' project items. */
-export function useRenderRows(
-  rows: HostSectionRow[],
-  groupBy: WorktreeGroupBy,
-  collapsedGroups: ReadonlySet<string>
-): RenderRow[] {
+export function useRenderRows(rows: HostSectionRow[], groupBy: WorktreeGroupBy): RenderRow[] {
   const pluginProjectItems = usePluginProjectItems()
   const hidden = useAppStore((s) => s.settings?.hiddenPluginProjectItems ?? NO_HIDDEN_PLUGIN_ITEMS)
   const gates = usePluginSettingGates(pluginProjectItems)
@@ -30,9 +26,8 @@ export function useRenderRows(
   )
   const shown = usePluginProjectItemTitles(gated)
   const renderRows = useMemo(
-    () =>
-      injectPluginProjectItemRows(buildRenderableRows(rows), shown, { groupBy, collapsedGroups }),
-    [rows, shown, groupBy, collapsedGroups]
+    () => injectPluginProjectItemRows(buildRenderableRows(rows), shown, { groupBy }),
+    [rows, shown, groupBy]
   )
   useReportVisiblePluginProjectItems(renderRows)
   return renderRows
