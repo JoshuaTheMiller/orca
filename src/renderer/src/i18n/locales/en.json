@@ -7326,6 +7326,9 @@
           "needsInput": "Needs input",
           "running": "Running",
           "idle": "Idle"
+        },
+        "PluginSidebarNavItems": {
+          "failed": "{{value0}} failed"
         }
       },
       "shared": {
@@ -11965,7 +11968,8 @@
             "secrets": "Store its own encrypted secrets",
             "settingsOwn": "Read and change its own settings",
             "agentsRead": "Get notified when agent status changes",
-            "terminalRun": "Run commands in your terminals, including SSH"
+            "terminalRun": "Run commands in your terminals, including SSH",
+            "editorOpen": "Open files in Orca's editor"
           },
           "decisionFailed": "Could not save the permission decision. Try again.",
           "fullAccessWarning": "Full access: runs as a normal program and can read your files, use the network and run other programs.",
@@ -13261,7 +13265,8 @@
           "light": "Light",
           "languageIncomplete": "{{value0}}% translated, too incomplete to use as Orca’s language",
           "languageCoverage": "Interface language · {{value0}}% translated",
-          "newFileMenu": "Adds to the + menu"
+          "newFileMenu": "Adds to the + menu",
+          "sidebarNavItem": "Adds to the left sidebar"
         },
         "PluginCardAction": {
           "installed": "Installed",
