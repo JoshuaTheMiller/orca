@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { parsePluginManifest } from '../manifest/plugin-manifest'
+import { satisfiesOrcaEngineRange } from '../manifest/plugin-manifest-engine-range'
 import { PLUGIN_SIDEBAR_NAV_ITEMS_SINCE } from '../manifest/plugin-schema-field-docs'
 import { PLUGIN_SCHEMA_NEWEST_SINCE } from '../installation/plugin-host-version'
 import { pluginCatalogTypes } from '../catalog/plugin-catalog-types'
@@ -35,8 +36,10 @@ function parsed(contributes: Record<string, unknown> = {}) {
 }
 
 describe('contributes.sidebarNavItems', () => {
-  it('is the newest schema since, and a declarative point', () => {
-    expect(PLUGIN_SCHEMA_NEWEST_SINCE).toBe(PLUGIN_SIDEBAR_NAV_ITEMS_SINCE)
+  it('is a declarative point, read by every release from its since on', () => {
+    expect(
+      satisfiesOrcaEngineRange(PLUGIN_SCHEMA_NEWEST_SINCE, `>=${PLUGIN_SIDEBAR_NAV_ITEMS_SINCE}`)
+    ).toBe(true)
     expect(parsed().contributes.sidebarNavItems).toEqual([item])
   })
 

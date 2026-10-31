@@ -32,7 +32,7 @@ Add `"$schema": "https://raw.githubusercontent.com/stablyai/orca/main/docs/schem
 | `contributes` | object | no | 1.4.160 | What the plugin adds to Orca. Every point defaults to empty. |
 | `contributes.panels` | [PanelContribution](#panelcontribution)[] | no | 1.4.160 | Sidebar panels. At most 64. |
 | `contributes.commands` | [CommandContribution](#commandcontribution)[] | no | 1.4.160 | Command palette entries. At most 256. |
-| `contributes.events` | [EventContribution](#eventcontribution)[] | no | 1.4.160 | Events delivered to the plugin worker. At most 4. |
+| `contributes.events` | [EventContribution](#eventcontribution)[] | no | 1.4.160 | Events delivered to the plugin worker. At most 5. |
 | `contributes.languagePacks` | [LanguagePackContribution](#languagepackcontribution)[] | no | 1.4.160 | Interface translations. At most 16. |
 | `contributes.keybindings` | [KeybindingContribution](#keybindingcontribution)[] | no | 1.4.160 | Keyboard shortcuts for contributed commands. At most 256. |
 | `contributes.vmRecipes` | [VmRecipeContribution](#vmrecipecontribution)[] | no | 1.4.160 | Virtual machine environment recipes. At most 64. |
@@ -43,13 +43,13 @@ Add `"$schema": "https://raw.githubusercontent.com/stablyai/orca/main/docs/schem
 | `contributes.customEditors` | [CustomEditorContribution](#customeditorcontribution)[] | no | 1.4.245 | Editors that open files of given types in the editor tab. At most 16. |
 | `contributes.newFiles` | [NewFileContribution](#newfilecontribution)[] | no | 1.4.245 | Untitled files the user can create from the + menu and the command palette. At most 16. |
 | `contributes.sidebarNavItems` | [SidebarNavItemContribution](#sidebarnavitemcontribution)[] | no | 1.4.247 | Entries in the left sidebar nav list that run a command of this plugin. At most 8. |
+| `contributes.settings` | [SettingContribution](#settingcontribution)[] | no | 1.4.249 | Typed settings that Orca shows in its own settings and stores with the plugin's other settings. At most 32. |
 | `contributes.agentHarnesses` | any[] | no | 1.4.245 | Reserved for coding-agent harness definitions; must be empty until their format is defined. |
 | `contributes.skills` | any[] | no | 1.4.245 | Reserved for agent skills; must be empty until their format is defined. |
 | `contributes.mcpServers` | any[] | no | 1.4.245 | Reserved for MCP server definitions; must be empty until their format is defined. |
 | `contributes.hooks` | any[] | no | 1.4.245 | Reserved for agent hooks; must be empty until their format is defined. |
 | `contributes.taskSources` | any[] | no | 1.4.245 | Reserved for task sources; must be empty until their format is defined. |
 | `contributes.connections` | any[] | no | 1.4.245 | Reserved for account connections; must be empty until their format is defined. |
-| `contributes.settings` | any[] | no | 1.4.245 | Reserved for plugin settings; must be empty until their format is defined. |
 | `contributes.statusBarItems` | any[] | no | 1.4.245 | Reserved for status bar items; must be empty until their format is defined. |
 | `contributes.sidebarCards` | any[] | no | 1.4.245 | Reserved for sidebar cards; must be empty until their format is defined. |
 | `capabilities` | [Capability](#capability)[] | no | 1.4.160 | Host APIs the plugin asks the user to grant. At most 32. |
@@ -83,11 +83,11 @@ A command palette entry. Requires the `declarative` execution profile or higher.
 
 ## EventContribution
 
-An event subscription. Requires `main`, the `trusted-worker` execution profile and the capability of the event's domain: `workspace:read` for workspace events, `agent:read` for agent events, `settings:own` for sidebar nav value changes.
+An event subscription. Requires `main`, the `trusted-worker` execution profile and the capability of the event's domain: `workspace:read` for workspace events, `agent:read` for agent events, `settings:own` for sidebar nav value and setting changes.
 
 | Field | Type | Required | Since | Description |
 | --- | --- | --- | --- | --- |
-| `on` | `"workspace.created"` \| `"workspace.removed"` \| `"agent.status.changed"` \| `"sidebarNav.valueChanged"` | yes | 1.4.160 | Event delivered to the plugin worker. |
+| `on` | `"workspace.created"` \| `"workspace.removed"` \| `"agent.status.changed"` \| `"sidebarNav.valueChanged"` \| `"settings.changed"` | yes | 1.4.160 | Event delivered to the plugin worker. |
 
 ## LanguagePackContribution
 
@@ -181,7 +181,31 @@ An entry in the left sidebar nav list, under Search: a button that runs one of t
 | `command` | string | no | 1.4.247 | Id of one of this plugin's `contributes.commands`. Clicking the item runs it as the command palette would. Required for `command` entries and refused on toggles and checkboxes. Example: `"graph.open"` |
 | `setting` | string | no | 1.4.247 | Key of the boolean a toggle or checkbox holds, unique among this plugin's nav items. Required for toggles and checkboxes and refused on commands. Example: `"show-details"` |
 | `default` | boolean | no | 1.4.247 | Value of a toggle or checkbox until the user flips it. Defaults to `false`. Example: `true` |
+| `when` | string | no | 1.4.249 | Id of a `boolean` entry in this plugin's `contributes.settings`. The item shows only while that setting is true, and reacts when the user changes it. A child of a toggle needs both its toggle and this setting. Example: `"show-graph"` |
 | `parent` | string | no | 1.4.247 | Id of a `toggle` nav item of this plugin. The entry shows indented under it, and only while the toggle is on. A parent cannot itself have a parent. Example: `"show-details"` |
+
+## SettingContribution
+
+A typed setting that Orca shows in its own settings and stores with the plugin's other settings. Requires the `declarative` execution profile or higher; code reads it with `settings.get`, which needs the `settings:own` capability.
+
+| Field | Type | Required | Since | Description |
+| --- | --- | --- | --- | --- |
+| `id` | string | yes | 1.4.249 | Setting key, unique among this plugin's settings. Stored in the same per-plugin store as `settings.set`. The reserved names `constructor` and `prototype` are refused. Example: `"show-graph"` |
+| `title` | string | yes | 1.4.249 | Label shown in Orca's settings. Example: `"Show graph"` |
+| `description` | string | no | 1.4.249 | Help text shown under the label. |
+| `type` | `"boolean"` \| `"string"` \| `"enum"` | yes | 1.4.249 | Value type: `boolean` (a switch), `string` (a text field) or `enum` (a choice among `options`). Example: `"boolean"` |
+| `default` | boolean \| string | yes | 1.4.249 | Value until the user changes it. Must match `type`; for `enum` it must be one of the option values. Example: `false` |
+| `options` | [SettingOption](#settingoption)[] | no | 1.4.249 | Choices of an `enum` setting, 2 to 20, with distinct values. Required for `enum` and refused on other types. |
+| `maxLength` | integer | no | 1.4.249 | Longest value of a `string` setting. Defaults to 200. Refused on other types. Example: `80` |
+
+## SettingOption
+
+One choice of an `enum` setting.
+
+| Field | Type | Required | Since | Description |
+| --- | --- | --- | --- | --- |
+| `value` | string | yes | 1.4.249 | Value stored and returned when the option is chosen. Example: `"dark"` |
+| `label` | string | yes | 1.4.249 | Text shown for the option. Example: `"Dark"` |
 
 ## Capability
 
@@ -210,7 +234,7 @@ One screenshot of the plugin in use.
 - **`terminal:send` needs `trusted-worker`.** Panels get no host method that types into a terminal, so Orca refuses the capability on any other profile instead of asking the user to grant something the plugin can never use.
 - **New fields, contribution points and values are additive.** They arrive with a `Since` version; nothing else changes. `manifestVersion` rises only if an existing field changes meaning.
 - **Deprecation.** A field to be removed is marked deprecated here and keeps working for at least one release; it is removed only together with a higher `engines.orca` requirement, and its name is never reused.
-- **Reserved contribution points.** `contributes.agentHarnesses`, `skills`, `mcpServers`, `hooks`, `taskSources`, `connections`, `settings`, `statusBarItems` and `sidebarCards` are held for planned features and must stay empty until their format is defined. Each will arrive as an additive point with its own `Since`, without a new manifest format. `skills`, `mcpServers` and `hooks` keep the meaning agent-plugin formats such as Claude Code's give them; `agents` stays unclaimed because those formats use it for subagent files.
+- **Reserved contribution points.** `contributes.agentHarnesses`, `skills`, `mcpServers`, `hooks`, `taskSources`, `connections`, `statusBarItems` and `sidebarCards` are held for planned features and must stay empty until their format is defined. Each will arrive as an additive point with its own `Since`, without a new manifest format. `skills`, `mcpServers` and `hooks` keep the meaning agent-plugin formats such as Claude Code's give them; `agents` stays unclaimed because those formats use it for subagent files.
 
 ## Planned contribution points
 
@@ -224,7 +248,6 @@ Each reserved point is planned as declared data that Orca renders and enforces, 
 - `mcpServers`: MCP server definitions that Orca offers to the agents it launches.
 - `skills`: Agent skills shipped as files that Orca installs for the agents it launches.
 - `hooks`: Agent lifecycle hooks, such as before and after a tool call, for the agents Orca launches.
-- `settings`: Typed plugin settings that Orca renders in its own settings UI.
 
 ## Legacy format 1
 

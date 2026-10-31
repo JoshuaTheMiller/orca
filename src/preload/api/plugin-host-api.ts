@@ -31,11 +31,16 @@ export type {
   PluginHostCustomEditor,
   PluginHostListEntry,
   PluginHostNewFile,
+  PluginHostSetting,
   PluginHostSidebarNavItem,
   PluginHostPanel,
   PluginHostStatus
 } from '../../shared/plugins/plugin-list-entry'
 import type { PluginHostListEntry } from '../../shared/plugins/plugin-list-entry'
+
+export type PluginSettingValue = boolean | string
+export type PluginSettingWriteOutcome = { ok: true } | { ok: false; error: string }
+export type PluginSettingChangedEvent = { pluginKey: string; key: string; value: unknown }
 
 export type PluginHostLogLine = {
   ts: number
@@ -213,6 +218,17 @@ export type PluginsApi = {
   /** Re-discovers after settings edits (feature flag, dev paths). */
   refresh: () => Promise<PluginHostListEntry[]>
   onChanged: (callback: (event: PluginChangeEvent) => void) => () => void
+  /** The plugin's declared settings (`contributes.settings`) with defaults applied, keyed by setting id. */
+  getSettings: (args: { pluginKey: string }) => Promise<Record<string, PluginSettingValue>>
+  setSetting: (args: {
+    pluginKey: string
+    key: string
+    value: PluginSettingValue
+  }) => Promise<PluginSettingWriteOutcome>
+  /** Drops the stored value so the setting reads as its default again. */
+  resetSetting: (args: { pluginKey: string; key: string }) => Promise<PluginSettingWriteOutcome>
+  /** Fires after a declared or untyped setting takes a new value, whoever changed it. */
+  onSettingChanged: (callback: (change: PluginSettingChangedEvent) => void) => () => void
   /** What automatic updates last did. Older hosts reject the call; treat that as nothing. */
   getAutoUpdateState: () => Promise<PluginAutoUpdateState>
   /** Held updates not yet told to the user, each returned once per version; never approves. */

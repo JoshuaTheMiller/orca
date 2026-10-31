@@ -103,6 +103,13 @@ export async function initializeMainProcessPlugins(runtime: OrcaRuntimeService):
     getPluginConsents: () => normalizePluginConsents(state.store?.getSettings().pluginConsents),
     getDevPluginPaths: () => normalizePluginIdList(state.store?.getSettings().devPluginPaths),
     getKeybindings: () => state.keybindings?.getOverrides() ?? {},
+    onPluginSettingChanged: (change) => {
+      for (const window of BrowserWindow.getAllWindows()) {
+        if (!window.isDestroyed()) {
+          window.webContents.send('plugins:settingChanged', change)
+        }
+      }
+    },
     getSidebarNavValues: () => state.store?.getSettings().pluginSidebarNavValues ?? {},
     getPluginKillListEntry: (pluginKey) => state.pluginKillListService?.find(pluginKey) ?? null,
     hostEntryPath: resolvePluginHostEntryPath(app.getAppPath(), app.isPackaged)

@@ -25,6 +25,7 @@ import {
   type PluginLockfile
 } from '../../shared/plugins/installation/plugin-install-lockfile'
 import { resolvePluginGitSource } from '../plugins/installation/plugin-git-ref-resolution'
+import { registerPluginSettingsHandlers } from './plugin-settings'
 import {
   registerPluginMarketplaceHandlers,
   type PluginMarketplaceHandlerServices
@@ -123,6 +124,8 @@ export function registerPluginHandlers(
       })
     }
   })
+
+  registerPluginSettingsHandlers(pluginService)
 
   // All handlers must await startup discovery to avoid returning a pre-discovery empty list.
   ipcMain.handle('plugins:list', async () => listPluginsForClients(pluginService))

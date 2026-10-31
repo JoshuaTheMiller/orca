@@ -143,7 +143,8 @@ function createTerminalHarness(terminalHandles: string[]): {
     services: bindPluginHostServices({
       delegate,
       pluginsDataDir: join(tmpdir(), 'plugin-host-methods-test'),
-      sidebarNavValues: () => ({})
+      sidebarNavValues: () => ({}),
+      settings: { getAll: () => ({}), set: () => ({ ok: true }) }
     })
   }
 }

@@ -90,7 +90,7 @@ export function renderPluginHostApiReference(): string {
     '| --- | --- | --- | --- | --- | --- |',
     ...specs.map(
       (spec) =>
-        `| [\`${spec.name}\`](#${spec.name.replace('.', '').toLowerCase()}) | \`${spec.capability}\` | ${spec.surfaces.join(', ')} | ${spec.mutation ? 'yes' : 'no'} | ${version(spec.since)}${spec.deprecatedSince === undefined ? '' : ` (deprecated ${version(spec.deprecatedSince)})`} | ${spec.summary} |`
+        `| [\`${spec.name}\`](#${spec.name.replace('.', '').toLowerCase()}) | \`${spec.capability}\` | ${spec.surfaces.join(', ')} | ${spec.mutation ? 'yes' : 'no'} | ${version(spec.since)}${spec.revisedIn === undefined ? '' : ` (revised ${version(spec.revisedIn)})`}${spec.deprecatedSince === undefined ? '' : ` (deprecated ${version(spec.deprecatedSince)})`} | ${spec.summary} |`
     )
   ]
   for (const spec of specs) {
@@ -117,7 +117,7 @@ export function renderPluginHostApiReference(): string {
     '',
     'Plugins are in Alpha: the manifest v2 format and catalog format are stable contracts; items listed as experimental in [Plugin authoring](./plugin-authoring.md#stability) may change.',
     '',
-    `- **Host API ${PLUGIN_HOST_API_MAJOR} is frozen.** Within \`pluginApi\` ${PLUGIN_HOST_API_MAJOR}, methods, params and results only grow: a new method or a new optional param arrives with a higher \`Since\` minor, and nothing listed here is removed, renamed or narrowed.`,
+    `- **Host API ${PLUGIN_HOST_API_MAJOR} is frozen.** Within \`pluginApi\` ${PLUGIN_HOST_API_MAJOR}, methods, params and results only grow: a new method or a new optional param arrives with a higher \`Since\` minor (a method that gains surfaces or result fields shows \`revised\`), and nothing listed here is removed, renamed or narrowed.`,
     '- **Deprecation.** A method to be retired is marked deprecated in this table and keeps working for the rest of the major.',
     '- **New majors.** A breaking change ships as a new `pluginApi` major beside the old one. Orca refuses a manifest whose `pluginApi` names a major it does not implement, with "update Orca", instead of loading it against the wrong API.',
     '- **Detect, do not assume.** Check `orca.host.has(name)` or `orca.api.minor` before calling a method newer than the oldest Orca you support; a call that slips through fails with `unknown_method`.'

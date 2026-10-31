@@ -9,6 +9,7 @@ import type {
   PluginHostInstallSource,
   PluginHostListEntry,
   PluginHostLogLine,
+  PluginSettingChangedEvent,
   PreloadApi
 } from '../api-types'
 
@@ -71,6 +72,17 @@ export const pluginsApi = {
     ipcRenderer.on('plugins:changed', listener)
     return () => {
       ipcRenderer.removeListener('plugins:changed', listener)
+    }
+  },
+  getSettings: (args) => ipcRenderer.invoke('plugins:getSettings', args),
+  setSetting: (args) => ipcRenderer.invoke('plugins:setSetting', args),
+  resetSetting: (args) => ipcRenderer.invoke('plugins:resetSetting', args),
+  onSettingChanged: (callback): (() => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, change: PluginSettingChangedEvent): void =>
+      callback(change)
+    ipcRenderer.on('plugins:settingChanged', listener)
+    return () => {
+      ipcRenderer.removeListener('plugins:settingChanged', listener)
     }
   },
   getAutoUpdateState: () => ipcRenderer.invoke('plugins:getAutoUpdateState'),

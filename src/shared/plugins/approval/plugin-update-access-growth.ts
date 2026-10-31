@@ -29,8 +29,13 @@ export type PluginUpdateAccessGrowth = {
 }
 
 // Why data points are excluded: themes, syntaxes and translations act on nothing.
+// Why settings too, though they need the `declarative` profile: a setting is a typed value the user
+// edits, and a plugin can read it only through `settings:own`, which growth already covers. A new
+// setting, or one that defaults to true, reaches nothing the manifest did not already.
+const INERT_POINTS: readonly PluginContributionPoint[] = ['settings']
 const AUTHORITY_POINTS = PLUGIN_CONTRIBUTION_POINTS.filter(
-  (point) => PLUGIN_CONTRIBUTION_POINT_POLICY[point].execution !== 'data'
+  (point) =>
+    PLUGIN_CONTRIBUTION_POINT_POLICY[point].execution !== 'data' && !INERT_POINTS.includes(point)
 )
 
 /** What counts as the same entry. Why ids for panels: their code may change like any worker's;

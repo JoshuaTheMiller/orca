@@ -64,11 +64,19 @@ export const sidebarNavValueChangedPayloadSchema = z.object({
   value: z.boolean()
 })
 
+export const settingsChangedPayloadSchema = z.object({
+  /** The setting key: a declared `contributes.settings` id, or a key the plugin wrote with `settings.set`. */
+  key: z.string().min(1).max(256),
+  /** The effective value after the change; a reset to the default delivers the default. */
+  value: z.json()
+})
+
 export const PLUGIN_EVENT_PAYLOAD_SCHEMAS = {
   'workspace.created': workspaceCreatedPayloadSchema,
   'workspace.removed': workspaceRemovedPayloadSchema,
   'agent.status.changed': agentStatusChangedPayloadSchema,
-  'sidebarNav.valueChanged': sidebarNavValueChangedPayloadSchema
+  'sidebarNav.valueChanged': sidebarNavValueChangedPayloadSchema,
+  'settings.changed': settingsChangedPayloadSchema
 } satisfies Record<PluginEventName, z.ZodType>
 
 export type PluginEventPayload<E extends PluginEventName> = z.infer<

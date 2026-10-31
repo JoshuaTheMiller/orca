@@ -7,6 +7,8 @@ export const PLUGIN_MANIFEST_V2_SINCE = '1.4.245'
 export const PLUGIN_DERIVED_PUBLISHER_SINCE = '1.4.246'
 /** First release with `contributes.sidebarNavItems` and the `editor:open` capability. */
 export const PLUGIN_SIDEBAR_NAV_ITEMS_SINCE = '1.4.247'
+/** First release with `contributes.settings`, `settings.changed` and the nav item `when` field. */
+export const PLUGIN_SETTINGS_SINCE = '1.4.249'
 
 type PluginFieldDoc = {
   description: string
