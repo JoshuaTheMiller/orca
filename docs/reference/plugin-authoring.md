@@ -160,6 +160,10 @@ With the `editor:open` capability, a worker, panel or custom editor calls
 workspaces opens in an editor tab there, so a matching custom editor applies; any other file opens
 in the floating workspace, the way a file opened from the operating system does.
 
+If the file is already open, Orca switches to that tab instead of opening a second one, whichever
+workspace holds it (the floating workspace too) and whichever `placement` or `projectId` you pass;
+`line` and `column` still move the cursor there, and you get `{ opened: true }` as usual.
+
 `placement: "active-workspace"` (host API 1.2) opens the file as an editor tab of the workspace
 that is focused now, even when the file lives outside it, so it sits beside that workspace's
 terminals and editors. It is saved and reloaded in place like any file the user opened by name.

@@ -1,4 +1,5 @@
 import { createRuntimeFilePositionQueue } from './runtime-file-position'
+import { findEditorTabOpenElsewhere } from './runtime-open-file-existing-tab'
 import { applyClosedTerminalLeafNotice } from '@/components/terminal-pane/closed-terminal-leaf-notice'
 import { closeTerminalTab } from '@/components/terminal/terminal-tab-actions'
 import { detectLanguage } from '@/lib/language-detect'
@@ -84,6 +85,24 @@ export function registerMobileAndTerminalCloseIpcBridge(
     window.api.ui.onOpenFileFromMobile(
       ({ worktreeId, filePath, relativePath, runtimeEnvironmentId, navigation, position }) => {
         const basename = relativePath.split(/[\\/]/).pop() || relativePath
+        // Why: a file another workspace already shows is revealed there; a second tab would be refused as a sibling.
+        const shown = findEditorTabOpenElsewhere(useAppStore.getState(), {
+          worktreeId,
+          filePath,
+          runtimeEnvironmentId
+        })
+        if (shown) {
+          openRuntimeEditorTab(shown.file.worktreeId, navigation, (store, selection) => {
+            if (selection !== 'none') {
+              store.activateTab(
+                shown.tabId,
+                selection === 'background' ? { recordFocus: false } : {}
+              )
+            }
+            positionFile(shown.file.id, position, selection === 'focus')
+          })
+          return
+        }
         openRuntimeEditorTab(worktreeId, navigation, (store, selection) => {
           // Use File Explorer’s creation path so grouped ordering and markdown bridges stay consistent.
           const fileId = store.openFile(
