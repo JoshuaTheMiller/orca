@@ -5,8 +5,8 @@
   "publisher": "your-github-user",
   "name": "Hello Orca",
   "version": "1.0.0",
-  "description": "Sample plugin combining a panel, a worker command, sidebar nav items (a command, a toggle and a checkbox), a setting, and event subscriptions.",
-  "engines": { "orca": ">=1.4.249" },
+  "description": "Sample plugin combining a panel, a worker command, sidebar nav items (a command, a toggle and a checkbox), a project item, a setting, and event subscriptions.",
+  "engines": { "orca": ">=1.4.251" },
   "pluginApi": 1,
   "main": "main.mjs",
   "contributes": {
@@ -23,6 +23,7 @@
         "parent": "chatty"
       }
     ],
+    "projectItems": [{ "id": "ping", "title": "Ping", "icon": "plug", "command": "hello-ping" }],
     "settings": [
       {
         "id": "excited",

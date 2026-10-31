@@ -8,13 +8,17 @@ export default async function activate(orca) {
     }
   })
 
-  orca.commands.register('hello-ping', async () => {
+  // A project item row passes `{ project: { id, name, paths, hostId }, itemTitle }`; the nav item and palette pass nothing.
+  orca.commands.register('hello-ping', async (args) => {
     const stored = await orca.host.call('storage.get', { key: 'pings' })
     const count = (typeof stored?.value === 'number' ? stored.value : 0) + 1
     await orca.host.call('storage.set', { key: 'pings', value: count })
     // A string result is shown as-is in Orca; objects are shown as JSON.
     const ending = excited ? '!!!' : '.'
-    return count === 1 ? `Pong! First ping${ending}` : `Pong! ${count} pings so far${ending}`
+    const where = typeof args?.project?.name === 'string' ? ` from ${args.project.name}` : ''
+    return count === 1
+      ? `Pong${where}! First ping${ending}`
+      : `Pong${where}! ${count} pings so far${ending}`
   })
 
   orca.events.on('workspace.created', async (payload) => {
