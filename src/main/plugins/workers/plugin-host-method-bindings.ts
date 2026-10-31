@@ -30,6 +30,11 @@ export type PluginHostServices = {
     title: string
     body?: string
   }): Promise<{ delivered: boolean }>
+  /** Opens a local absolute file in an editor tab; rejects when it is missing or not a file. */
+  openEditorFile(
+    absolutePath: string,
+    position?: { line: number; column?: number }
+  ): Promise<{ opened: boolean }>
   storage: {
     get(pluginId: string, key: string): PluginJsonValue | undefined
     set(
@@ -171,6 +176,13 @@ const HANDLERS: Record<PluginHostMethodName, BoundPluginHostMethod> = {
   })),
   'settings.set': bind(api['settings.set'], async ({ key, value }, { pluginId, services }) =>
     okOrThrow(services.settings.set(pluginId, key, value))
+  ),
+  'editor.openFile': bind(api['editor.openFile'], async (params, { services }) =>
+    services.openEditorFile(
+      params.path,
+      // Why: a column alone names no place in the file.
+      params.line === undefined ? undefined : { line: params.line, column: params.column }
+    )
   )
 }
 

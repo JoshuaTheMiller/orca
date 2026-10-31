@@ -3,7 +3,8 @@ import { PLUGIN_ENUM_SINCE_KEY } from '../manifest/plugin-engine-floor-keys'
 import {
   pluginFieldDoc,
   PLUGIN_MANIFEST_V2_SINCE,
-  PLUGIN_SCHEMA_SINCE_V1
+  PLUGIN_SCHEMA_SINCE_V1,
+  PLUGIN_SIDEBAR_NAV_ITEMS_SINCE
 } from '../manifest/plugin-schema-field-docs'
 
 /** Closed v0 capabilities fail unknown kinds instead of silently granting nothing. Consent binds capabilities and worker trust;
@@ -16,7 +17,8 @@ export const PLUGIN_CAPABILITY_KINDS = [
   'notifications:show',
   'storage:own',
   'secrets:own',
-  'settings:own'
+  'settings:own',
+  'editor:open'
 ] as const
 
 export type PluginCapabilityKind = (typeof PLUGIN_CAPABILITY_KINDS)[number]
@@ -29,7 +31,8 @@ export const PLUGIN_CAPABILITY_SINCE: Record<PluginCapabilityKind, string> = {
   'notifications:show': PLUGIN_SCHEMA_SINCE_V1,
   'storage:own': PLUGIN_MANIFEST_V2_SINCE,
   'secrets:own': PLUGIN_MANIFEST_V2_SINCE,
-  'settings:own': PLUGIN_SCHEMA_SINCE_V1
+  'settings:own': PLUGIN_SCHEMA_SINCE_V1,
+  'editor:open': PLUGIN_SIDEBAR_NAV_ITEMS_SINCE
 }
 
 /** Format 1 capability names and what each now grants. `events:subscribe` split by event domain. */
@@ -63,7 +66,8 @@ export const PLUGIN_CAPABILITY_DESCRIPTIONS: Record<PluginCapabilityKind, string
   'notifications:show': 'Show desktop notifications labeled with the plugin name',
   'storage:own': "Store data in the plugin's own storage folder",
   'secrets:own': "Store and read secrets in the plugin's own encrypted file",
-  'settings:own': "Read and change the plugin's own settings"
+  'settings:own': "Read and change the plugin's own settings",
+  'editor:open': "Open files in Orca's editor"
 }
 
 /** Canonicalize order, duplicates and field order so equivalent grants preserve consent across manifest formatting changes. */

@@ -5,6 +5,7 @@ type RuntimeFileCommandName =
   | 'searchMobileFilePaths'
   | 'searchQuickOpenFilePaths'
   | 'openMobileFile'
+  | 'openLocalAbsoluteFile'
   | 'openMobileDiff'
   | 'readMobileFile'
   | 'resolveTerminalPath'
@@ -48,6 +49,7 @@ export function installRuntimeFileCommandSurface(
     searchMobileFilePaths: commands.searchMobileFilePaths.bind(commands),
     searchQuickOpenFilePaths: commands.searchQuickOpenFilePaths.bind(commands),
     openMobileFile: commands.openMobileFile.bind(commands),
+    openLocalAbsoluteFile: commands.openLocalAbsoluteFile.bind(commands),
     openMobileDiff: commands.openMobileDiff.bind(commands),
     readMobileFile: commands.readMobileFile.bind(commands),
     resolveTerminalPath: commands.resolveTerminalPath.bind(commands),

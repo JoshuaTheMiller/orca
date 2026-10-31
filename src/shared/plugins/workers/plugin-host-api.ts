@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import type { PluginCapabilityKind } from '../capabilities/plugin-capabilities'
 import type { PluginSurface } from '../frames/plugin-protocol'
+import { editorOpenFileParams, editorOpenFileResult } from './plugin-host-editor-api'
 
 /**
  * Host API 1 (`pluginApi: 1`) — the separately-versioned public facade plugins call. Every
@@ -242,6 +243,18 @@ export const PLUGIN_HOST_API = {
     surfaces: WORKER_ONLY,
     params: settingsSetParams,
     result: settingsSetResult
+  }),
+  'editor.openFile': spec({
+    summary:
+      'Opens a file by absolute path in an editor tab, in its workspace when it is inside one.',
+    since: 1,
+    scope: 'desktop',
+    capability: 'editor:open',
+    mutation: true,
+    // Why every surface: a custom editor opens a file when the user Ctrl+clicks a reference in it.
+    surfaces: ALL_SURFACES,
+    params: editorOpenFileParams,
+    result: editorOpenFileResult
   })
 }
 

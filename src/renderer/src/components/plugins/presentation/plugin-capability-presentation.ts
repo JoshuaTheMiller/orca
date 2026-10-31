@@ -49,6 +49,11 @@ export function pluginCapabilityDescription(kind: string, fallback: string): str
         'auto.components.settings.PluginConsentDialog.capability.settingsOwn',
         'Read and change its own settings'
       )
+    case 'editor:open':
+      return translate(
+        'auto.components.settings.PluginConsentDialog.capability.editorOpen',
+        "Open files in Orca's editor"
+      )
     default:
       return fallback
   }
