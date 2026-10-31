@@ -18,31 +18,52 @@ export type PluginProjectItemTarget = {
   hostId: string
 }
 
+/**
+ * The project a top-level header stands for, or null for headers that get no items.
+ * Top level means `projectGroupDepth` 0 (or absent): an ungrouped git repo project, or a folder
+ * project (a project group header, which carries `projectGroup` and no `repo`). Projects nested
+ * inside a folder project sit at depth 1 or deeper and get nothing, as do nested folders.
+ */
 function projectTargetOf(header: GroupHeaderRow): PluginProjectItemTarget | null {
+  if ((header.projectGroupDepth ?? 0) > 0) {
+    return null
+  }
   const repo = header.repo
-  if (!repo) {
+  if (repo) {
+    return {
+      id: repo.id,
+      name: header.label ?? repo.displayName,
+      // Why local only: a remote path means nothing to a plugin worker running on this machine.
+      paths: isRepoOnCatalogHost(repo) ? [repo.path] : [],
+      hostId: header.hostId ?? getRepoExecutionHostId(repo)
+    }
+  }
+  const group = header.projectGroup
+  // Why the id check: the synthetic "Ungrouped" header has a null id and is not a project.
+  if (!group || group.id === null || !('parentPath' in group)) {
     return null
   }
   return {
-    id: repo.id,
-    name: header.label ?? repo.displayName,
-    // Why local only: a remote path means nothing to a plugin worker running on this machine.
-    paths: isRepoOnCatalogHost(repo) ? [repo.path] : [],
-    hostId: header.hostId ?? getRepoExecutionHostId(repo)
+    id: group.id,
+    name: header.label ?? group.name,
+    paths: group.parentPath && isRepoOnCatalogHost(group) ? [group.parentPath] : [],
+    hostId: header.hostId ?? getRepoExecutionHostId(group)
   }
 }
 
 /**
- * Puts each visible plugin project item right under every project header, above its workspaces.
+ * Puts each visible plugin project item right under every top-level project header (a git repo
+ * project or a folder project), above its workspaces.
  * Why a render-layer step: the shared row plan also feeds main and paired clients, which know nothing
  * of plugins, and injecting here keeps the rows inside the virtualizer's own row list.
- * Items exist only where project headers do (grouped by project), follow the header through the
- * sidebar filters, and hide with a collapsed header.
+ * Items exist only where project headers do (grouped by project) and follow the header through the
+ * sidebar filters. They stay when the header is collapsed, as a quick way in, and projects nested
+ * inside a folder project get none.
  */
 export function injectPluginProjectItemRows(
   rows: readonly RenderRow[],
   items: readonly ActivePluginProjectItem[],
-  options: { groupBy: WorktreeGroupBy; collapsedGroups: ReadonlySet<string> }
+  options: { groupBy: WorktreeGroupBy }
 ): RenderRow[] {
   if (items.length === 0 || options.groupBy !== 'repo') {
     return rows as RenderRow[]
@@ -54,8 +75,7 @@ export function injectPluginProjectItemRows(
       continue
     }
     const project = projectTargetOf(row)
-    // Why count > 0: an empty project has no collapse affordance, so a stale collapsed key must not hide its items.
-    if (!project || (row.count > 0 && options.collapsedGroups.has(row.collapseKey ?? row.key))) {
+    if (!project) {
       continue
     }
     for (const item of items) {
@@ -64,7 +84,7 @@ export function injectPluginProjectItemRows(
         key: `${getRenderRowKey(row)}/${item.key}`,
         item,
         project,
-        groupDepth: row.projectGroupDepth ?? 0
+        groupDepth: 0
       }
       result.push(injected)
     }

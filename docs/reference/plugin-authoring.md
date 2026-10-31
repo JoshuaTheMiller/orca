@@ -328,7 +328,7 @@ export default async function activate(orca) {
 ### Project items
 
 `contributes.projectItems` adds rows (at most 4) to the left sidebar's Projects list. Each row
-appears as the **first child of every project**, above its workspaces, styled like the other child
+appears as the **first child of every top-level project**, git repo or folder project alike, above its workspaces, styled like the other child
 rows and showing only a title (no badges). It needs the `declarative` execution profile or higher
 and engine `>=1.4.251`.
 
@@ -379,10 +379,15 @@ orca.commands.register('board.open', async ({ project, itemTitle }) => {
 A command that maps to a built-in action (`action`) takes no arguments, so it ignores these.
 
 **Where rows appear.** Rows exist only where project headers do: the sidebar grouped by project.
-They follow the header through the sidebar's filters and search (a project the filter hides shows no
-rows, and the rows never count toward a match), disappear while the project is collapsed, and sit
-inside the virtualized list, so a long list costs nothing extra. A project with no workspaces still
-shows them. Project groups (folders of projects) get no rows; their projects do.
+Every top-level project line gets them, whether it is a git repo project or a folder project (a
+non-git folder that can hold its own folder workspace and the repo projects Orca found inside it).
+Projects nested inside a folder project, and nested folders, get none. They follow the header
+through the sidebar's filters and search (a project the filter hides shows no rows, and the rows
+never count toward a match), stay visible while the project line is collapsed as a quick way in,
+and sit inside the virtualized list, so a long list costs nothing extra. A project with no
+workspaces still shows them. For a folder project, `project.id` is the folder's project group id,
+`name` the label Orca shows, and `paths` its folder path (`[]` when it lives on a remote host or has
+no path).
 
 **User control.** Right-click a row for **Rename…** (a name for that one project's row, kept on
 this computer under the plugin, item and project; **Reset name** removes it) and **Hide from
@@ -425,7 +430,7 @@ orca.events.on('projectItems.visible', ({ itemId, projects }) => {
 ```
 
 The first event starts the worker, so a plugin whose rows just appeared does not need a command run
-first. "Showing" means the row is in the list: collapsed projects, hidden items, rows turned off by
+first. "Showing" means the row is in the list: hidden items, rows turned off by
 `when` and filtered-out projects do not count, but a row scrolled out of view does. The event goes to
 the owning plugin only.
 

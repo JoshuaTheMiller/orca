@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { GroupHeaderRow } from '../../../../../../shared/sidebar-list/row-types'
 import type { Repo } from '../../../../../../shared/repo-types'
+import type { ProjectGroup } from '../../../../../../shared/project-group-types'
 import type { ActivePluginProjectItem } from '@/store/plugin-sidebar-project-items'
 import { buildRenderableRows } from './renderable-rows'
 import { getRenderRowKey, type RenderRow } from './render-row'
@@ -11,7 +12,13 @@ import {
 import { estimateRenderRowSize, getStickyHeaderIndexes } from '../viewport/virtual-rows'
 
 const repo = (id: string, extra: Partial<Repo> = {}): Repo =>
-  ({ id, path: `/code/${id}`, displayName: id.toUpperCase(), badgeColor: '#000', ...extra }) as Repo
+  ({
+    id,
+    path: `/code/${id}`,
+    displayName: id.toUpperCase(),
+    badgeColor: '#000',
+    ...extra
+  }) as Repo
 
 const header = (id: string, extra: Partial<GroupHeaderRow> = {}): GroupHeaderRow => ({
   type: 'header',
@@ -20,6 +27,19 @@ const header = (id: string, extra: Partial<GroupHeaderRow> = {}): GroupHeaderRow
   icon: { kind: 'project' },
   repo: repo(id),
   ...extra
+})
+
+const group = (id: string): ProjectGroup => ({
+  id,
+  name: `Folder ${id}`,
+  parentPath: null,
+  parentGroupId: null,
+  createdFrom: 'folder-scan',
+  tabOrder: 0,
+  isCollapsed: false,
+  color: null,
+  createdAt: 0,
+  updatedAt: 0
 })
 
 const plugin = { pluginKey: 'samples.board', pluginName: 'Board' }
@@ -38,10 +58,16 @@ const item = (id: string): ActivePluginProjectItem => ({
   }
 })
 const worktreeRow = (id: string) =>
-  ({ type: 'item', rowKey: `wt:${id}`, sectionKey: 'x', lineageChildCount: 0, depth: 0 }) as never
+  ({
+    type: 'item',
+    rowKey: `wt:${id}`,
+    sectionKey: 'x',
+    lineageChildCount: 0,
+    depth: 0
+  }) as never
 
 const rows: RenderRow[] = [header('a'), worktreeRow('a1'), header('b'), worktreeRow('b1')]
-const options = { groupBy: 'repo' as const, collapsedGroups: new Set<string>() }
+const options = { groupBy: 'repo' as const }
 
 const summary = (list: readonly RenderRow[]): string[] =>
   list.map((row) =>
@@ -58,34 +84,95 @@ describe('injectPluginProjectItemRows', () => {
   it('returns the rows untouched with no items or outside project grouping', () => {
     expect(injectPluginProjectItemRows(rows, [], options)).toBe(rows)
     expect(
-      injectPluginProjectItemRows(rows, [item('one')], { ...options, groupBy: 'workspace-status' })
+      injectPluginProjectItemRows(rows, [item('one')], {
+        ...options,
+        groupBy: 'workspace-status'
+      })
     ).toBe(rows)
   })
 
-  it('leaves a collapsed project without its items but keeps the others', () => {
-    const collapsed = { ...options, collapsedGroups: new Set(['repo:a']) }
-    expect(summary(injectPluginProjectItemRows(rows, [item('one')], collapsed))).toEqual([
+  it('keeps the items under a collapsed project, which stays a quick way in', () => {
+    const collapsed: RenderRow[] = [header('a', { count: 0 }), header('b', { collapseKey: 'k' })]
+    expect(summary(injectPluginProjectItemRows(collapsed, [item('one')], options))).toEqual([
       'header',
-      'item',
+      'item:one@a',
       'header',
-      'item:one@b',
-      'item'
+      'item:one@b'
     ])
   })
 
-  it('honors a header collapse key, and ignores a stale collapse on an empty project', () => {
-    const scoped: RenderRow[] = [
-      header('a', { collapseKey: 'host:local:repo:a' }),
-      header('empty', { count: 0 })
+  it('gives a top-level folder project the items but not the projects nested in it', () => {
+    const folder = (id: string, depth: number): GroupHeaderRow => ({
+      type: 'header',
+      key: `group:${id}`,
+      label: `Folder ${id}`,
+      count: 3,
+      icon: { kind: 'project' },
+      projectGroup: { ...group(id), parentPath: `/code/${id}` },
+      projectGroupDepth: depth
+    })
+    const list: RenderRow[] = [
+      folder('f', 0),
+      header('nested', { projectGroupDepth: 1 }),
+      folder('sub', 1),
+      header('top')
     ]
-    const collapsed = {
-      ...options,
-      collapsedGroups: new Set(['host:local:repo:a', 'repo:empty'])
+    expect(summary(injectPluginProjectItemRows(list, [item('one')], options))).toEqual([
+      'header',
+      'item:one@f',
+      'header',
+      'header',
+      'header',
+      'item:one@top'
+    ])
+    const [, injected] = injectPluginProjectItemRows(list, [item('one')], options)
+    expect(injected).toMatchObject({
+      project: {
+        id: 'f',
+        name: 'Folder f',
+        paths: ['/code/f'],
+        hostId: 'local'
+      },
+      groupDepth: 0
+    })
+  })
+
+  it('names a remote or path-less folder project with no local paths', () => {
+    const groupHeader = (extra: Partial<ProjectGroup>): GroupHeaderRow => ({
+      type: 'header',
+      key: 'group:g',
+      label: 'G',
+      count: 1,
+      icon: { kind: 'project' },
+      projectGroup: { ...group('g'), ...extra },
+      projectGroupDepth: 0
+    })
+    const remote = injectPluginProjectItemRows(
+      [groupHeader({ parentPath: '/srv/g', connectionId: 'box' })],
+      [item('one')],
+      options
+    )[1]
+    expect(remote).toMatchObject({
+      project: { id: 'g', paths: [], hostId: 'ssh:box' }
+    })
+    const manual = injectPluginProjectItemRows(
+      [groupHeader({ parentPath: null })],
+      [item('one')],
+      options
+    )[1]
+    expect(manual).toMatchObject({ project: { paths: [], hostId: 'local' } })
+  })
+
+  it('skips the synthetic Ungrouped header', () => {
+    const ungrouped: GroupHeaderRow = {
+      type: 'header',
+      key: 'group:none',
+      count: 1,
+      icon: { kind: 'project' },
+      projectGroup: { id: null, name: 'Ungrouped', tabOrder: 0 }
     }
-    expect(summary(injectPluginProjectItemRows(scoped, [item('one')], collapsed))).toEqual([
-      'header',
-      'header',
-      'item:one@empty'
+    expect(summary(injectPluginProjectItemRows([ungrouped], [item('one')], options))).toEqual([
+      'header'
     ])
   })
 
@@ -155,10 +242,19 @@ describe('collectVisiblePluginProjectItems', () => {
     ])
   })
 
-  it('omits collapsed projects and reports nothing without rows', () => {
-    const collapsed = { ...options, collapsedGroups: new Set(['repo:a', 'repo:b']) }
+  it('still reports a collapsed project, since its items stay in the list', () => {
+    const collapsed: RenderRow[] = [header('a', { collapseKey: 'k' })]
     expect(
-      collectVisiblePluginProjectItems(injectPluginProjectItemRows(rows, [item('one')], collapsed))
-    ).toEqual([])
+      collectVisiblePluginProjectItems(
+        injectPluginProjectItemRows(collapsed, [item('one')], options)
+      )
+    ).toEqual([
+      {
+        pluginKey: 'samples.board',
+        itemId: 'one',
+        projects: [{ id: 'a', name: 'A', paths: ['/code/a'] }]
+      }
+    ])
+    expect(collectVisiblePluginProjectItems([])).toEqual([])
   })
 })
