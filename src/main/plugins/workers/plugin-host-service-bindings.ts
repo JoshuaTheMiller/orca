@@ -2,6 +2,10 @@ import { PLUGIN_WORKSPACE_TERMINAL_LIMIT } from '../../../shared/plugins/workers
 import type { PluginHostServices } from './plugin-host-methods'
 import { PluginSecretsStore } from '../plugin-secrets-store'
 import { PluginKvStore } from '../plugin-storage-store'
+import type {
+  AgentSessionOpenOutcome,
+  AgentSessionOpenTarget
+} from '../../../shared/agent-session-open'
 import type { TerminalInputKind } from '../../../shared/terminal-input-kind'
 
 export type PluginRuntimeDelegate = {
@@ -21,6 +25,7 @@ export type PluginRuntimeDelegate = {
     action: { text?: string; enter?: boolean },
     options: { inputKind: TerminalInputKind }
   ): Promise<{ accepted: boolean }>
+  openAgentSession(target: AgentSessionOpenTarget): Promise<AgentSessionOpenOutcome>
   dispatchPluginNotification(input: {
     pluginId: string
     title: string
@@ -60,6 +65,7 @@ export function bindPluginHostServices(input: {
       const result = await delegate.sendTerminal(terminalId, action, { inputKind: 'driving' })
       return { accepted: result.accepted }
     },
+    openAgentSession: (target) => delegate.openAgentSession(target),
     dispatchPluginNotification: (notification) => delegate.dispatchPluginNotification(notification),
     storage: {
       get: (key, itemKey) => new PluginKvStore(pluginsDataDir, key, 'storage.json').get(itemKey),

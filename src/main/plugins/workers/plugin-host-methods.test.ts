@@ -10,6 +10,7 @@ function createServices(storageSet: PluginHostServices['storage']['set']): Plugi
     resolveActiveWorktreeContext: vi.fn().mockResolvedValue(null),
     listWorktreeTerminals: vi.fn().mockResolvedValue([]),
     sendTerminalText: vi.fn().mockResolvedValue({ accepted: true }),
+    openAgentSession: vi.fn().mockResolvedValue('not_found'),
     dispatchPluginNotification: vi.fn().mockResolvedValue({ delivered: true }),
     storage: {
       get: vi.fn(),
@@ -133,6 +134,7 @@ function createTerminalHarness(terminalHandles: string[]): {
       terminals: terminalHandles.map((handle) => ({ handle, title: null }))
     }),
     sendTerminal: vi.fn().mockResolvedValue({ accepted: true }),
+    openAgentSession: vi.fn().mockResolvedValue('not_found'),
     dispatchPluginNotification: vi.fn().mockResolvedValue({ delivered: true })
   }
   return {

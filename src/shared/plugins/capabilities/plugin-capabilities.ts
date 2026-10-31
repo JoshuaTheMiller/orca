@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { PLUGIN_ENUM_SINCE_KEY } from '../manifest/plugin-engine-floor-keys'
 import {
   pluginFieldDoc,
+  PLUGIN_AGENT_SESSIONS_OPEN_SINCE,
   PLUGIN_MANIFEST_V2_SINCE,
   PLUGIN_SCHEMA_SINCE_V1
 } from '../manifest/plugin-schema-field-docs'
@@ -13,6 +14,7 @@ export const PLUGIN_CAPABILITY_KINDS = [
   'workspace:read',
   'agent:read',
   'terminal:send',
+  'agents:open',
   'notifications:show',
   'storage:own',
   'secrets:own',
@@ -26,6 +28,7 @@ export const PLUGIN_CAPABILITY_SINCE: Record<PluginCapabilityKind, string> = {
   'workspace:read': PLUGIN_SCHEMA_SINCE_V1,
   'agent:read': PLUGIN_MANIFEST_V2_SINCE,
   'terminal:send': PLUGIN_SCHEMA_SINCE_V1,
+  'agents:open': PLUGIN_AGENT_SESSIONS_OPEN_SINCE,
   'notifications:show': PLUGIN_SCHEMA_SINCE_V1,
   'storage:own': PLUGIN_MANIFEST_V2_SINCE,
   'secrets:own': PLUGIN_MANIFEST_V2_SINCE,
@@ -60,6 +63,7 @@ export const PLUGIN_CAPABILITY_DESCRIPTIONS: Record<PluginCapabilityKind, string
     'Read the name, branch, and terminal list of your focused workspace, and get notified when workspaces are created or removed',
   'agent:read': 'Get notified when agent status changes',
   'terminal:send': 'Type and run commands in your terminals, local and SSH',
+  'agents:open': 'Open and resume your agent sessions, and switch to the workspace that holds them',
   'notifications:show': 'Show desktop notifications labeled with the plugin name',
   'storage:own': "Store data in the plugin's own storage folder",
   'secrets:own': "Store and read secrets in the plugin's own encrypted file",

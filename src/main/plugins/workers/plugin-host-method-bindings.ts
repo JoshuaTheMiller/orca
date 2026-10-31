@@ -10,6 +10,10 @@ import {
   type PluginHostMethodSpec,
   type PluginJsonValue
 } from '../../../shared/plugins/workers/plugin-host-api'
+import type {
+  AgentSessionOpenOutcome,
+  AgentSessionOpenTarget
+} from '../../../shared/agent-session-open'
 import { shortPluginBranchName } from '../../../shared/plugins/events/plugin-events'
 
 export type PluginWorktreeContext = {
@@ -25,6 +29,7 @@ export type PluginHostServices = {
     terminalId: string,
     action: { text: string; enter: boolean }
   ): Promise<{ accepted: boolean }>
+  openAgentSession(target: AgentSessionOpenTarget): Promise<AgentSessionOpenOutcome>
   dispatchPluginNotification(input: {
     pluginId: string
     title: string
@@ -136,6 +141,13 @@ const HANDLERS: Record<PluginHostMethodName, BoundPluginHostMethod> = {
     const result = await services.sendTerminalText(params.terminalId, { text, enter })
     return { accepted: result.accepted }
   }),
+  'agentSessions.open': bind(api['agentSessions.open'], async (params, { services }) => ({
+    outcome: await services.openAgentSession({
+      agent: params.agent,
+      sessionId: params.sessionId,
+      ...(params.cwd ? { cwd: params.cwd } : {})
+    })
+  })),
   'notifications.show': bind(api['notifications.show'], async (params, { pluginId, services }) =>
     services.dispatchPluginNotification({ pluginId, title: params.title, body: params.body })
   ),

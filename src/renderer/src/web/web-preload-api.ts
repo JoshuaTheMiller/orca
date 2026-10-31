@@ -51,6 +51,7 @@ import { createWebStarNagApi } from './preload-api/web-star-nag-api'
 import { createWebTelemetryApi } from './preload-api/web-telemetry-api'
 import { createPtyApi, createSshApi } from './preload-api/web-terminal-api'
 import { createWebUiApi } from './preload-api/web-ui-api'
+import { webAgentSessionOpenApi } from './preload-api/web-agent-session-open-api'
 import { createUpdaterApi } from './preload-api/web-updater-api'
 import { createWebWorkspacePortsApi } from './preload-api/web-workspace-ports-api'
 import { createWebLinkPreviewApi } from './preload-api/web-link-preview-api'
@@ -78,7 +79,7 @@ function createWebPreloadApi(): Omit<Partial<PreloadApi>, 'settings'> & {
     ...createWebE2EApi(),
     ...createWebSettingsApi(),
     keybindings: createWebKeybindingsApi(),
-    ui: createWebUiApi(),
+    ui: { ...createWebUiApi(), ...webAgentSessionOpenApi },
     ...createWebDiagnosticsApi(),
     ...createWebWorkspaceSessionApi(),
     ...createWebOnboardingApi(),

@@ -349,7 +349,7 @@
               "notifications:show"
             ]
           ],
-          "maxItems": 7,
+          "maxItems": 8,
           "type": "array",
           "items": {
             "type": "string",
@@ -357,6 +357,7 @@
               "workspace:read",
               "agent:read",
               "terminal:send",
+              "agents:open",
               "notifications:show",
               "storage:own",
               "secrets:own",

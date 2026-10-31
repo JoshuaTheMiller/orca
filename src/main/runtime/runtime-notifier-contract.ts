@@ -13,6 +13,10 @@ import type {
 import type { TerminalPaneSplitSource } from '../../shared/feature-education-telemetry'
 import type { TerminalRevealIdentity } from '../../shared/terminal-reveal-identity'
 import type { TerminalPaneRevealTarget } from '../../shared/terminal-pane-reveal'
+import type {
+  AgentSessionOpenOutcome,
+  AgentSessionOpenTarget
+} from '../../shared/agent-session-open'
 import type { TuiAgent } from '../../shared/tui-agent'
 import type { WorkspaceSleepNotice } from '../../shared/workspace-sleep'
 import type { RuntimeNavigationTarget } from '../../shared/runtime-navigation'
@@ -130,6 +134,8 @@ export type RuntimeNotifier = {
   focusTerminal(tabId: string, worktreeId: string, leafId?: string | null): void
   /** Raises the window onto a pane it shows; resolves false when the window does not know the worktree. */
   revealTerminalPane?(target: TerminalPaneRevealTarget): Promise<boolean>
+  /** Focuses the live tab running the session, or resumes it; `not_found` leaves the window untouched. */
+  openAgentSession?(target: AgentSessionOpenTarget): Promise<AgentSessionOpenOutcome>
   focusEditorTab?(tabId: string, worktreeId: string): void
   closeSessionTab?(tabId: string, worktreeId: string): void | Promise<void>
   moveSessionTab?(worktreeId: string, move: RuntimeMobileSessionTabMove): void

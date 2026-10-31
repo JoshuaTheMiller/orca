@@ -65,7 +65,7 @@ Before any plugin code runs, the frame shell defines a frozen `window.orca`. It 
 supported way to talk to Orca; the messages underneath are internal and change without notice.
 
 ```js
-orca.api // { major: 1, minor: 0 }: the host API this Orca implements
+orca.api // { major: 1, minor: 1 }: the host API this Orca implements
 if (orca.host.has('workspace.readContext')) {
   // Synchronous: is the method offered to this surface by this Orca?
   const controller = new AbortController()
@@ -135,6 +135,46 @@ inside the frame, never on a call alone.
 Theme changes do not reload the frame: the shell updates the `--orca-*` variables and the
 `light`/`dark` class on `<html>` in place and emits `theme`. Restyle from the variables, or
 listen with `orca.on('theme', …)`, to follow it.
+
+### Opening agent sessions
+
+Declare the `agents:open` capability (`engines.orca` `>=1.4.253`, host API minor 1) and call
+`agentSessions.open` from a worker, panel or editor to bring an agent session up, for example from
+a session list or a command:
+
+```js
+if (orca.host.has('agentSessions.open')) {
+  const { outcome } = await orca.host.call('agentSessions.open', {
+    agent: 'claude', // an agent id from Session History, such as claude or codex
+    sessionId, // the agent's own conversation id
+    cwd: '/home/me/project' // optional absolute directory that picks the workspace to resume in
+  })
+  // 'focused' | 'resumed' | 'not_found'
+}
+```
+
+- `focused`: a tab already runs that session, in any workspace (a terminal pane, even a sleeping
+  or parked one, or a native chat). Orca switches to its workspace and focuses the tab. Nothing
+  new starts.
+- `resumed`: no tab runs it, but Orca resumed it with its own resume path, in the workspace that
+  contains `cwd` (or, without `cwd`, the directory the session recorded). Orca follows the user's
+  Chat | CLI choice for that agent: a chat when the agent has one that can take the conversation
+  over (Claude, Codex, Grok, OMP, OpenCode, Pi) and the user prefers it, otherwise the agent's
+  own resume command in a new terminal tab. A chat that already owns the conversation is
+  reopened. A failure after that point (for example the agent's CLI is missing) is reported to
+  the user by Orca's own notification, as it is for a resume started from Session History.
+- `not_found`: Orca could not find or resume it, and changed nothing. That covers an unknown
+  agent or session id, a session with no turns, no workspace that contains the directory (or an
+  archived one), a session recorded on another machine (SSH or a paired host), and an agent
+  without a resume command. Agents that can be resumed: claude, codebuddy, codex, qoder, qwen-code,
+  gemini, antigravity, opencode, opencode2, pi, mimo-code, droid, grok, devin, omp, prime-agent,
+  copilot, cursor, kimi, muse, zcode, dsh, jcode, kiro and hermes. Any other agent only ever
+  answers `focused` or `not_found`.
+
+The call never types into a terminal, so it needs only `agents:open`, not `terminal:send`. It
+raises Orca's window when it focuses or resumes, and the audit log records the agent and the first
+8 characters of the session id, never the directory. It fails with `action_failed` when Orca has
+no window to act in (a headless server).
 
 ## 2. Load it while you work
 

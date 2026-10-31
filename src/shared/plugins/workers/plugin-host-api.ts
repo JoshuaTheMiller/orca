@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import type { PluginCapabilityKind } from '../capabilities/plugin-capabilities'
 import type { PluginSurface } from '../frames/plugin-protocol'
+import { isWindowsAbsolutePathLike } from '../../cross-platform-path'
 
 /**
  * Host API 1 (`pluginApi: 1`) — the separately-versioned public facade plugins call. Every
@@ -23,6 +24,11 @@ export const PANEL_ACTION_TEXT_MAX_LENGTH = 4096
 export const PLUGIN_WORKSPACE_TERMINAL_LIMIT = 50
 export const PLUGIN_WORKSPACE_LABEL_MAX_LENGTH = 512
 export const PLUGIN_TERMINAL_ID_MAX_LENGTH = 1024
+export const PLUGIN_AGENT_ID_MAX_LENGTH = 64
+export const PLUGIN_AGENT_SESSION_ID_MAX_LENGTH = 512
+export const PLUGIN_AGENT_SESSION_CWD_MAX_LENGTH = 4096
+/** Session ids are secrets-adjacent: the audit log keeps only this many leading characters. */
+export const PLUGIN_AGENT_SESSION_AUDIT_ID_CHARS = 8
 
 const workspaceReadContextParams = z.strictObject({}).optional()
 const workspaceReadContextResult = z
@@ -51,6 +57,21 @@ const terminalSendTextParams = z.strictObject({
   enter: z.boolean().default(false)
 })
 const terminalSendTextResult = z.object({ accepted: z.boolean() })
+
+const agentSessionsOpenParams = z.strictObject({
+  /** An agent id such as `claude`; one this Orca cannot open answers `not_found`. */
+  agent: z.string().min(1).max(PLUGIN_AGENT_ID_MAX_LENGTH),
+  sessionId: z.string().min(1).max(PLUGIN_AGENT_SESSION_ID_MAX_LENGTH),
+  /** Absolute directory picking the workspace to resume in; defaults to the session's recorded one. */
+  cwd: z
+    .string()
+    .min(1)
+    .max(PLUGIN_AGENT_SESSION_CWD_MAX_LENGTH)
+    .refine((path) => path.startsWith('/') || isWindowsAbsolutePathLike(path), 'must be absolute')
+    .optional()
+})
+export const PLUGIN_AGENT_SESSION_OPEN_OUTCOMES = ['focused', 'resumed', 'not_found'] as const
+const agentSessionsOpenResult = z.object({ outcome: z.enum(PLUGIN_AGENT_SESSION_OPEN_OUTCOMES) })
 
 const notificationsShowParams = z.strictObject({
   title: z.string().min(1).max(120),
@@ -103,7 +124,7 @@ export type PluginHostMethodSpec<
   /** Minor that deprecated it; it keeps working until the next major. */
   deprecatedSince?: number
   /** Machine-readable resource boundary enforced by the host binding. */
-  scope: 'active-workspace' | 'explicit-terminal' | 'plugin-private' | 'desktop'
+  scope: 'active-workspace' | 'explicit-terminal' | 'agent-session' | 'plugin-private' | 'desktop'
   capability: PluginCapabilityKind
   /** Mutations are audit-logged with actor `plugin:<id>`. */
   mutation: boolean
@@ -142,6 +163,18 @@ export const PLUGIN_HOST_API = {
     surfaces: WORKER_ONLY,
     params: terminalSendTextParams,
     result: terminalSendTextResult
+  }),
+  'agentSessions.open': spec({
+    summary:
+      'Switches to a live agent session, or resumes a past one in the workspace holding its directory.',
+    since: 1,
+    scope: 'agent-session',
+    capability: 'agents:open',
+    // Why: it navigates the UI and may start the agent's own resume command, but never types into a terminal.
+    mutation: true,
+    surfaces: ALL_SURFACES,
+    params: agentSessionsOpenParams,
+    result: agentSessionsOpenResult
   }),
   'notifications.show': spec({
     summary: 'Shows a desktop notification.',
