@@ -27,7 +27,12 @@ export type PluginRuntimeDelegate = {
     title: string
     body?: string
   }): Promise<{ delivered: boolean }>
-  openLocalAbsoluteFile(absolutePath: string, position?: RuntimeFileOpenPosition): Promise<unknown>
+  openLocalAbsoluteFile(
+    absolutePath: string,
+    position?: RuntimeFileOpenPosition,
+    /** Open as a tab of this workspace even when the file lies outside it. */
+    options?: { activeWorktreeId?: string }
+  ): Promise<unknown>
 }
 
 export function bindPluginHostServices(input: {
@@ -65,7 +70,17 @@ export function bindPluginHostServices(input: {
       return { accepted: result.accepted }
     },
     dispatchPluginNotification: (notification) => delegate.dispatchPluginNotification(notification),
-    openEditorFile: async (absolutePath, position) => {
+    openEditorFile: async (absolutePath, position, placement) => {
+      if (placement === 'active-workspace') {
+        const context = await delegate.resolveActiveWorktreeContext()
+        if (!context) {
+          throw new Error('no active workspace is available to open the file in')
+        }
+        await delegate.openLocalAbsoluteFile(absolutePath, position, {
+          activeWorktreeId: context.worktreeId
+        })
+        return { opened: true }
+      }
       await delegate.openLocalAbsoluteFile(absolutePath, position)
       return { opened: true }
     },

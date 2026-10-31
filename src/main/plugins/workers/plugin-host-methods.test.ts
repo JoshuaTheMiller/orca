@@ -343,6 +343,16 @@ describe('editor.openFile', () => {
     expect(summaries).toEqual(['file=graph.json', 'file=graph.json'])
   })
 
+  it('passes the placement on and rejects an unknown one', async () => {
+    const { outcome, services } = openFile({ path: '/a.md', placement: 'active-workspace' })
+
+    await outcome
+    expect(services.openEditorFile).toHaveBeenCalledWith('/a.md', undefined, 'active-workspace')
+    await expect(openFile({ path: '/a.md', placement: 'floating' }).outcome).resolves.toMatchObject(
+      { ok: false, code: 'invalid_params' }
+    )
+  })
+
   it('ignores a column given without a line', async () => {
     const { outcome, services } = openFile({ path: String.raw`C:\notes\a.md`, column: 3 })
 
@@ -391,6 +401,36 @@ describe('editor.openFile', () => {
       value: { opened: true }
     })
     expect(delegate.openLocalAbsoluteFile).toHaveBeenCalledWith('/w/a.md', { line: 1 })
+  })
+
+  it('opens in the active workspace when asked and refuses when none is active', async () => {
+    const { delegate, services } = createTerminalHarness([])
+
+    await expect(
+      openFile({ path: '/w/a.md', placement: 'active-workspace' }, { services }).outcome
+    ).resolves.toEqual({ ok: true, value: { opened: true } })
+    expect(delegate.openLocalAbsoluteFile).toHaveBeenCalledWith('/w/a.md', undefined, {
+      activeWorktreeId: 'worktree-1'
+    })
+
+    vi.mocked(delegate.resolveActiveWorktreeContext).mockResolvedValue(null)
+    vi.mocked(delegate.openLocalAbsoluteFile).mockClear()
+    await expect(
+      openFile({ path: '/w/a.md', placement: 'active-workspace' }, { services }).outcome
+    ).resolves.toEqual({
+      ok: false,
+      code: 'action_failed',
+      error: 'no active workspace is available to open the file in'
+    })
+    expect(delegate.openLocalAbsoluteFile).not.toHaveBeenCalled()
+  })
+
+  it('keeps auto placement on the default route', async () => {
+    const { delegate, services } = createTerminalHarness([])
+
+    await openFile({ path: '/w/a.md', placement: 'auto' }, { services }).outcome
+    expect(delegate.openLocalAbsoluteFile).toHaveBeenCalledWith('/w/a.md', undefined)
+    expect(delegate.resolveActiveWorktreeContext).not.toHaveBeenCalled()
   })
 })
 

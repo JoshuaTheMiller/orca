@@ -155,12 +155,19 @@ orca.events.on('sidebarNav.valueChanged', ({ setting, value }) => {
 ### Opening files
 
 With the `editor:open` capability, a worker, panel or custom editor calls
-`orca.host.call('editor.openFile', { path, line?, column? })` and gets `{ opened }`. `path` is
-absolute. A file inside one of the user's workspaces opens in an editor tab there, so a matching
-custom editor applies; any other file opens in the floating workspace, the way a file opened from
-the operating system does. A path that does not exist, or is not a file, fails with
-`action_failed`. `column` is used only together with `line`. Each call is recorded in the audit
-log by file name.
+`orca.host.call('editor.openFile', { path, line?, column?, placement? })` and gets `{ opened }`.
+`path` is absolute. With the default `placement: "auto"`, a file inside one of the user's
+workspaces opens in an editor tab there, so a matching custom editor applies; any other file opens
+in the floating workspace, the way a file opened from the operating system does.
+
+`placement: "active-workspace"` (host API 1.2) opens the file as an editor tab of the workspace
+that is focused now, even when the file lives outside it, so it sits beside that workspace's
+terminals and editors. It is saved and reloaded in place like any file the user opened by name.
+It fails with `action_failed` when no workspace is focused, or when the focused workspace is
+remote (SSH or a paired host), because the path names a file on this computer. A file that is
+inside the focused workspace opens there as usual. A path that does not exist, or is not a file,
+fails with `action_failed`. `column` is used only together with `line`. Each call is recorded in
+the audit log by file name.
 
 ### Custom editors
 

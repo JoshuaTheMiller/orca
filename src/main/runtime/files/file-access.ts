@@ -79,10 +79,12 @@ export class RuntimeFileAccess {
   }
 
   /** Opens a local absolute file in an editor tab: in the workspace that owns the path, else in
-   *  the floating workspace the way OS-opened documents are, so any matching custom editor applies. */
+   *  the floating workspace the way OS-opened documents are, so any matching custom editor applies.
+   *  With `activeWorktreeId` it opens as a tab of that workspace instead, even from outside its root. */
   async openLocalAbsoluteFile(
     absolutePath: string,
-    position?: RuntimeFileOpenPosition
+    position?: RuntimeFileOpenPosition,
+    options?: { activeWorktreeId?: string }
   ): Promise<{ worktree: string }> {
     if (!isAbsolute(absolutePath)) {
       throw new Error('path must be absolute')
@@ -91,6 +93,10 @@ export class RuntimeFileAccess {
       absolutePath,
       LOCAL_EXECUTION_HOST_ID
     )
+    const activeId = options?.activeWorktreeId
+    if (activeId && activeId !== FLOATING_TERMINAL_WORKTREE_ID && owner?.worktree.id !== activeId) {
+      return this.openOutsideActiveWorkspace(absolutePath, activeId, position)
+    }
     if (owner) {
       await this.assertOpenTargetIsFile(absolutePath, owner)
       await this.host.openFile(
@@ -103,16 +109,7 @@ export class RuntimeFileAccess {
       )
       return { worktree: owner.worktree.id }
     }
-    // Why the node fs: no workspace owns the path, so no provider does either.
-    let stats: Awaited<ReturnType<typeof statLocalPath>>
-    try {
-      stats = await statLocalPath(absolutePath)
-    } catch (error) {
-      throw isENOENT(error) ? new Error(`file not found: ${basename(absolutePath)}`) : error
-    }
-    if (!stats.isFile()) {
-      throw new Error(`not a file: ${basename(absolutePath)}`)
-    }
+    await assertLocalRegularFile(absolutePath)
     await this.host.openFile(
       FLOATING_TERMINAL_WORKTREE_ID,
       absolutePath,
@@ -122,6 +119,31 @@ export class RuntimeFileAccess {
       ...(position ? [position] : [])
     )
     return { worktree: FLOATING_TERMINAL_WORKTREE_ID }
+  }
+
+  /** A file this computer holds, opened as a tab of the focused workspace though its root does not contain it.
+   *  Why `relativePath` is the absolute path: that is the shape Orca's own external-file tabs use, and the
+   *  renderer then reads and saves it in place as a file the user named instead of refusing it as outside the project. */
+  private async openOutsideActiveWorkspace(
+    absolutePath: string,
+    worktreeId: string,
+    position?: RuntimeFileOpenPosition
+  ): Promise<{ worktree: string }> {
+    const target = await this.host.resolveRuntimeFileTarget(`id:${worktreeId}`)
+    // Why local only: on an SSH or remote-runtime workspace the path would name a file on another machine.
+    if (target.executionHostId !== LOCAL_EXECUTION_HOST_ID) {
+      throw new Error('the active workspace is not on this computer')
+    }
+    await assertLocalRegularFile(absolutePath)
+    await this.host.openFile(
+      target.worktree.id,
+      absolutePath,
+      absolutePath,
+      null,
+      undefined,
+      ...(position ? [position] : [])
+    )
+    return { worktree: target.worktree.id }
   }
 
   private async assertOpenTargetIsFile(
@@ -208,6 +230,19 @@ export class RuntimeFileAccess {
       mtime: fileStat.mtime,
       ...(fileStat.ctimeMs === undefined ? {} : { ctime: fileStat.ctimeMs })
     }
+  }
+}
+
+/** Why the node fs: no workspace owns the path, so no provider does either. */
+async function assertLocalRegularFile(absolutePath: string): Promise<void> {
+  let stats: Awaited<ReturnType<typeof statLocalPath>>
+  try {
+    stats = await statLocalPath(absolutePath)
+  } catch (error) {
+    throw isENOENT(error) ? new Error(`file not found: ${basename(absolutePath)}`) : error
+  }
+  if (!stats.isFile()) {
+    throw new Error(`not a file: ${basename(absolutePath)}`)
   }
 }
 
