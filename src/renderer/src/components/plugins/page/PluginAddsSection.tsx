@@ -9,6 +9,7 @@ import {
   Palette,
   PanelLeft,
   PanelRight,
+  SlidersHorizontal,
   PenTool,
   Server,
   SquareTerminal
@@ -105,7 +106,8 @@ const CONTRIBUTION_ICON: Record<PluginContributionKind, React.ReactNode> = {
   customEditors: <PenTool />,
   vmRecipes: <Server />,
   newFiles: <FilePlus />,
-  sidebarNavItems: <PanelLeft />
+  sidebarNavItems: <PanelLeft />,
+  settings: <SlidersHorizontal />
 }
 
 type AddsCommand = {
@@ -252,6 +254,7 @@ function useContributionRowActions(
       case 'customEditors':
       case 'vmRecipes':
       case 'sidebarNavItems':
+      case 'settings':
         // Themes have "Use now" above the list; editors open from their new files; recipes have nothing to try here.
         return null
     }

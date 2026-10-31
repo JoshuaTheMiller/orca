@@ -13268,7 +13268,10 @@
           "newFileMenu": "Adds to the + menu",
           "sidebarNavItem": "Adds to the left sidebar",
           "sidebarNavToggle": "Adds a toggle to the left sidebar",
-          "sidebarNavCheckbox": "Adds a checkbox to the left sidebar"
+          "sidebarNavCheckbox": "Adds a checkbox to the left sidebar",
+          "settingsTitle": "Settings",
+          "settingsOne": "Adds 1 setting",
+          "settingsMany": "Adds {{value0}} settings"
         },
         "PluginCardAction": {
           "installed": "Installed",
@@ -13349,7 +13352,8 @@
           "worktreeRemoved": "When a workspace is removed",
           "agentStatusChanged": "When an agent’s status changes",
           "detail": "Background code runs",
-          "sidebarNavValueChanged": "When a sidebar toggle or checkbox changes"
+          "sidebarNavValueChanged": "When a sidebar toggle or checkbox changes",
+          "settingsChanged": "When one of its settings changes"
         },
         "pluginInstallAction": {
           "installed": "{{value0}} installed",
@@ -13448,6 +13452,12 @@
           "cancel": "Cancel",
           "addFolder": "Add folder",
           "install": "Install"
+        },
+        "PluginSettingsSection": {
+          "saveFailed": "Could not save the setting",
+          "resetNamed": "Reset {{value0}} to its default",
+          "reset": "Reset",
+          "title": "Settings"
         }
       },
       "right": {

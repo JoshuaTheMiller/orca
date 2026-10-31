@@ -50,7 +50,8 @@ function useInstalledPluginContributionSource(
       customEditors: plugin.customEditors ?? [],
       vmRecipes: plugin.vmRecipes?.map((recipe) => recipe.name) ?? [],
       newFiles: plugin.newFiles ?? [],
-      sidebarNavItems: plugin.sidebarNavItems ?? []
+      sidebarNavItems: plugin.sidebarNavItems ?? [],
+      settings: plugin.settings ?? []
     }
   }, [plugin, appThemes, terminalThemes, iconThemes, syntaxes, languagePacks, failures])
 }
