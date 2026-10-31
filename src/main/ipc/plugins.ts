@@ -25,6 +25,7 @@ import {
   type PluginLockfile
 } from '../../shared/plugins/installation/plugin-install-lockfile'
 import { resolvePluginGitSource } from '../plugins/installation/plugin-git-ref-resolution'
+import { createElectronPluginFolderPicker } from '../plugins/dialogs/plugin-folder-picker-electron'
 import {
   registerPluginMarketplaceHandlers,
   type PluginMarketplaceHandlerServices
@@ -114,6 +115,7 @@ export function registerPluginHandlers(
   if (runtime) {
     pluginService.setRuntimeDelegate(runtime)
   }
+  pluginService.folderPicker = createElectronPluginFolderPicker(store, runtime)
 
   store.onSettingsChanged((updates) => {
     if ('pluginSystemEnabled' in updates || 'devPluginPaths' in updates) {

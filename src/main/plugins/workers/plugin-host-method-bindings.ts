@@ -10,6 +10,7 @@ import {
   type PluginHostMethodSpec,
   type PluginJsonValue
 } from '../../../shared/plugins/workers/plugin-host-api'
+import { PluginHostError } from './plugin-host-error'
 import { shortPluginBranchName } from '../../../shared/plugins/events/plugin-events'
 
 export type PluginWorktreeContext = {
@@ -30,6 +31,13 @@ export type PluginHostServices = {
     title: string
     body?: string
   }): Promise<{ delivered: boolean }>
+  /** Absent where no window can show a dialog, e.g. headless serve. */
+  pickFolder?(input: {
+    pluginId: string
+    title?: string
+    defaultPath?: string
+    createIfMissing?: boolean
+  }): Promise<{ path: string | null }>
   storage: {
     get(pluginId: string, key: string): PluginJsonValue | undefined
     set(
@@ -139,6 +147,12 @@ const HANDLERS: Record<PluginHostMethodName, BoundPluginHostMethod> = {
   'notifications.show': bind(api['notifications.show'], async (params, { pluginId, services }) =>
     services.dispatchPluginNotification({ pluginId, title: params.title, body: params.body })
   ),
+  'dialogs.pickFolder': bind(api['dialogs.pickFolder'], async (params, { pluginId, services }) => {
+    if (!services.pickFolder) {
+      throw new PluginHostError('unavailable', 'folder pickers are not available on this host')
+    }
+    return services.pickFolder({ pluginId, ...params })
+  }),
   'storage.get': bind(api['storage.get'], async ({ key }, { pluginId, services }) => ({
     value: services.storage.get(pluginId, key) ?? null
   })),

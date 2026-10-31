@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import type { PluginCapabilityKind } from '../capabilities/plugin-capabilities'
 import type { PluginSurface } from '../frames/plugin-protocol'
+import { dialogsPickFolderParams, dialogsPickFolderResult } from './plugin-host-api-dialogs'
 
 /**
  * Host API 1 (`pluginApi: 1`) — the separately-versioned public facade plugins call. Every
@@ -107,6 +108,8 @@ export type PluginHostMethodSpec<
   capability: PluginCapabilityKind
   /** Mutations are audit-logged with actor `plugin:<id>`. */
   mutation: boolean
+  /** Also audit-logged though it changes nothing, e.g. a prompt that reaches the user. */
+  audited?: boolean
   /** Where plugin code may call it; any other surface gets `not_permitted`. */
   surfaces: readonly PluginSurface[]
   params: P
@@ -242,6 +245,18 @@ export const PLUGIN_HOST_API = {
     surfaces: WORKER_ONLY,
     params: settingsSetParams,
     result: settingsSetResult
+  }),
+  'dialogs.pickFolder': spec({
+    summary:
+      "Shows Orca's native folder picker and returns the chosen path, or null when cancelled. Local workspaces only.",
+    since: 1,
+    scope: 'desktop',
+    capability: 'dialogs:open',
+    mutation: false,
+    audited: true,
+    surfaces: ALL_SURFACES,
+    params: dialogsPickFolderParams,
+    result: dialogsPickFolderResult
   })
 }
 

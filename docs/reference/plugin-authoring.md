@@ -136,6 +136,26 @@ Theme changes do not reload the frame: the shell updates the `--orca-*` variable
 `light`/`dark` class on `<html>` in place and emits `theme`. Restyle from the variables, or
 listen with `orca.on('theme', …)`, to follow it.
 
+### Asking for a folder
+
+With the `dialogs:open` capability (Since 1.4.252, host API 1.1), a worker, panel or editor can show Orca's native folder picker. The dialog belongs to the focused Orca window.
+
+```js
+const { path } = await orca.host.call('dialogs.pickFolder', {
+  title: 'Choose your notes folder', // optional, up to 120 characters
+  defaultPath: '/home/me/notes', // optional, absolute: preselected in the dialog
+  createIfMissing: true // optional: create defaultPath first when it is missing
+})
+if (path === null) {
+  // The user cancelled.
+}
+```
+
+- `createIfMissing` creates `defaultPath` (and any missing parents) only when it lies under the user's home folder; anywhere else the call fails with `not_permitted`. Without it, a missing `defaultPath` falls back to its nearest existing parent.
+- Only one picker per plugin is open at a time: a second call fails with `conflict` until the first closes.
+- The picker browses this computer, so while a remote (SSH or paired host) workspace is focused the call fails with `not_permitted`. Remote folders are not supported yet.
+- The audit log records that the picker was shown and its title, never the chosen path.
+
 ## 2. Load it while you work
 
 1. Settings → Plugins: click **Turn on plugins**.
