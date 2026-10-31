@@ -9,6 +9,17 @@ import {
 } from './plugin-discovery'
 import type { PluginWorkerController } from './workers/plugin-worker-controller'
 
+const deliveryQueues = new WeakMap<PluginWorkerController, Map<string, Promise<void>>>()
+
+function queuesFor(controller: PluginWorkerController): Map<string, Promise<void>> {
+  let queues = deliveryQueues.get(controller)
+  if (!queues) {
+    queues = new Map()
+    deliveryQueues.set(controller, queues)
+  }
+  return queues
+}
+
 /** Delivers only to plugins whose manifest subscribes and whose grant covers the event's domain. */
 export function deliverPluginEvent(options: {
   event: PluginEventName
@@ -41,13 +52,23 @@ export function deliverPluginEvent(options: {
       continue
     }
     const logWarning = options.logWarning(plugin.pluginKey)
-    void options.workerController
-      .ensure(plugin)
+    // Why: ensure() can settle in a different order for two events sent back to back (the first
+    // one may be starting the worker), so each plugin's deliveries are chained to stay in order.
+    const queues = queuesFor(options.workerController)
+    const tail = queues.get(plugin.pluginKey) ?? Promise.resolve()
+    const next: Promise<void> = tail
+      .then(() => options.workerController.ensure(plugin))
       .then((handle) => handle.deliverEvent(options.event, projected.data))
       .catch((error) => {
         logWarning(
           `event ${options.event} dropped: ${error instanceof Error ? error.message : String(error)}`
         )
       })
+      .finally(() => {
+        if (queues.get(plugin.pluginKey) === next) {
+          queues.delete(plugin.pluginKey)
+        }
+      })
+    queues.set(plugin.pluginKey, next)
   }
 }

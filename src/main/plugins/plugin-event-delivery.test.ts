@@ -84,3 +84,45 @@ describe('deliverPluginEvent sidebarNav.valueChanged', () => {
     expect(ensure).not.toHaveBeenCalled()
   })
 })
+
+describe('deliverPluginEvent ordering', () => {
+  it('delivers one plugin its events in the order they were sent, even if the worker starts slowly', async () => {
+    const delivered: unknown[] = []
+    const deliverEvent = vi.fn((_event: string, payload: unknown) => {
+      delivered.push(payload)
+    })
+    let releaseFirst: () => void = () => undefined
+    const firstStart = new Promise<void>((resolve) => {
+      releaseFirst = resolve
+    })
+    const ensure = vi
+      .fn()
+      .mockImplementationOnce(async () => {
+        await firstStart
+        return { deliverEvent }
+      })
+      .mockResolvedValue({ deliverEvent })
+    const send = (value: boolean): void =>
+      deliverPluginEvent({
+        event: 'sidebarNav.valueChanged',
+        payload: { setting: 'show-details', value },
+        plugins: [plugin('graph', ['sidebarNav.valueChanged'])],
+        // SAFETY: delivery only calls `ensure` on the controller.
+        // oxlint-disable-next-line typescript/consistent-type-assertions
+        workerController: { ensure } as unknown as PluginWorkerController,
+        isRuntimeApproved: () => true,
+        grantedCapabilities: () => ['settings:own'],
+        logWarning: () => () => undefined
+      })
+
+    send(true)
+    send(false)
+    releaseFirst()
+    await vi.waitFor(() => expect(deliverEvent).toHaveBeenCalledTimes(2))
+
+    expect(delivered).toEqual([
+      { setting: 'show-details', value: true },
+      { setting: 'show-details', value: false }
+    ])
+  })
+})
