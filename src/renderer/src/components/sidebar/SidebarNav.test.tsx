@@ -72,6 +72,16 @@ vi.mock('../setup-guide/use-setup-guide-progress', () => ({
   })
 }))
 
+const pluginNav = vi.hoisted(() => ({ items: [] as unknown[], execute: vi.fn() }))
+
+vi.mock('@/store/plugin-sidebar-nav-items', () => ({
+  usePluginSidebarNavItems: () => pluginNav.items
+}))
+
+vi.mock('@/lib/plugin-command-execution', () => ({
+  executePluginCommand: pluginNav.execute
+}))
+
 vi.mock('@/components/ui/context-menu', () => ({
   ContextMenu: ({ children }: { children: ReactNode }) => (
     <div data-testid="context-menu">{children}</div>
@@ -391,6 +401,82 @@ describe('SidebarNav', () => {
     await clickButton(getHideButton(mobileMenu as HTMLElement))
 
     expect(mocks.updateSettings).toHaveBeenCalledWith({ showMobileButton: false })
+  })
+
+  describe('plugin nav items', () => {
+    const item = {
+      id: 'graph',
+      key: 'samples.graph/graph',
+      title: 'Graph',
+      icon: 'database',
+      command: 'graph.open',
+      pluginKey: 'samples.graph',
+      pluginName: 'Graph',
+      runnable: {
+        id: 'graph.open',
+        title: 'Open',
+        context: 'global',
+        handler: { type: 'worker' },
+        keybindings: [],
+        pluginKey: 'samples.graph',
+        pluginName: 'Graph'
+      }
+    }
+
+    beforeEach(() => {
+      pluginNav.items = [item]
+      pluginNav.execute.mockResolvedValue(undefined)
+    })
+
+    afterEach(() => {
+      pluginNav.items = []
+    })
+
+    it('renders after the built-in rows and runs the command like the palette', async () => {
+      const container = await renderSidebarNav()
+      const buttons = Array.from(container.querySelectorAll('button'))
+      const row = getButtonByText(container, 'Graph')
+
+      expect(buttons.indexOf(row)).toBeGreaterThan(
+        buttons.indexOf(getButtonByText(container, 'Automations'))
+      )
+      await clickButton(row)
+
+      expect(pluginNav.execute).toHaveBeenCalledWith(item.runnable, 'plugin-palette')
+    })
+
+    it('hides an item through its context menu, keeping earlier hidden ones', async () => {
+      setSidebarState({
+        settings: { ...getDefaultSettings('/tmp'), hiddenPluginSidebarNavItems: ['samples.x/y'] }
+      })
+      const container = await renderSidebarNav()
+      const menu = getButtonByText(container, 'Graph').closest('[data-testid="context-menu"]')
+
+      await clickButton(getHideButton(menu as HTMLElement))
+
+      expect(mocks.updateSettings).toHaveBeenCalledWith({
+        hiddenPluginSidebarNavItems: ['samples.x/y', 'samples.graph/graph']
+      })
+    })
+
+    it('omits an item that was hidden', async () => {
+      setSidebarState({
+        settings: {
+          ...getDefaultSettings('/tmp'),
+          hiddenPluginSidebarNavItems: ['samples.graph/graph']
+        }
+      })
+      const container = await renderSidebarNav()
+
+      expect(queryButtonByText(container, 'Graph')).toBeNull()
+    })
+
+    it('disables a workspace command while no workspace is active', async () => {
+      pluginNav.items = [{ ...item, runnable: { ...item.runnable, context: 'workspace' } }]
+      const container = await renderSidebarNav()
+
+      expect(getButtonByText(container, 'Graph').disabled).toBe(true)
+    })
   })
 
   it('places the worktree palette search above the sidebar nav rows', async () => {

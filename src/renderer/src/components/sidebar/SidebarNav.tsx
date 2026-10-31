@@ -12,6 +12,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { SetupGuideSidebarEntry } from './SetupGuideSidebarEntry'
 import { SidebarTaskNavButton } from './SidebarTaskNavButton'
 import { HideSidebarMenu } from './sidebar-nav-controls'
+import { PluginSidebarNavItems } from './PluginSidebarNavItems'
 import { translate } from '@/i18n/i18n'
 import { lazyWithRetry } from '@/lib/lazy-with-retry'
 import type { GlobalSettings } from '../../../../shared/global-settings-types'
@@ -283,6 +284,7 @@ const SidebarNav = React.memo(function SidebarNav() {
           <HideSidebarMenu onHide={hideMobileButton} />
         </ContextMenu>
       ) : null}
+      <PluginSidebarNavItems />
     </div>
   )
 })
