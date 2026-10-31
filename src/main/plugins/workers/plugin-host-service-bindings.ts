@@ -3,6 +3,7 @@ import type { PluginHostServices } from './plugin-host-methods'
 import { PluginSecretsStore } from '../plugin-secrets-store'
 import { PluginKvStore } from '../plugin-storage-store'
 import type { RuntimeFileOpenPosition } from '../../../shared/runtime-file-contracts'
+import type { PluginOpenLinkRequest } from '../../../shared/plugins/workers/plugin-host-links-schema'
 import type { TerminalInputKind } from '../../../shared/terminal-input-kind'
 
 export type PluginRuntimeDelegate = {
@@ -40,8 +41,9 @@ export function bindPluginHostServices(input: {
   pluginsDataDir: string
   /** One plugin's toggle and checkbox values, defaults applied. */
   sidebarNavValues: (pluginKey: string) => Record<string, boolean>
+  openLink?: (request: PluginOpenLinkRequest) => boolean
 }): PluginHostServices {
-  const { delegate, pluginsDataDir } = input
+  const { delegate, pluginsDataDir, openLink } = input
   return {
     resolveActiveWorktreeContext: async () => {
       const context = await delegate.resolveActiveWorktreeContext()
@@ -85,6 +87,7 @@ export function bindPluginHostServices(input: {
       return { opened: true }
     },
     sidebarNavValues: input.sidebarNavValues,
+    openLink: async (request) => ({ opened: openLink?.(request) ?? false }),
     storage: {
       get: (key, itemKey) => new PluginKvStore(pluginsDataDir, key, 'storage.json').get(itemKey),
       set: (key, itemKey, value) =>

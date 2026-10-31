@@ -261,7 +261,8 @@ export class PluginService {
           ? bindPluginHostServices({
               delegate: this.runtimeDelegate,
               pluginsDataDir: getPluginsDataDir(this.options.userDataPath),
-              sidebarNavValues: (key) => readPluginSidebarNavValues(this, key)
+              sidebarNavValues: (key) => readPluginSidebarNavValues(this, key),
+              openLink: this.options.openLink
             })
           : null,
         audit: this.audit

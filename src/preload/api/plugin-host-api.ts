@@ -1,3 +1,4 @@
+import type { PluginOpenLinkRequest } from '../../shared/plugins/workers/plugin-host-links-schema'
 import type { PluginHostImages } from '../../shared/plugins/images/plugin-image-url'
 import type { PluginUpdateAccessGrowth } from '../../shared/plugins/approval/plugin-update-access-growth'
 import type {
@@ -213,6 +214,8 @@ export type PluginsApi = {
   /** Re-discovers after settings edits (feature flag, dev paths). */
   refresh: () => Promise<PluginHostListEntry[]>
   onChanged: (callback: (event: PluginChangeEvent) => void) => () => void
+  /** Main asks this window to open a plugin's web link under the user's link settings. */
+  onOpenLink: (callback: (request: PluginOpenLinkRequest) => void) => () => void
   /** What automatic updates last did. Older hosts reject the call; treat that as nothing. */
   getAutoUpdateState: () => Promise<PluginAutoUpdateState>
   /** Held updates not yet told to the user, each returned once per version; never approves. */

@@ -7,6 +7,8 @@ export const PLUGIN_MANIFEST_V2_SINCE = '1.4.245'
 export const PLUGIN_DERIVED_PUBLISHER_SINCE = '1.4.246'
 /** First release with `contributes.sidebarNavItems` and the `editor:open` capability. */
 export const PLUGIN_SIDEBAR_NAV_ITEMS_SINCE = '1.4.247'
+/** First release with the `links:open` capability, which opens web links the way Orca's own links open. */
+export const PLUGIN_LINKS_OPEN_SINCE = '1.4.248'
 
 type PluginFieldDoc = {
   description: string

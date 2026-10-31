@@ -93,11 +93,12 @@ describe('createPluginFrameMessageHandler', () => {
       payload: {
         protocol: 1,
         surface: 'editor',
-        api: { major: 1, minor: 2 },
+        api: { major: 1, minor: 3 },
         theme: { colorScheme: 'dark', tokens: '--orca-background:#000' }
       }
     })
     expect(hello.payload.methods).toContain('notifications.show')
+    expect(hello.payload.methods).toContain('links.open')
     expect(hello.payload.methods).not.toContain('storage.get')
     expect(onReady).toHaveBeenCalledOnce()
   })

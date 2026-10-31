@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { PLUGIN_ENUM_SINCE_KEY } from '../manifest/plugin-engine-floor-keys'
 import {
   pluginFieldDoc,
+  PLUGIN_LINKS_OPEN_SINCE,
   PLUGIN_MANIFEST_V2_SINCE,
   PLUGIN_SCHEMA_SINCE_V1,
   PLUGIN_SIDEBAR_NAV_ITEMS_SINCE
@@ -18,7 +19,8 @@ export const PLUGIN_CAPABILITY_KINDS = [
   'storage:own',
   'secrets:own',
   'settings:own',
-  'editor:open'
+  'editor:open',
+  'links:open'
 ] as const
 
 export type PluginCapabilityKind = (typeof PLUGIN_CAPABILITY_KINDS)[number]
@@ -32,7 +34,8 @@ export const PLUGIN_CAPABILITY_SINCE: Record<PluginCapabilityKind, string> = {
   'storage:own': PLUGIN_MANIFEST_V2_SINCE,
   'secrets:own': PLUGIN_MANIFEST_V2_SINCE,
   'settings:own': PLUGIN_SCHEMA_SINCE_V1,
-  'editor:open': PLUGIN_SIDEBAR_NAV_ITEMS_SINCE
+  'editor:open': PLUGIN_SIDEBAR_NAV_ITEMS_SINCE,
+  'links:open': PLUGIN_LINKS_OPEN_SINCE
 }
 
 /** Format 1 capability names and what each now grants. `events:subscribe` split by event domain. */
@@ -67,7 +70,8 @@ export const PLUGIN_CAPABILITY_DESCRIPTIONS: Record<PluginCapabilityKind, string
   'storage:own': "Store data in the plugin's own storage folder",
   'secrets:own': "Store and read secrets in the plugin's own encrypted file",
   'settings:own': "Read and change the plugin's own settings",
-  'editor:open': "Open files in Orca's editor"
+  'editor:open': "Open files in Orca's editor",
+  'links:open': "Open web links in Orca's browser or your system browser"
 }
 
 /** Canonicalize order, duplicates and field order so equivalent grants preserve consent across manifest formatting changes. */

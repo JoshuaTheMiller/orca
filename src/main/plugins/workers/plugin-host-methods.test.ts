@@ -13,6 +13,7 @@ function createServices(storageSet: PluginHostServices['storage']['set']): Plugi
     dispatchPluginNotification: vi.fn().mockResolvedValue({ delivered: true }),
     openEditorFile: vi.fn().mockResolvedValue({ opened: true }),
     sidebarNavValues: vi.fn().mockReturnValue({}),
+    openLink: vi.fn().mockResolvedValue({ opened: true }),
     storage: {
       get: vi.fn(),
       set: storageSet,

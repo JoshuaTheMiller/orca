@@ -1206,7 +1206,8 @@
             "storage:own",
             "secrets:own",
             "settings:own",
-            "editor:open"
+            "editor:open",
+            "links:open"
           ],
           "description": "Capability granted on user consent.",
           "x-orca-since": "1.4.160",
@@ -1218,7 +1219,8 @@
             "storage:own": "1.4.245",
             "secrets:own": "1.4.245",
             "settings:own": "1.4.160",
-            "editor:open": "1.4.247"
+            "editor:open": "1.4.247",
+            "links:open": "1.4.248"
           }
         }
       },
