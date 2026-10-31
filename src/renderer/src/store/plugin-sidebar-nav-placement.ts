@@ -25,7 +25,11 @@ export function placePluginSidebarNavItems(
   const placed: PlacedPluginSidebarNavItem[] = []
   for (const item of visible.filter((candidate) => !candidate.parentKey)) {
     placed.push({ item, depth: 0 })
-    if (!isStateNavItem(item) || item.kind !== 'toggle' || !(values[item.valueKey] ?? item.default)) {
+    if (
+      !isStateNavItem(item) ||
+      item.kind !== 'toggle' ||
+      !(values[item.valueKey] ?? item.default)
+    ) {
       continue
     }
     for (const child of visible.filter((candidate) => candidate.parentKey === item.key)) {
@@ -34,4 +38,3 @@ export function placePluginSidebarNavItems(
   }
   return placed
 }
-

@@ -7,7 +7,10 @@ import {
   type ActivePluginCommand
 } from './plugin-panels'
 
-type ActiveNavItemBase = Omit<PluginHostSidebarNavItem, 'kind' | 'command' | 'setting' | 'default'> & {
+type ActiveNavItemBase = Omit<
+  PluginHostSidebarNavItem,
+  'kind' | 'command' | 'setting' | 'default'
+> & {
   /** Unique across plugins. */
   key: string
   pluginKey: string
