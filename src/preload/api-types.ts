@@ -211,6 +211,7 @@ export type {
   PluginSidebarCardRef,
   PluginSettingValue,
   PluginSettingWriteOutcome,
+  PluginHostPage,
   PluginHostInstallResult,
   PluginHostInstallSource,
   PluginHostListEntry,

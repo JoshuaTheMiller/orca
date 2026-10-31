@@ -300,7 +300,8 @@ export class PluginService {
                 this.sidebarCards.setItems(key, cardId, items),
               settings: this.settings,
               projectItems: this.projectItems,
-              pickFolder: this.folderPicker
+              pickFolder: this.folderPicker,
+              openPluginPage: (request) => this.panels.pages.open(request)
             })
           : null,
         audit: this.audit

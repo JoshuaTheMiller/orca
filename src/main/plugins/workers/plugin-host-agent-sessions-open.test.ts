@@ -38,7 +38,8 @@ function createHarness(outcome: AgentSessionOpenOutcome = 'resumed') {
         sidebarNavValues: () => ({}),
         setSidebarCardItems: () => ({ ok: true }),
         settings: { getAll: () => ({}), set: () => ({ ok: true }) },
-        projectItems: { setDetail: () => ({ ok: true }) }
+        projectItems: { setDetail: () => ({ ok: true }) },
+        openPluginPage: async () => undefined
       }),
       audit: { record }
     })
@@ -46,7 +47,7 @@ function createHarness(outcome: AgentSessionOpenOutcome = 'resumed') {
 }
 
 describe('host API minors', () => {
-  it('gives each extension point its own minor and ends at agentSessions.open', () => {
+  it('gives each extension point its own minor and ends at pages.open', () => {
     const minors = {
       'editor.openFile': PLUGIN_HOST_API['editor.openFile'].since,
       'sidebarNav.getValues': PLUGIN_HOST_API['sidebarNav.getValues'].since,
@@ -55,10 +56,11 @@ describe('host API minors', () => {
       'sidebarCards.setItems': PLUGIN_HOST_API['sidebarCards.setItems'].since,
       'projectItems.setDetail': PLUGIN_HOST_API['projectItems.setDetail'].since,
       'dialogs.pickFolder': PLUGIN_HOST_API['dialogs.pickFolder'].since,
-      'agentSessions.open': PLUGIN_HOST_API['agentSessions.open'].since
+      'agentSessions.open': PLUGIN_HOST_API['agentSessions.open'].since,
+      'pages.open': PLUGIN_HOST_API['pages.open'].since
     }
-    expect(Object.values(minors)).toEqual([1, 2, 3, 4, 5, 6, 7, 8])
-    expect(PLUGIN_HOST_API_MINOR).toBe(8)
+    expect(Object.values(minors)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9])
+    expect(PLUGIN_HOST_API_MINOR).toBe(9)
   })
 })
 

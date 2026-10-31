@@ -1,6 +1,7 @@
 import { PLUGIN_CAPABILITY_DESCRIPTIONS } from '../../shared/plugins/capabilities/plugin-capabilities'
 import { needsReconsent } from '../../shared/plugins/approval/plugin-consent-state'
 import { pluginPanelTabKey } from '../../shared/plugins/manifest/plugin-manifest'
+import { pluginPageViewKey } from '../../shared/top-level-view'
 import type { PluginLockfile } from '../../shared/plugins/installation/plugin-install-lockfile'
 import { isInvalidDiscoveredPlugin, type DiscoveredPlugin } from './plugin-discovery'
 import {
@@ -93,6 +94,7 @@ export async function buildPluginList(
           bundled: false,
           capabilities: [],
           panels: [],
+          pages: [],
           customEditors: [],
           newFiles: [],
           sidebarNavItems: [],
@@ -174,6 +176,12 @@ export async function buildPluginList(
           title: panel.title,
           ...(panel.icon ? { icon: panel.icon } : {}),
           tabKey: pluginPanelTabKey(plugin.pluginKey, panel.id)
+        })),
+        pages: plugin.manifest.contributes.pages.map((page) => ({
+          id: page.id,
+          title: page.title,
+          ...(page.icon ? { icon: page.icon } : {}),
+          viewKey: pluginPageViewKey(plugin.pluginKey, page.id)
         })),
         customEditors: plugin.manifest.contributes.customEditors.map((editor, index) => ({
           id: editor.id,

@@ -47,10 +47,12 @@ import {
   PLUGIN_SIDEBAR_CARD_LIMIT,
   pluginSidebarCardContributionSchema
 } from './plugin-sidebar-card-contribution'
+import { PLUGIN_PAGE_LIMIT, pluginPageContributionSchema } from './plugin-page-contribution'
 import { PLUGIN_PANEL_LIMIT, pluginPanelContributionSchema } from './plugin-panel-contribution'
 import {
   pluginFieldDoc,
   PLUGIN_MANIFEST_V2_SINCE,
+  PLUGIN_PAGES_SINCE,
   PLUGIN_PROJECT_ITEMS_SINCE,
   PLUGIN_SCHEMA_SINCE_V1,
   PLUGIN_SETTINGS_SINCE,
@@ -61,6 +63,7 @@ import {
 /** Every `contributes` key, in manifest order. Adding a point starts here. */
 export const PLUGIN_CONTRIBUTION_POINTS = [
   'panels',
+  'pages',
   'commands',
   'events',
   'languagePacks',
@@ -151,6 +154,12 @@ export const pluginContributesFields = {
     PLUGIN_PANEL_LIMIT,
     'Sidebar panels.',
     V1
+  ),
+  pages: contributionList(
+    pluginPageContributionSchema,
+    PLUGIN_PAGE_LIMIT,
+    'Full-page views shown in the main area.',
+    PLUGIN_PAGES_SINCE
   ),
   commands: contributionList(
     pluginCommandContributionSchema,
@@ -269,6 +278,8 @@ export const PLUGIN_CONTRIBUTION_POINT_POLICY: Record<
   ContributionPointPolicy
 > = {
   panels: { execution: 'sandboxed-ui', catalogType: 'panel', bindsContent: false },
+  // Why the panel catalog type: a page is the same sandboxed frame, only shown full size.
+  pages: { execution: 'sandboxed-ui', catalogType: 'panel', bindsContent: false },
   // Why unbound: an alias command only names a built-in action; it carries no bytes.
   commands: { execution: 'declarative', catalogType: 'instructions', bindsContent: false },
   // Why no catalog type: events need a worker, which `main` already declares.

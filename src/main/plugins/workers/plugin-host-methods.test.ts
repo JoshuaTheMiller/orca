@@ -18,6 +18,7 @@ function createServices(storageSet: PluginHostServices['storage']['set']): Plugi
     openLink: vi.fn().mockResolvedValue({ opened: true }),
     setSidebarCardItems: vi.fn().mockReturnValue({ ok: true }),
     projectItems: { setDetail: vi.fn().mockReturnValue({ ok: true }) },
+    openPluginPage: vi.fn().mockResolvedValue(undefined),
     storage: {
       get: vi.fn(),
       set: storageSet,
@@ -152,7 +153,8 @@ function createTerminalHarness(terminalHandles: string[]): {
       sidebarNavValues: () => ({}),
       setSidebarCardItems: () => ({ ok: true }),
       settings: { getAll: () => ({}), set: () => ({ ok: true }) },
-      projectItems: { setDetail: () => ({ ok: true }) }
+      projectItems: { setDetail: () => ({ ok: true }) },
+      openPluginPage: vi.fn().mockResolvedValue(undefined)
     })
   }
 }

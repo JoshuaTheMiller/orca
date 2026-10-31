@@ -3,7 +3,7 @@ import { randomBytes } from 'node:crypto'
 export type PluginPanelSessionBinding = {
   pluginKey: string
   /** Which contribution list `contributionId` names; it also picks the callable methods. */
-  surface: 'panel' | 'editor'
+  surface: 'panel' | 'editor' | 'page'
   contributionId: string
   rootDir: string
   manifestRevision: string

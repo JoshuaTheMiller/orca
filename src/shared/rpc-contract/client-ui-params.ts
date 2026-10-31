@@ -107,6 +107,7 @@ export const FeatureInteractionIdParam = z.custom<FeatureInteractionId>(isFeatur
   message: 'Unknown feature interaction id'
 })
 
+// Why static only: a plugin page view (`plugin:<key>/<id>`) is session-only, so it never crosses IPC.
 export const TopLevelViewSchema = z.enum([
   'terminal',
   'settings',

@@ -17,6 +17,7 @@ function createHarness(
     setSidebarCardItems: () => ({ ok: true }),
     settings: { getAll: () => ({}), set: () => ({ ok: true }) },
     projectItems: { setDetail: () => ({ ok: true }) },
+    openPluginPage: async () => undefined,
     openLink
   })
   const audit = { record: vi.fn().mockResolvedValue(undefined) }

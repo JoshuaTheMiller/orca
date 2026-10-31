@@ -5,13 +5,17 @@
   "publisher": "your-github-user",
   "name": "Hello Orca",
   "version": "1.0.0",
-  "description": "Sample plugin combining a panel, a worker command, sidebar nav items (a command, a toggle and a checkbox), a project item, a setting, a setting-gated sidebar card, and event subscriptions.",
-  "engines": { "orca": ">=1.4.251" },
+  "description": "Sample plugin combining a panel, a full page, a worker command, sidebar nav items (a command, a toggle and a checkbox), a project item, a setting, a setting-gated sidebar card, and event subscriptions.",
+  "engines": { "orca": ">=1.4.254" },
   "pluginApi": 1,
   "main": "main.mjs",
   "contributes": {
     "panels": [{ "id": "hello", "title": "Hello Orca", "icon": "plug", "entry": "panel.html" }],
-    "commands": [{ "id": "hello-ping", "title": "Hello: Ping" }],
+    "pages": [{ "id": "notes", "title": "Hello Notes", "icon": "file-text", "entry": "page.html" }],
+    "commands": [
+      { "id": "hello-ping", "title": "Hello: Ping" },
+      { "id": "hello-open-notes", "title": "Hello: Open notes page" }
+    ],
     "sidebarNavItems": [
       { "id": "ping", "title": "Hello Ping", "icon": "plug", "command": "hello-ping" },
       { "id": "chatty", "title": "Chatty pings", "kind": "toggle", "setting": "chatty" },

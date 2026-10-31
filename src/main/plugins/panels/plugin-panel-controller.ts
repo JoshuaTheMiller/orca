@@ -21,6 +21,7 @@ import {
   PLUGIN_PANEL_ENTRY_MAX_BYTES,
   readContainedPluginArtifactText
 } from '../plugin-artifact-validation'
+import { PluginPageHost } from '../pages/plugin-page-host'
 import { PluginPanelSessions, type PluginPanelSessionBinding } from './plugin-panel-sessions'
 
 type PluginPanelControllerOptions = {
@@ -43,11 +44,13 @@ type LoadedPluginPanel = {
 
 export class PluginPanelController {
   private readonly sessions = new PluginPanelSessions()
+  readonly pages: PluginPageHost
   private readonly boundOwnerSignals = new WeakSet<AbortSignal>()
   private readonly panelAdmission: PluginPanelCallAdmission
 
   constructor(private readonly options: PluginPanelControllerOptions) {
     this.panelAdmission = options.panelAdmission ?? createPluginPanelCallAdmission()
+    this.pages = new PluginPageHost(options.resolveApprovedPlugin)
   }
 
   async readEntry(pluginKey: string, panelId: string): Promise<{ html: string } | null> {
@@ -61,6 +64,15 @@ export class PluginPanelController {
     isCurrent?: () => boolean
   ): Promise<PluginFrameEntry | null> {
     return this.openFrame(ownerKey, pluginKey, 'panel', panelId, isCurrent)
+  }
+
+  openPage(
+    ownerKey: string,
+    pluginKey: string,
+    pageId: string,
+    isCurrent?: () => boolean
+  ): Promise<PluginFrameEntry | null> {
+    return this.openFrame(ownerKey, pluginKey, 'page', pageId, isCurrent)
   }
 
   openCustomEditor(
@@ -129,6 +141,7 @@ export class PluginPanelController {
 
   dispose(): void {
     this.revokeAll()
+    this.pages.dispose()
   }
 
   private extractSessionToken(call: unknown): string | null {
@@ -222,9 +235,12 @@ function findFrameContribution(
   surface: PluginPanelSessionBinding['surface'],
   id: string
 ): { entry: string } | null {
+  const contributes = plugin.manifest.contributes
   const list =
     surface === 'panel'
-      ? plugin.manifest.contributes.panels
-      : plugin.manifest.contributes.customEditors
+      ? contributes.panels
+      : surface === 'page'
+        ? contributes.pages
+        : contributes.customEditors
   return list.find((entry) => entry.id === id) ?? null
 }

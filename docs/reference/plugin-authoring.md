@@ -12,10 +12,10 @@ A plugin is a folder (in practice its own Git repository) with `orca-plugin.json
 Start from `examples/plugins/orca-gleam-syntax`, which carries the JSON Schema for editor
 completion, or from one of:
 
-| Example                              | Execution        | Shows                                                              |
-| ------------------------------------ | ---------------- | ------------------------------------------------------------------ |
-| `examples/plugins/orca-gleam-syntax` | `data`           | A syntax, no code                                                  |
-| `examples/plugins/hello-orca`        | `trusted-worker` | A panel, a worker command, sidebar nav items, a setting and events |
+| Example                              | Execution        | Shows                                                                      |
+| ------------------------------------ | ---------------- | -------------------------------------------------------------------------- |
+| `examples/plugins/orca-gleam-syntax` | `data`           | A syntax, no code                                                          |
+| `examples/plugins/hello-orca`        | `trusted-worker` | A panel, a page, a worker command, sidebar nav items, a setting and events |
 
 Leave `publisher` out. Orca names the publisher after where the plugin comes from, the way a
 [Go module path](https://go.dev/ref/mod#module-path) is its repository path: the owner of the
@@ -46,9 +46,9 @@ asked to approve:
 - `data`: themes, terminal themes, icon themes, syntaxes, translations. Installs in one click.
 - `declarative`: commands that run Orca actions, shortcuts, sidebar nav items, VM recipes. Reviewed before they
   are enabled.
-- `sandboxed-ui`: panels and custom editors, in a sandboxed frame that talks to Orca only
+- `sandboxed-ui`: panels, pages and custom editors, in a sandboxed frame that talks to Orca only
   through `window.orca` (see [Frames](#frames-windoworca)) and can call only the host methods
-  whose surfaces list `panel` or `editor`.
+  whose surfaces list `panel`, `editor` or `page`.
   Orca's colors reach frame CSS as `--orca-background`, `--orca-foreground`, `--orca-primary`
   and the rest of its panel token set, so they never collide with a frame's own variables.
 - `trusted-worker`: `main` runs in a separate Node process and can call every host method its
@@ -598,6 +598,58 @@ The call never types into a terminal, so it needs only `agents:open`, not `termi
 raises Orca's window when it focuses or resumes, and the audit log records the agent and the first
 8 characters of the session id, never the directory. It fails with `action_failed` when Orca has
 no window to act in (a headless server).
+
+### Pages
+
+A page is a full-size view in the main area, under Orca's usual page header (a back button and
+the title), like the built-in Tasks and Automations pages. Declare up to four under
+`contributes.pages`; they need the `sandboxed-ui` profile and `engines.orca` of at least
+`>=1.4.254`:
+
+```json
+"pages": [{ "id": "notes", "title": "Notes", "icon": "file-text", "entry": "page/index.html" }]
+```
+
+`icon` takes the same names as a panel icon. A page runs in the same sandboxed frame as a panel
+(no Node, no network, no file system) with the same `--orca-*` colors, and its `window.orca` is the
+frame API above with the host methods whose surfaces list `page`: `workspace.readContext`,
+`notifications.show` and `pages.open`. A page has no tab or shortcut of its own, so it is opened
+by code: a worker command, a panel, a custom editor or another page calls `pages.open`, which
+shows the page in the focused window or focuses it if it is already the current view:
+
+```js
+// In a worker (main.mjs): a command that opens the page with a file.
+orca.commands.register('open-notes', async () => {
+  const path = fileURLToPath(new URL('./notes.txt', import.meta.url))
+  await orca.host.call('pages.open', { pageId: 'notes', path })
+})
+```
+
+```js
+// In page/index.html: the file arrives like a custom editor's document, read-only.
+orca.document.onDidChange((doc) => render(doc.content.text)) // content.kind is always 'text'
+```
+
+`pages.open` needs no capability: a plugin can only open a page it declared, which the user
+approved with the plugin, and it never writes anything. It rejects with `action_failed` when the
+plugin declares no such page or no window can show it, and with `invalid_params` for a `path`
+that is not absolute.
+
+With a `path` (an absolute path to a local file), the page gets `orca.document` exactly as a
+[custom editor](#custom-editors) does: `get()` and `onDidChange()` deliver `{ version, readOnly,
+content }` with `readOnly: true` and `content: { kind: 'text', text }`, and `applyEdit` rejects
+with `not_permitted`. The page never sees the path. While the page is open Orca watches that one
+file and sends a new document when it changes, including when an editor replaces it by writing
+a temporary file and renaming it over the original (updates arrive about 200 ms after the last
+change). Orca stops watching when the page closes, and a page watches one file at a time: calling
+`pages.open` again with another `path` replaces the file. Files are capped at 64 MiB, like
+custom editor documents; a missing, unreadable or larger file shows a notice above the page and
+sends no document. Without a `path`, `orca.document.get()` never resolves. A `path` on a remote
+(SSH or paired host) workspace is not supported: it names a file on the machine running Orca.
+
+A page is session-only: Orca reopens the last built-in view on restart, not the page, and when
+its plugin is turned off, updated without the page or removed, Orca returns to the view the page
+was opened from.
 
 ## 2. Load it while you work
 

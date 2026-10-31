@@ -10,7 +10,8 @@ Every call is checked against the capabilities the user approved, and params are
 
 | Method | Capability | Surfaces | Mutation | Since | Summary |
 | --- | --- | --- | --- | --- | --- |
-| [`workspace.readContext`](#workspacereadcontext) | `workspace:read` | worker, panel, editor | no | 1.0 | Branch, name and terminal ids of the focused workspace, or null when none is focused. |
+| [`workspace.readContext`](#workspacereadcontext) | `workspace:read` | worker, panel, editor, page | no | 1.0 | Branch, name and terminal ids of the focused workspace, or null when none is focused. |
+| [`pages.open`](#pagesopen) | none | worker, panel, editor, page | no | 1.1 | Opens one of the plugin's pages in the main area of the focused window, or focuses it. With `path`, the page receives that local file as a read-only text document and live updates while it is open. |
 | [`terminal.sendText`](#terminalsendtext) | `terminal:send` | worker | yes | 1.0 | Types text into one terminal named by id, optionally pressing Enter. |
 | [`agentSessions.open`](#agentsessionsopen) | `agents:open` | worker, panel, editor | yes | 1.8 | Switches to a live agent session, or resumes a past one in the workspace holding its directory. |
 | [`notifications.show`](#notificationsshow) | `notifications:show` | worker, panel, editor | yes | 1.0 | Shows a desktop notification. |
@@ -36,6 +37,14 @@ Branch, name and terminal ids of the focused workspace, or null when none is foc
 
 ```ts
 (params: {}) => { branch: string; displayName: string; terminals: { id: string }[] } | null
+```
+
+### `pages.open`
+
+Opens one of the plugin's pages in the main area of the focused window, or focuses it. With `path`, the page receives that local file as a read-only text document and live updates while it is open.
+
+```ts
+(params: { pageId: string; path?: string }) => { opened: true }
 ```
 
 ### `terminal.sendText`

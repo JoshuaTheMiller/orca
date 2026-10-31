@@ -12,6 +12,7 @@ import {
   PanelLeftOpen,
   PanelRight,
   SlidersHorizontal,
+  PanelTop,
   PenTool,
   Server,
   SquareTerminal
@@ -36,6 +37,7 @@ import { DetailRow, DetailSection } from './PluginDetailSections'
 import { PluginContributionActionCommand } from './PluginContributionActionCommand'
 import { PluginContributionEventRow, usePluginWorkerEvents } from './PluginContributionActionEvents'
 import { PluginContributionActionLanguage } from './PluginContributionActionLanguage'
+import { PluginContributionActionPage } from './PluginContributionActionPage'
 import { PluginContributionActionPanel } from './PluginContributionActionPanel'
 import { PluginContributionActionNewFile } from './PluginContributionActionNewFile'
 import { collectActivePluginNewFiles } from '@/store/plugin-new-files'
@@ -105,6 +107,7 @@ const CONTRIBUTION_ICON: Record<PluginContributionKind, React.ReactNode> = {
   syntaxes: <Highlighter />,
   languagePacks: <Languages />,
   panels: <PanelRight />,
+  pages: <PanelTop />,
   customEditors: <PenTool />,
   vmRecipes: <Server />,
   newFiles: <FilePlus />,
@@ -230,6 +233,10 @@ function useContributionRowActions(
       case 'panels': {
         const panel = plugin.panels[Number(id)]
         return panel ? <PluginContributionActionPanel panel={panel} /> : null
+      }
+      case 'pages': {
+        const page = plugin.pages?.[Number(id)]
+        return page ? <PluginContributionActionPage page={page} /> : null
       }
       case 'newFiles': {
         const newFile = collectActivePluginNewFiles([plugin])[Number(id)]

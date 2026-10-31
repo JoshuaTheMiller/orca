@@ -1,4 +1,3 @@
-import { PLUGIN_LANGUAGE_PACK_MIN_COVERAGE } from '../../../../../shared/plugins/languages/plugin-language-pack-coverage'
 import type { PluginContributionSummaryItem } from '../../../../../shared/plugins/contributions/plugin-contribution-summary'
 import type { PluginContributionPoint } from '../../../../../shared/plugins/contributions/plugin-contribution-points'
 import type { PluginManifest } from '../../../../../shared/plugins/manifest/plugin-manifest'
@@ -7,6 +6,7 @@ import { describeSidebarNavItemRows, navItemFromSummary } from './plugin-sidebar
 import { describeSettingRows, type SettingSource } from './plugin-setting-rows'
 import { describeSidebarCardRows, type SidebarCardSource } from './plugin-sidebar-card-rows'
 import { describeProjectItemRows, type ProjectItemSource } from './plugin-project-item-rows'
+import { fileList, languageDetail, withMode } from './plugin-contribution-detail-text'
 
 /** The manifest points shown as named rows; commands, shortcuts and events have their own lists. */
 export type PluginContributionKind = Exclude<
@@ -38,6 +38,7 @@ export type PluginContributionSource = {
   /** Coverage is known only once a pack is installed. */
   languagePacks: readonly { locale: string; coverage?: number }[]
   panels: readonly string[]
+  pages: readonly string[]
   customEditors: readonly {
     title: string
     extensions: readonly string[]
@@ -58,6 +59,7 @@ export const EMPTY_CONTRIBUTION_SOURCE: PluginContributionSource = {
   syntaxes: [],
   languagePacks: [],
   panels: [],
+  pages: [],
   customEditors: [],
   vmRecipes: [],
   newFiles: [],
@@ -66,8 +68,6 @@ export const EMPTY_CONTRIBUTION_SOURCE: PluginContributionSource = {
   sidebarCards: [],
   projectItems: []
 }
-
-const FILE_LIST_LIMIT = 4
 
 /** "recipes/ubuntu-dev.json" → "Ubuntu dev"; manifests name these files by path only. */
 export function nameFromContributionPath(path: string): string {
@@ -101,6 +101,7 @@ export function manifestContributionSource(manifest: PluginManifest): PluginCont
     syntaxes: contributes.syntaxes.map(titled),
     languagePacks: contributes.languagePacks,
     panels: contributes.panels.map((panel) => panel.title),
+    pages: contributes.pages.map((page) => page.title),
     customEditors: contributes.customEditors,
     vmRecipes: contributes.vmRecipes.map((recipe) => nameFromContributionPath(recipe.path)),
     newFiles: contributes.newFiles,
@@ -139,6 +140,7 @@ export function summaryContributionSource(
     })),
     languagePacks: of('languagePacks').map((item) => ({ locale: item.name })),
     panels: of('panels').map((item) => item.name),
+    pages: of('pages').map((item) => item.name),
     customEditors: of('customEditors').map((item) => ({
       title: item.name,
       extensions: item.detail ? item.detail.split(', ') : [],
@@ -150,50 +152,6 @@ export function summaryContributionSource(
     settings: of('settings').map((item) => ({ title: item.name })),
     sidebarCards: of('sidebarCards').map((item) => ({ title: item.name })),
     projectItems: of('projectItems').map((item) => ({ title: item.name }))
-  }
-}
-
-function withMode(kindLabel: string, mode: 'light' | 'dark' | 'unknown' | undefined): string {
-  if (mode === 'dark') {
-    return `${kindLabel} · ${translate('auto.components.settings.pluginContributions.dark', 'Dark')}`
-  }
-  if (mode === 'light') {
-    return `${kindLabel} · ${translate('auto.components.settings.pluginContributions.light', 'Light')}`
-  }
-  return kindLabel
-}
-
-function fileList(extensions: readonly string[], filenames: readonly string[]): string {
-  const files = [...extensions, ...filenames]
-  const shown = files.slice(0, FILE_LIST_LIMIT).join(', ')
-  return files.length > FILE_LIST_LIMIT ? `${shown} +${files.length - FILE_LIST_LIMIT}` : shown
-}
-
-function languageDetail(coverage: number | undefined): Pick<PluginContribution, 'detail' | 'tone'> {
-  const label = translate(
-    'auto.components.settings.PluginDetailSections.typeLanguagePack',
-    'Interface language'
-  )
-  if (coverage === undefined) {
-    return { detail: label, tone: 'default' }
-  }
-  if (coverage < PLUGIN_LANGUAGE_PACK_MIN_COVERAGE) {
-    return {
-      detail: translate(
-        'auto.components.settings.pluginContributions.languageIncomplete',
-        '{{value0}}% translated, too incomplete to use as Orca’s language',
-        { value0: coverage }
-      ),
-      tone: 'warning'
-    }
-  }
-  return {
-    detail: translate(
-      'auto.components.settings.pluginContributions.languageCoverage',
-      'Interface language · {{value0}}% translated',
-      { value0: coverage }
-    ),
-    tone: 'default'
   }
 }
 
@@ -276,6 +234,15 @@ export function describePluginContributions(
       kind: 'panels',
       title,
       detail: translate('auto.components.settings.PluginDetailSections.panel', 'Sidebar panel'),
+      tone: 'default'
+    })
+  }
+  for (const [index, title] of source.pages.entries()) {
+    rows.push({
+      key: `pages:${index}`,
+      kind: 'pages',
+      title,
+      detail: translate('auto.components.settings.PluginDetailSections.page', 'Page'),
       tone: 'default'
     })
   }

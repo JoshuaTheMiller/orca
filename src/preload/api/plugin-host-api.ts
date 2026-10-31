@@ -16,6 +16,11 @@ import type {
 } from '../../shared/plugins/artifacts/plugin-syntax-artifact'
 import type { PluginTerminalThemeRegistration } from '../../shared/plugins/artifacts/plugin-terminal-theme-artifact'
 import type { PluginFrameEntry } from '../../shared/plugins/frames/plugin-frame-bridge'
+import type {
+  PluginPageDocumentResult,
+  PluginPageDocumentUpdate,
+  PluginPageOpenRequest
+} from '../../shared/plugins/frames/plugin-page-document-bridge'
 import type { PluginHostCallOutcome } from '../../shared/plugins/frames/plugin-protocol'
 import type { PluginConsentRequest } from '../../shared/plugins/approval/plugin-consent-request'
 import type { PluginLanguagePackRegistration } from '../../shared/plugins/artifacts/plugin-language-pack-artifact'
@@ -36,6 +41,7 @@ export type {
   PluginHostSetting,
   PluginHostSidebarCard,
   PluginHostSidebarNavItem,
+  PluginHostPage,
   PluginHostPanel,
   PluginHostStatus
 } from '../../shared/plugins/plugin-list-entry'
@@ -176,6 +182,20 @@ export type PluginsApi = {
     pluginKey: string
     editorId: string
   }) => Promise<PluginFrameEntry | null>
+  /** CSP-wrapped plugin page HTML and its host-call session; null if missing or disabled. */
+  readPageEntry?: (args: { pluginKey: string; pageId: string }) => Promise<PluginFrameEntry | null>
+  /** Reads the file a page was opened with and watches it until `closePageDocument`; the
+   *  watch is one per `instanceId`, and changes arrive through `onPageDocumentChanged`. */
+  openPageDocument?: (args: {
+    pluginKey: string
+    pageId: string
+    instanceId: string
+    path: string
+  }) => Promise<PluginPageDocumentResult>
+  closePageDocument?: (args: { instanceId: string }) => Promise<void>
+  onPageDocumentChanged?: (callback: (update: PluginPageDocumentUpdate) => void) => () => void
+  /** A plugin called `pages.open` and this window is the one that should show the page. */
+  onOpenPageRequested?: (callback: (request: PluginPageOpenRequest) => void) => () => void
   /** A new file's starting text (its template, or empty); null if the plugin is off or lacks it. */
   readNewFileTemplate?: (args: { pluginKey: string; newFileId: string }) => Promise<string | null>
   invokeCommand: (args: {

@@ -5,7 +5,7 @@ import { pluginHostVersion } from '../../shared/plugins/installation/plugin-host
 import { app, BrowserWindow, net } from 'electron'
 import { performance } from 'node:perf_hooks'
 import { PluginService } from '../plugins/plugin-service'
-import { createPluginLinkOpener } from '../plugins/plugin-open-link'
+import { createPluginLinkOpener, sendToPluginWindow } from '../plugins/plugin-open-link'
 import { PluginKillListService } from '../plugins/catalog/plugin-kill-list-service'
 import { PluginInstallStatsService } from '../plugins/catalog/plugin-install-stats-service'
 import { PluginMarketplaceService } from '../plugins/catalog/plugin-marketplace-service'
@@ -127,6 +127,10 @@ export async function initializeMainProcessPlugins(runtime: OrcaRuntimeService):
     openLink: createPluginLinkOpener(() => state.mainWindow)
   })
   const pluginService = state.pluginService
+  // Why the focused window: pages.open names no window, and the caller is whatever the user is using.
+  pluginService.panels.pages.setOpener((request) =>
+    sendToPluginWindow(BrowserWindow.getFocusedWindow() ?? state.mainWindow, 'plugins:openPageRequested', request)
+  )
   const pluginAutoUpdater = new PluginAutoUpdater({
     pluginService,
     installer: state.pluginMarketplaceInstaller,

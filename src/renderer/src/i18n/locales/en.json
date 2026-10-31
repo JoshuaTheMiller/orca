@@ -9421,7 +9421,6 @@
         },
         "TerminalWindowSection": {
           "1705318506": "ANSI magenta color",
-          "03c855d15f": "Reset all color overrides",
           "63f8d9336e": "Color Overrides",
           "e86e09b5c7": "Override individual terminal colors.",
           "1d1920dc8a": "Hide the mouse cursor when typing in the terminal.",
@@ -9488,7 +9487,11 @@
           "cf37ff69f6": "Base",
           "8abdab9f7c": "Restart now",
           "907131d741": "Restarting…",
-          "605a35d600": "Not applied by the terminal renderer yet — xterm.js has no bold color slot. A saved value is preserved."
+          "605a35d600": "Not applied by the terminal renderer yet — xterm.js has no bold color slot. A saved value is preserved.",
+          "color_overrides_dark_description": "Override individual colors of the dark terminal theme.",
+          "color_overrides_light_description": "Override individual colors of the light terminal theme.",
+          "reset_dark_color_overrides": "Reset dark color overrides",
+          "reset_light_color_overrides": "Reset light color overrides"
         },
         "UIZoomControl": {
           "c2c64b24d0": "Reset"
@@ -13190,7 +13193,8 @@
           "accessFailed": "Couldn’t read its access",
           "retry": "Retry",
           "noAccessReach": "Nothing outside its own files",
-          "customEditor": "Editor"
+          "customEditor": "Editor",
+          "page": "Page"
         },
         "PluginManagerRows": {
           "reinstall": "Reinstall",
@@ -13260,7 +13264,8 @@
           "newContributions": "Features that act for you",
           "allAccess": "See all access",
           "update": "Update",
-          "review": "Review"
+          "review": "Review",
+          "newPages": "Pages"
         },
         "PluginDetailInfo": {
           "previous": "Previous",
@@ -13473,6 +13478,10 @@
           "cancel": "Cancel",
           "addFolder": "Add folder",
           "install": "Install"
+        },
+        "PluginContributionActionPage": {
+          "openName": "Open page: {{value0}}",
+          "open": "Open page"
         },
         "PluginSettingsSection": {
           "saveFailed": "Could not save the setting",
@@ -19033,6 +19042,21 @@
         },
         "pluginInstallCount": {
           "installs": "{{value0}} installs"
+        }
+      },
+      "plugin": {
+        "page": {
+          "PluginFullPage": {
+            "back": "Back",
+            "unavailable": "This plugin page is no longer available.",
+            "loading": "Loading plugin page...",
+            "unresponsive": "This plugin page stopped responding and was suspended.",
+            "loadFailed": "The plugin page could not be loaded.",
+            "fileMissing": "The file this page shows no longer exists.",
+            "notAFile": "This page was asked to show something that is not a file.",
+            "fileTooLarge": "The file this page shows is too large.",
+            "fileUnreadable": "The file this page shows could not be read."
+          }
         }
       }
     },

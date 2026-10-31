@@ -1,4 +1,6 @@
 // Sample plugin runs in a lazily forked plain-Node worker; its default export receives commands, events and capability-gated host API.
+import { fileURLToPath } from 'node:url'
+
 export default async function activate(orca) {
   // Declared settings come back with their defaults applied; the user edits them in the plugin's page in Settings.
   let excited = (await orca.host.call('settings.get')).settings.excited === true
@@ -43,6 +45,14 @@ export default async function activate(orca) {
         void updateCard()
       }
     }
+  })
+
+  // pages.open shows a page the manifest declares; with a path, the page gets that file as a
+  // read-only document and live updates while it stays open. Edit notes.txt to watch it change.
+  orca.commands.register('hello-open-notes', async () => {
+    const path = fileURLToPath(new URL('./notes.txt', import.meta.url))
+    await orca.host.call('pages.open', { pageId: 'notes', path })
+    return 'Opened the notes page.'
   })
 
   // A project item row passes `{ project: { id, name, paths, hostId }, itemTitle }`; the nav item and palette pass nothing.

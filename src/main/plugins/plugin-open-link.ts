@@ -26,3 +26,12 @@ export function createPluginLinkOpener(
     }
   }
 }
+
+/** Sends one request to a window; false when there is none to take it. */
+export function sendToPluginWindow(window: LinkWindow | null, channel: string, payload: unknown): boolean {
+  if (!window || window.isDestroyed()) {
+    return false
+  }
+  window.webContents.send(channel, payload)
+  return true
+}

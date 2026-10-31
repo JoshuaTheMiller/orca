@@ -25,7 +25,7 @@
         "sandboxed-ui",
         "trusted-worker"
       ],
-      "description": "Most authority the plugin needs, least first: `data` (themes, syntaxes, translations), `declarative` (commands, shortcuts, recipes), `sandboxed-ui` (panels), `trusted-worker` (`main` and events). Contributions beyond it fail validation.",
+      "description": "Most authority the plugin needs, least first: `data` (themes, syntaxes, translations), `declarative` (commands, shortcuts, recipes), `sandboxed-ui` (panels, pages), `trusted-worker` (`main` and events). Contributions beyond it fail validation.",
       "x-orca-since": "1.4.245",
       "examples": [
         "data"
@@ -194,6 +194,16 @@
           "type": "array",
           "items": {
             "$ref": "#/$defs/PanelContribution"
+          }
+        },
+        "pages": {
+          "default": [],
+          "description": "Full-page views shown in the main area. At most 4.",
+          "x-orca-since": "1.4.254",
+          "maxItems": 4,
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PageContribution"
           }
         },
         "commands": {
@@ -545,6 +555,86 @@
       ],
       "additionalProperties": false,
       "description": "A sidebar panel. Requires the `sandboxed-ui` execution profile or higher."
+    },
+    "PageContribution": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 64,
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "description": "Page id, unique among this plugin's pages. The reserved names `constructor` and `prototype` are refused.",
+          "x-orca-since": "1.4.254",
+          "examples": [
+            "report"
+          ]
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "description": "Title shown in the page header.",
+          "x-orca-since": "1.4.254",
+          "examples": [
+            "Report"
+          ]
+        },
+        "icon": {
+          "description": "Icon shown for the page in Orca. Same names as panel icons. Defaults to `plug`.",
+          "x-orca-since": "1.4.254",
+          "examples": [
+            "file-text"
+          ],
+          "type": "string",
+          "enum": [
+            "activity",
+            "bar-chart-3",
+            "bell",
+            "blocks",
+            "book",
+            "bot",
+            "bug",
+            "calendar",
+            "cloud",
+            "code",
+            "database",
+            "file-text",
+            "flag",
+            "folder",
+            "gauge",
+            "globe",
+            "hammer",
+            "layers",
+            "lightbulb",
+            "package",
+            "plug",
+            "puzzle",
+            "rocket",
+            "star",
+            "terminal",
+            "wrench",
+            "zap"
+          ]
+        },
+        "entry": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "pattern": "^[^<>:\"|?*\\x00-\\x1f\\\\/]*[^<>:\"|?*\\x00-\\x1f\\\\/. ](?:[\\\\/][^<>:\"|?*\\x00-\\x1f\\\\/]*[^<>:\"|?*\\x00-\\x1f\\\\/. ])*$",
+          "description": "HTML file, relative to the plugin root, rendered full size in the main area inside a sandboxed frame like a panel. A worker or another frame opens it with `pages.open`. It is trusted code: install pages you trust. Relative to the plugin root; `..` segments and Windows device names such as `CON` are refused.",
+          "x-orca-since": "1.4.254",
+          "examples": [
+            "page/index.html"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "entry"
+      ],
+      "additionalProperties": false,
+      "description": "A full-page view shown in the main area, like the built-in Tasks and Automations pages. Requires the `sandboxed-ui` execution profile or higher."
     },
     "CommandContribution": {
       "type": "object",

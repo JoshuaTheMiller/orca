@@ -1,4 +1,5 @@
 import type { AppState } from '@/store/types'
+import { isPluginPageView } from '../../../shared/top-level-view'
 import { getIndexedRepoMap, getIndexedWorktreeMap } from '@/store/worktree-repo-index'
 import { isFolderRepo } from '../../../shared/repo-kind'
 import { selectWorktreesByRepo } from '@/store/workspace-record-selectors'
@@ -17,7 +18,7 @@ const RIGHT_SIDEBAR_SUPPRESSED_VIEWS = new Set<ActiveView>([
 ])
 
 export function canShowRightSidebarForView(activeView: ActiveView): boolean {
-  return !RIGHT_SIDEBAR_SUPPRESSED_VIEWS.has(activeView)
+  return !RIGHT_SIDEBAR_SUPPRESSED_VIEWS.has(activeView) && !isPluginPageView(activeView)
 }
 
 export function rightSidebarShowsPullRequestData(

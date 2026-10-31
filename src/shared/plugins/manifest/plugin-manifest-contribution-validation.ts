@@ -23,6 +23,7 @@ type ContributionValidationManifest = {
   main?: string
   contributes: {
     panels: IdentifiedContribution[]
+    pages: IdentifiedContribution[]
     commands: (IdentifiedContribution & { action?: string; when?: 'global' | 'workspace' })[]
     events: { on: PluginEventName }[]
     languagePacks: { locale: string }[]
@@ -69,6 +70,7 @@ export function validatePluginManifestContributions(
 ): void {
   for (const path of [
     'panels',
+    'pages',
     'commands',
     'themes',
     'terminalThemes',

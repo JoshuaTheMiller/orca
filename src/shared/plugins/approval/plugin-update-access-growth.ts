@@ -38,13 +38,13 @@ const AUTHORITY_POINTS = PLUGIN_CONTRIBUTION_POINTS.filter(
     PLUGIN_CONTRIBUTION_POINT_POLICY[point].execution !== 'data' && !INERT_POINTS.includes(point)
 )
 
-/** What counts as the same entry. Why ids for panels and cards: their code or rows may change like any worker's;
+/** What counts as the same entry. Why ids for panels, cards and pages: their code or rows may change like any worker's;
  *  shortcuts, aliases and events count whole, since each part changes what they reach. */
 function entryIdentity(point: PluginContributionPoint, entry: unknown): string {
   if (!isPluginJsonObject(entry)) {
     return JSON.stringify(entry)
   }
-  if ((point === 'panels' || point === 'sidebarCards') && 'id' in entry) {
+  if ((point === 'panels' || point === 'sidebarCards' || point === 'pages') && 'id' in entry) {
     return `id:${String(entry.id)}`
   }
   if (point === 'commands') {

@@ -13,7 +13,7 @@ Add `"$schema": "https://raw.githubusercontent.com/stablyai/orca/main/docs/schem
 | --- | --- | --- | --- | --- |
 | `$schema` | string | no | 1.4.245 | JSON Schema URL for editor completion. Ignored by Orca. |
 | `manifestVersion` | `2` | yes | 1.4.245 | Manifest format. Use 2 for new plugins. |
-| `execution` | `"data"` \| `"declarative"` \| `"sandboxed-ui"` \| `"trusted-worker"` | yes | 1.4.245 | Most authority the plugin needs, least first: `data` (themes, syntaxes, translations), `declarative` (commands, shortcuts, recipes), `sandboxed-ui` (panels), `trusted-worker` (`main` and events). Contributions beyond it fail validation. Example: `"data"` |
+| `execution` | `"data"` \| `"declarative"` \| `"sandboxed-ui"` \| `"trusted-worker"` | yes | 1.4.245 | Most authority the plugin needs, least first: `data` (themes, syntaxes, translations), `declarative` (commands, shortcuts, recipes), `sandboxed-ui` (panels, pages), `trusted-worker` (`main` and events). Contributions beyond it fail validation. Example: `"data"` |
 | `id` | string | yes | 1.4.160 | Plugin id, kebab-case. The install identity is `<publisher>.<id>`, where Orca derives the publisher from the repository owner. The reserved names `constructor` and `prototype` are refused. Example: `"gleam-syntax"` |
 | `publisher` | string | no | 1.4.160 | Deprecated: leave it out. Orca derives the publisher from where the plugin comes from, the way a Go module is named by its repository path: the repository owner for the official and community catalogs and for Git URL installs (`acme` for `github.com/acme/gleam-syntax`), and `local` for a folder. A value here is ignored for catalog and Git installs. Leaving it out needs `engines.orca` of at least `>=1.4.246`, because older Orca requires it; if you keep it for older Orca, it must equal the repository owner. Reserved owners (`stablyai`, `official`, `anthropic`, `openai`, `github` and any starting `orca`) and ids starting `orca-` install only from Orca's official catalog. Example: `"acme"` |
 | `name` | string | yes | 1.4.160 | Display name. Example: `"Gleam"` |
@@ -31,6 +31,7 @@ Add `"$schema": "https://raw.githubusercontent.com/stablyai/orca/main/docs/schem
 | `main` | string | no | 1.4.160 | Node entry run in an out-of-process plugin worker. Requires the `trusted-worker` execution profile, and is required by it, by `contributes.events` and by any command without an `action`. Relative to the plugin root; `..` segments and Windows device names such as `CON` are refused. Example: `"dist/main.mjs"` |
 | `contributes` | object | no | 1.4.160 | What the plugin adds to Orca. Every point defaults to empty. |
 | `contributes.panels` | [PanelContribution](#panelcontribution)[] | no | 1.4.160 | Sidebar panels. At most 64. |
+| `contributes.pages` | [PageContribution](#pagecontribution)[] | no | 1.4.254 | Full-page views shown in the main area. At most 4. |
 | `contributes.commands` | [CommandContribution](#commandcontribution)[] | no | 1.4.160 | Command palette entries. At most 256. |
 | `contributes.events` | [EventContribution](#eventcontribution)[] | no | 1.4.160 | Events delivered to the plugin worker. At most 7. |
 | `contributes.languagePacks` | [LanguagePackContribution](#languagepackcontribution)[] | no | 1.4.160 | Interface translations. At most 16. |
@@ -70,6 +71,17 @@ A sidebar panel. Requires the `sandboxed-ui` execution profile or higher.
 | `title` | string | yes | 1.4.160 | Title shown on the panel tab and its tooltip. Example: `"Dashboard"` |
 | `icon` | `"activity"` \| `"bar-chart-3"` \| `"bell"` \| `"blocks"` \| `"book"` \| `"bot"` \| `"bug"` \| `"calendar"` \| `"cloud"` \| `"code"` \| `"database"` \| `"file-text"` \| `"flag"` \| `"folder"` \| `"gauge"` \| `"globe"` \| `"hammer"` \| `"layers"` \| `"lightbulb"` \| `"package"` \| `"plug"` \| `"puzzle"` \| `"rocket"` \| `"star"` \| `"terminal"` \| `"wrench"` \| `"zap"` | no | 1.4.160 | Icon shown in the right-sidebar activity bar. Defaults to `plug`. Example: `"database"` |
 | `entry` | string | yes | 1.4.160 | HTML file, relative to the plugin root, rendered inside a panel frame. It is trusted code: install panels you trust. Relative to the plugin root; `..` segments and Windows device names such as `CON` are refused. Example: `"dist/panel.html"` |
+
+## PageContribution
+
+A full-page view shown in the main area, like the built-in Tasks and Automations pages. Requires the `sandboxed-ui` execution profile or higher.
+
+| Field | Type | Required | Since | Description |
+| --- | --- | --- | --- | --- |
+| `id` | string | yes | 1.4.254 | Page id, unique among this plugin's pages. The reserved names `constructor` and `prototype` are refused. Example: `"report"` |
+| `title` | string | yes | 1.4.254 | Title shown in the page header. Example: `"Report"` |
+| `icon` | `"activity"` \| `"bar-chart-3"` \| `"bell"` \| `"blocks"` \| `"book"` \| `"bot"` \| `"bug"` \| `"calendar"` \| `"cloud"` \| `"code"` \| `"database"` \| `"file-text"` \| `"flag"` \| `"folder"` \| `"gauge"` \| `"globe"` \| `"hammer"` \| `"layers"` \| `"lightbulb"` \| `"package"` \| `"plug"` \| `"puzzle"` \| `"rocket"` \| `"star"` \| `"terminal"` \| `"wrench"` \| `"zap"` | no | 1.4.254 | Icon shown for the page in Orca. Same names as panel icons. Defaults to `plug`. Example: `"file-text"` |
+| `entry` | string | yes | 1.4.254 | HTML file, relative to the plugin root, rendered full size in the main area inside a sandboxed frame like a panel. A worker or another frame opens it with `pages.open`. It is trusted code: install pages you trust. Relative to the plugin root; `..` segments and Windows device names such as `CON` are refused. Example: `"page/index.html"` |
 
 ## CommandContribution
 

@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { useAppStore } from '../store'
+import { isStaticTopLevelView } from '../../../shared/top-level-view'
 import {
   capturePersistedUIWriteBaseline,
   diffPersistedUIWriteFields,
@@ -184,7 +185,8 @@ export function usePersistedUIWriter(): void {
 
   // activeView uses a tiny profile preference rather than the multi-MB durable writer (#9002).
   useEffect(() => {
-    if (!persistedUIReady) {
+    // Why skip plugin pages: they are session-only, so a restart reopens the last built-in view.
+    if (!persistedUIReady || !isStaticTopLevelView(activeView)) {
       return
     }
     void window.api.ui.set({ activeView })

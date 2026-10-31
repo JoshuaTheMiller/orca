@@ -29,6 +29,7 @@ import {
   structuredCloneMessageBytes,
   type PanelMessageBudget
 } from '../../../../shared/plugins/frames/plugin-panel-message-budget'
+import type { PluginFrameSurface } from '../../../../shared/plugins/frames/plugin-panel-shell'
 import { translate } from '@/i18n/i18n'
 import { currentPluginFrameTheme } from './plugin-panel-design-token-css'
 
@@ -40,7 +41,7 @@ export type PanelActionCall = {
   params?: unknown
 }
 
-/** A custom editor's document channel, riding the same frame. */
+/** A custom editor's (or document-bearing page's) document channel, riding the same frame. */
 export type PluginFrameEditorChannel = {
   /** Claims a message before the shared budget (edits have their own); true when handled. */
   claim: (data: unknown) => boolean
@@ -50,7 +51,7 @@ export type PluginFrameEditorChannel = {
 }
 
 export type PluginFrameHostOptions = {
-  surface: 'panel' | 'editor'
+  surface: PluginFrameSurface
   getFrameWindow: () => Window | null
   /** Null until main issues one; host calls answer `unavailable` meanwhile. */
   getSessionToken: () => string | null
@@ -82,7 +83,7 @@ export function callPanelActionViaPreload(call: PanelActionCall): Promise<Plugin
   return panelAction(call)
 }
 
-export function pluginFrameHello(surface: 'panel' | 'editor'): PluginFrameHello {
+export function pluginFrameHello(surface: PluginFrameSurface): PluginFrameHello {
   return {
     protocol: PLUGIN_PROTOCOL_VERSION,
     surface,

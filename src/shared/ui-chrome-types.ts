@@ -114,8 +114,8 @@ export type ManualRepoOrderEntry = {
   repoId: string
 }
 
-/** The active top-level section shown in the main content area. */
-export type TopLevelView =
+/** The built-in sections. Only these persist across restarts. */
+export type StaticTopLevelView =
   | 'terminal'
   | 'settings'
   | 'tasks'
@@ -125,3 +125,9 @@ export type TopLevelView =
   | 'skills'
   | 'artifacts'
   | 'mobile'
+
+/** A full page a plugin contributes: `plugin:<publisher>.<id>/<pageId>`. Session-only. */
+export type PluginPageTopLevelView = `plugin:${string}/${string}`
+
+/** The active top-level section shown in the main content area. */
+export type TopLevelView = StaticTopLevelView | PluginPageTopLevelView

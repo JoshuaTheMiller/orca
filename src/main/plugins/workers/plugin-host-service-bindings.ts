@@ -58,6 +58,7 @@ export function bindPluginHostServices(input: {
   /** Keeps the detail text of project item rows. */
   projectItems: PluginHostServices['projectItems']
   pickFolder?: PluginHostServices['pickFolder']
+  openPluginPage: PluginHostServices['openPluginPage']
 }): PluginHostServices {
   const { delegate, pluginsDataDir, openLink, pickFolder } = input
   return {
@@ -117,6 +118,7 @@ export function bindPluginHostServices(input: {
     setSidebarCardItems: input.setSidebarCardItems,
     projectItems: input.projectItems,
     pickFolder,
+    openPluginPage: input.openPluginPage,
     storage: {
       get: (key, itemKey) => new PluginKvStore(pluginsDataDir, key, 'storage.json').get(itemKey),
       set: (key, itemKey, value) =>

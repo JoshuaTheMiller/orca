@@ -556,6 +556,7 @@
           "type": "string",
           "enum": [
             "panels",
+            "pages",
             "commands",
             "events",
             "languagePacks",
