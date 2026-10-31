@@ -208,9 +208,9 @@
         },
         "events": {
           "default": [],
-          "description": "Events delivered to the plugin worker. At most 5.",
+          "description": "Events delivered to the plugin worker. At most 6.",
           "x-orca-since": "1.4.160",
-          "maxItems": 5,
+          "maxItems": 6,
           "type": "array",
           "items": {
             "$ref": "#/$defs/EventContribution"
@@ -325,6 +325,16 @@
             "$ref": "#/$defs/SettingContribution"
           }
         },
+        "sidebarCards": {
+          "default": [],
+          "description": "Alternative left-sidebar views, switched to from the Projects header, whose rows the plugin worker sets. At most 4.",
+          "x-orca-since": "1.4.250",
+          "maxItems": 4,
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SidebarCardContribution"
+          }
+        },
         "agentHarnesses": {
           "description": "Reserved for coding-agent harness definitions; must be empty until their format is defined.",
           "x-orca-since": "1.4.245",
@@ -369,13 +379,6 @@
         },
         "statusBarItems": {
           "description": "Reserved for status bar items; must be empty until their format is defined.",
-          "x-orca-since": "1.4.245",
-          "maxItems": 0,
-          "type": "array",
-          "items": {}
-        },
-        "sidebarCards": {
-          "description": "Reserved for sidebar cards; must be empty until their format is defined.",
           "x-orca-since": "1.4.245",
           "maxItems": 0,
           "type": "array",
@@ -633,7 +636,8 @@
             "workspace.removed",
             "agent.status.changed",
             "sidebarNav.valueChanged",
-            "settings.changed"
+            "settings.changed",
+            "sidebarCards.visibilityChanged"
           ],
           "description": "Event delivered to the plugin worker.",
           "x-orca-since": "1.4.160",
@@ -642,7 +646,8 @@
             "workspace.removed": "1.4.245",
             "agent.status.changed": "1.4.160",
             "sidebarNav.valueChanged": "1.4.247",
-            "settings.changed": "1.4.249"
+            "settings.changed": "1.4.249",
+            "sidebarCards.visibilityChanged": "1.4.250"
           }
         }
       },
@@ -650,7 +655,7 @@
         "on"
       ],
       "additionalProperties": false,
-      "description": "An event subscription. Requires `main`, the `trusted-worker` execution profile and the capability of the event's domain: `workspace:read` for workspace events, `agent:read` for agent events, `settings:own` for sidebar nav value and setting changes."
+      "description": "An event subscription. Requires `main`, the `trusted-worker` execution profile and the capability of the event's domain: `workspace:read` for workspace events, `agent:read` for agent events, `settings:own` for sidebar nav value and setting changes. `sidebarCards.visibilityChanged` needs no capability, only a declared `contributes.sidebarCards` card."
     },
     "LanguagePackContribution": {
       "type": "object",
@@ -1322,6 +1327,94 @@
       ],
       "additionalProperties": false,
       "description": "One choice of an `enum` setting."
+    },
+    "SidebarCardContribution": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 64,
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "description": "Card id, unique among this plugin's cards. The reserved names `constructor` and `prototype` are refused.",
+          "x-orca-since": "1.4.250",
+          "examples": [
+            "open-issues"
+          ]
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32,
+          "description": "Name of the left-sidebar view, shown beside Projects in the switcher in the sidebar header.",
+          "x-orca-since": "1.4.250",
+          "examples": [
+            "Issues"
+          ]
+        },
+        "icon": {
+          "description": "Icon shown in the switcher. Defaults to `plug`.",
+          "x-orca-since": "1.4.250",
+          "examples": [
+            "database"
+          ],
+          "type": "string",
+          "enum": [
+            "activity",
+            "bar-chart-3",
+            "bell",
+            "blocks",
+            "book",
+            "bot",
+            "bug",
+            "calendar",
+            "cloud",
+            "code",
+            "database",
+            "file-text",
+            "flag",
+            "folder",
+            "gauge",
+            "globe",
+            "hammer",
+            "layers",
+            "lightbulb",
+            "package",
+            "plug",
+            "puzzle",
+            "rocket",
+            "star",
+            "terminal",
+            "wrench",
+            "zap"
+          ]
+        },
+        "emptyText": {
+          "description": "Text shown while the plugin has set no rows. Defaults to a generic message.",
+          "x-orca-since": "1.4.250",
+          "examples": [
+            "Nothing to show yet."
+          ],
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "when": {
+          "description": "Id of a `boolean` entry in this plugin's `contributes.settings`. The card is offered only while that setting is true, and the sidebar returns to Projects if it turns false while shown.",
+          "x-orca-since": "1.4.250",
+          "examples": [
+            "show-issues"
+          ],
+          "type": "string",
+          "maxLength": 64,
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        }
+      },
+      "required": [
+        "id",
+        "title"
+      ],
+      "additionalProperties": false,
+      "description": "An alternative left-sidebar view the user switches to from the Projects header. Its rows come from the plugin's worker through `sidebarCards.setItems`. Requires `main` and the `trusted-worker` execution profile."
     },
     "Capability": {
       "type": "object",

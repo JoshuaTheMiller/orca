@@ -6,6 +6,10 @@ import {
   type PluginEventName
 } from '../contributions/plugin-event-contribution'
 import type { PluginSettingContribution } from '../contributions/plugin-setting-contribution'
+import {
+  validatePluginSidebarCards,
+  type PluginSidebarCardContribution
+} from '../contributions/plugin-sidebar-card-contribution'
 import type { PluginSidebarNavItemContribution } from '../contributions/plugin-sidebar-nav-item-contribution'
 import { validatePluginSidebarNavItems } from '../contributions/plugin-sidebar-nav-item-validation'
 import type { PluginFileMatch } from '../contributions/plugin-file-match'
@@ -30,6 +34,7 @@ type ContributionValidationManifest = {
     newFiles: IdentifiedContribution[]
     sidebarNavItems: PluginSidebarNavItemContribution[]
     settings: PluginSettingContribution[]
+    sidebarCards: PluginSidebarCardContribution[]
   }
   capabilities: { kind: string }[]
 }
@@ -69,7 +74,8 @@ export function validatePluginManifestContributions(
     'customEditors',
     'newFiles',
     'sidebarNavItems',
-    'settings'
+    'settings',
+    'sidebarCards'
   ] as const) {
     rejectDuplicateValues(
       manifest.contributes[path],
@@ -154,6 +160,7 @@ export function validatePluginManifestContributions(
     manifest.contributes.settings,
     ctx
   )
+  validatePluginSidebarCards(manifest.contributes.sidebarCards, manifest.contributes.settings, ctx)
   for (const [index, keybinding] of manifest.contributes.keybindings.entries()) {
     const command = commands.get(keybinding.command)
     if (!command) {
@@ -191,9 +198,26 @@ export function validatePluginManifestContributions(
       message: 'required when contributes.events is non-empty'
     })
   }
+  if (!manifest.main && manifest.contributes.sidebarCards.length > 0) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['main'],
+      message: 'required when contributes.sidebarCards is non-empty'
+    })
+  }
   for (const [index, subscription] of manifest.contributes.events.entries()) {
     const required = PLUGIN_EVENT_CAPABILITY[subscription.on]
-    if (!manifest.capabilities.some((capability) => capability.kind === required)) {
+    if (
+      subscription.on === 'sidebarCards.visibilityChanged' &&
+      manifest.contributes.sidebarCards.length === 0
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['contributes', 'events', index, 'on'],
+        message: `${subscription.on} requires a contributes.sidebarCards entry`
+      })
+    }
+    if (required && !manifest.capabilities.some((capability) => capability.kind === required)) {
       ctx.addIssue({
         code: 'custom',
         path: ['contributes', 'events', index, 'on'],

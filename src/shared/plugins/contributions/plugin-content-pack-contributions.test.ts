@@ -85,7 +85,8 @@ describe('content-pack manifest contributions', () => {
       customEditors: [],
       newFiles: [],
       sidebarNavItems: [],
-      settings: []
+      settings: [],
+      sidebarCards: []
     })
   })
 

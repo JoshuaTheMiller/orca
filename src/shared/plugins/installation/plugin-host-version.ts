@@ -4,6 +4,7 @@ import {
   PLUGIN_MANIFEST_V2_SINCE,
   PLUGIN_SCHEMA_SINCE_V1,
   PLUGIN_SETTINGS_SINCE,
+  PLUGIN_SIDEBAR_CARDS_SINCE,
   PLUGIN_SIDEBAR_NAV_ITEMS_SINCE
 } from '../manifest/plugin-schema-field-docs'
 
@@ -13,7 +14,8 @@ export const PLUGIN_SCHEMA_NEWEST_SINCE = [
   PLUGIN_MANIFEST_V2_SINCE,
   PLUGIN_DERIVED_PUBLISHER_SINCE,
   PLUGIN_SIDEBAR_NAV_ITEMS_SINCE,
-  PLUGIN_SETTINGS_SINCE
+  PLUGIN_SETTINGS_SINCE,
+  PLUGIN_SIDEBAR_CARDS_SINCE
 ].reduce((newest, version) => (satisfiesOrcaEngineRange(version, `>=${newest}`) ? version : newest))
 
 /**

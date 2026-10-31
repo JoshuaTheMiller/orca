@@ -5,6 +5,7 @@ import {
   PLUGIN_MANIFEST_V2_SINCE,
   PLUGIN_SCHEMA_SINCE_V1,
   PLUGIN_SETTINGS_SINCE,
+  PLUGIN_SIDEBAR_CARDS_SINCE,
   PLUGIN_SIDEBAR_NAV_ITEMS_SINCE
 } from '../manifest/plugin-schema-field-docs'
 import type { PluginCapabilityKind } from '../capabilities/plugin-capabilities'
@@ -16,7 +17,8 @@ export const PLUGIN_EVENT_NAMES = [
   'workspace.removed',
   'agent.status.changed',
   'sidebarNav.valueChanged',
-  'settings.changed'
+  'settings.changed',
+  'sidebarCards.visibilityChanged'
 ] as const
 export const PLUGIN_EVENT_SUBSCRIPTION_LIMIT = PLUGIN_EVENT_NAMES.length
 
@@ -28,7 +30,8 @@ export const PLUGIN_EVENT_SINCE: Record<PluginEventName, string> = {
   'workspace.removed': PLUGIN_MANIFEST_V2_SINCE,
   'agent.status.changed': PLUGIN_SCHEMA_SINCE_V1,
   'sidebarNav.valueChanged': PLUGIN_SIDEBAR_NAV_ITEMS_SINCE,
-  'settings.changed': PLUGIN_SETTINGS_SINCE
+  'settings.changed': PLUGIN_SETTINGS_SINCE,
+  'sidebarCards.visibilityChanged': PLUGIN_SIDEBAR_CARDS_SINCE
 }
 
 /** Format 1 event names, rewritten on parse and still dispatched to handlers registered under them. */
@@ -38,14 +41,17 @@ export const PLUGIN_V1_EVENT_ALIASES: ReadonlyMap<string, PluginEventName> = new
 ])
 
 /** Each event is gated by the read capability of its domain, never a blanket event grant. */
-export const PLUGIN_EVENT_CAPABILITY: Record<PluginEventName, PluginCapabilityKind> = {
+/** The capability an event needs; null when declaring the contribution it reports on is the whole grant. */
+export const PLUGIN_EVENT_CAPABILITY: Record<PluginEventName, PluginCapabilityKind | null> = {
   'workspace.created': 'workspace:read',
   'workspace.removed': 'workspace:read',
   'agent.status.changed': 'agent:read',
   // Why settings:own, like `sidebarNav.getValues`: the value belongs to the receiving plugin alone.
   'sidebarNav.valueChanged': 'settings:own',
   // Why settings:own: the key and value belong to the receiving plugin alone.
-  'settings.changed': 'settings:own'
+  'settings.changed': 'settings:own',
+  // Why none: the plugin declared the card, and the event only says whether the user is looking at it.
+  'sidebarCards.visibilityChanged': null
 }
 
 export const pluginEventContributionSchema = z
@@ -59,7 +65,7 @@ export const pluginEventContributionSchema = z
   .meta({
     id: 'EventContribution',
     description:
-      "An event subscription. Requires `main`, the `trusted-worker` execution profile and the capability of the event's domain: `workspace:read` for workspace events, `agent:read` for agent events, `settings:own` for sidebar nav value and setting changes."
+      "An event subscription. Requires `main`, the `trusted-worker` execution profile and the capability of the event's domain: `workspace:read` for workspace events, `agent:read` for agent events, `settings:own` for sidebar nav value and setting changes. `sidebarCards.visibilityChanged` needs no capability, only a declared `contributes.sidebarCards` card."
   })
 
 export type PluginEventContribution = z.infer<typeof pluginEventContributionSchema>

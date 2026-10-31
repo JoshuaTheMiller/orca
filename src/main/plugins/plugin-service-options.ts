@@ -19,6 +19,8 @@ export type PluginServiceOptions = {
     key: string
     value: PluginJsonValue
   }) => void
+  /** Called after a plugin sets the rows of one of its sidebar cards, so windows showing it can reload them. */
+  onSidebarCardItemsChanged?: (change: { pluginKey: string; cardId: string }) => void
   getPluginKillListEntry?: (pluginKey: string) => PluginKillListEntry | null
   hostEntryPath?: string
   workerFactory?: PluginWorkerFactory

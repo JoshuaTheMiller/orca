@@ -1,4 +1,5 @@
 import type { z } from 'zod'
+import type { PluginSidebarCardItem } from '../../../shared/plugins/contributions/plugin-sidebar-card-items'
 import {
   isPluginHostMethodName,
   PLUGIN_HOST_API,
@@ -39,6 +40,12 @@ export type PluginHostServices = {
   ): Promise<{ opened: boolean }>
   /** The plugin's sidebar toggle and checkbox values, defaults applied. */
   sidebarNavValues(pluginId: string): Record<string, boolean>
+  /** Replaces the rows of one of the plugin's declared sidebar cards. */
+  setSidebarCardItems(
+    pluginId: string,
+    cardId: string,
+    items: readonly PluginSidebarCardItem[]
+  ): { ok: true } | { ok: false; error: string; invalid?: boolean }
   storage: {
     get(pluginId: string, key: string): PluginJsonValue | undefined
     set(
@@ -194,7 +201,12 @@ const HANDLERS: Record<PluginHostMethodName, BoundPluginHostMethod> = {
   ),
   'sidebarNav.getValues': bind(api['sidebarNav.getValues'], async (_params, ctx) => ({
     values: ctx.services.sidebarNavValues(ctx.pluginId)
-  }))
+  })),
+  'sidebarCards.setItems': bind(
+    api['sidebarCards.setItems'],
+    async ({ cardId, items }, { pluginId, services }) =>
+      okOrThrow(services.setSidebarCardItems(pluginId, cardId, items))
+  )
 }
 
 function okOrThrow(

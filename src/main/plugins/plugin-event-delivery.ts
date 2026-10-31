@@ -36,7 +36,9 @@ export function deliverPluginEvent(options: {
       !plugin.manifest.contributes.events.some(
         (subscription) => subscription.on === options.event
       ) ||
-      !options.grantedCapabilities(plugin.pluginKey)?.includes(required)
+      (required === null
+        ? options.grantedCapabilities(plugin.pluginKey) === null
+        : !options.grantedCapabilities(plugin.pluginKey)?.includes(required))
     ) {
       continue
     }

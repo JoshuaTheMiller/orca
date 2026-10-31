@@ -32,7 +32,7 @@ Add `"$schema": "https://raw.githubusercontent.com/stablyai/orca/main/docs/schem
 | `contributes` | object | no | 1.4.160 | What the plugin adds to Orca. Every point defaults to empty. |
 | `contributes.panels` | [PanelContribution](#panelcontribution)[] | no | 1.4.160 | Sidebar panels. At most 64. |
 | `contributes.commands` | [CommandContribution](#commandcontribution)[] | no | 1.4.160 | Command palette entries. At most 256. |
-| `contributes.events` | [EventContribution](#eventcontribution)[] | no | 1.4.160 | Events delivered to the plugin worker. At most 5. |
+| `contributes.events` | [EventContribution](#eventcontribution)[] | no | 1.4.160 | Events delivered to the plugin worker. At most 6. |
 | `contributes.languagePacks` | [LanguagePackContribution](#languagepackcontribution)[] | no | 1.4.160 | Interface translations. At most 16. |
 | `contributes.keybindings` | [KeybindingContribution](#keybindingcontribution)[] | no | 1.4.160 | Keyboard shortcuts for contributed commands. At most 256. |
 | `contributes.vmRecipes` | [VmRecipeContribution](#vmrecipecontribution)[] | no | 1.4.160 | Virtual machine environment recipes. At most 64. |
@@ -44,6 +44,7 @@ Add `"$schema": "https://raw.githubusercontent.com/stablyai/orca/main/docs/schem
 | `contributes.newFiles` | [NewFileContribution](#newfilecontribution)[] | no | 1.4.245 | Untitled files the user can create from the + menu and the command palette. At most 16. |
 | `contributes.sidebarNavItems` | [SidebarNavItemContribution](#sidebarnavitemcontribution)[] | no | 1.4.247 | Entries in the left sidebar nav list that run a command of this plugin. At most 8. |
 | `contributes.settings` | [SettingContribution](#settingcontribution)[] | no | 1.4.249 | Typed settings that Orca shows in its own settings and stores with the plugin's other settings. At most 32. |
+| `contributes.sidebarCards` | [SidebarCardContribution](#sidebarcardcontribution)[] | no | 1.4.250 | Alternative left-sidebar views, switched to from the Projects header, whose rows the plugin worker sets. At most 4. |
 | `contributes.agentHarnesses` | any[] | no | 1.4.245 | Reserved for coding-agent harness definitions; must be empty until their format is defined. |
 | `contributes.skills` | any[] | no | 1.4.245 | Reserved for agent skills; must be empty until their format is defined. |
 | `contributes.mcpServers` | any[] | no | 1.4.245 | Reserved for MCP server definitions; must be empty until their format is defined. |
@@ -51,7 +52,6 @@ Add `"$schema": "https://raw.githubusercontent.com/stablyai/orca/main/docs/schem
 | `contributes.taskSources` | any[] | no | 1.4.245 | Reserved for task sources; must be empty until their format is defined. |
 | `contributes.connections` | any[] | no | 1.4.245 | Reserved for account connections; must be empty until their format is defined. |
 | `contributes.statusBarItems` | any[] | no | 1.4.245 | Reserved for status bar items; must be empty until their format is defined. |
-| `contributes.sidebarCards` | any[] | no | 1.4.245 | Reserved for sidebar cards; must be empty until their format is defined. |
 | `capabilities` | [Capability](#capability)[] | no | 1.4.160 | Host APIs the plugin asks the user to grant. At most 32. |
 | `cover` | object | no | 1.4.245 | Wide image at the top of the plugin page. |
 | `cover.path` | string | yes | 1.4.245 | Cover image shown on the plugin page, 16:10 recommended (1600×1000). PNG, JPEG, WEBP, static, at least 800×500, at most 1024 KB. Relative to the plugin root; `..` segments and Windows device names such as `CON` are refused. Example: `"images/cover.png"` |
@@ -83,11 +83,11 @@ A command palette entry. Requires the `declarative` execution profile or higher.
 
 ## EventContribution
 
-An event subscription. Requires `main`, the `trusted-worker` execution profile and the capability of the event's domain: `workspace:read` for workspace events, `agent:read` for agent events, `settings:own` for sidebar nav value and setting changes.
+An event subscription. Requires `main`, the `trusted-worker` execution profile and the capability of the event's domain: `workspace:read` for workspace events, `agent:read` for agent events, `settings:own` for sidebar nav value and setting changes. `sidebarCards.visibilityChanged` needs no capability, only a declared `contributes.sidebarCards` card.
 
 | Field | Type | Required | Since | Description |
 | --- | --- | --- | --- | --- |
-| `on` | `"workspace.created"` \| `"workspace.removed"` \| `"agent.status.changed"` \| `"sidebarNav.valueChanged"` \| `"settings.changed"` | yes | 1.4.160 | Event delivered to the plugin worker. |
+| `on` | `"workspace.created"` \| `"workspace.removed"` \| `"agent.status.changed"` \| `"sidebarNav.valueChanged"` \| `"settings.changed"` \| `"sidebarCards.visibilityChanged"` | yes | 1.4.160 | Event delivered to the plugin worker. |
 
 ## LanguagePackContribution
 
@@ -207,6 +207,18 @@ One choice of an `enum` setting.
 | `value` | string | yes | 1.4.249 | Value stored and returned when the option is chosen. Example: `"dark"` |
 | `label` | string | yes | 1.4.249 | Text shown for the option. Example: `"Dark"` |
 
+## SidebarCardContribution
+
+An alternative left-sidebar view the user switches to from the Projects header. Its rows come from the plugin's worker through `sidebarCards.setItems`. Requires `main` and the `trusted-worker` execution profile.
+
+| Field | Type | Required | Since | Description |
+| --- | --- | --- | --- | --- |
+| `id` | string | yes | 1.4.250 | Card id, unique among this plugin's cards. The reserved names `constructor` and `prototype` are refused. Example: `"open-issues"` |
+| `title` | string | yes | 1.4.250 | Name of the left-sidebar view, shown beside Projects in the switcher in the sidebar header. Example: `"Issues"` |
+| `icon` | `"activity"` \| `"bar-chart-3"` \| `"bell"` \| `"blocks"` \| `"book"` \| `"bot"` \| `"bug"` \| `"calendar"` \| `"cloud"` \| `"code"` \| `"database"` \| `"file-text"` \| `"flag"` \| `"folder"` \| `"gauge"` \| `"globe"` \| `"hammer"` \| `"layers"` \| `"lightbulb"` \| `"package"` \| `"plug"` \| `"puzzle"` \| `"rocket"` \| `"star"` \| `"terminal"` \| `"wrench"` \| `"zap"` | no | 1.4.250 | Icon shown in the switcher. Defaults to `plug`. Example: `"database"` |
+| `emptyText` | string | no | 1.4.250 | Text shown while the plugin has set no rows. Defaults to a generic message. Example: `"Nothing to show yet."` |
+| `when` | string | no | 1.4.250 | Id of a `boolean` entry in this plugin's `contributes.settings`. The card is offered only while that setting is true, and the sidebar returns to Projects if it turns false while shown. Example: `"show-issues"` |
+
 ## Capability
 
 A host API the plugin may call once the user consents.
@@ -234,7 +246,7 @@ One screenshot of the plugin in use.
 - **`terminal:send` needs `trusted-worker`.** Panels get no host method that types into a terminal, so Orca refuses the capability on any other profile instead of asking the user to grant something the plugin can never use.
 - **New fields, contribution points and values are additive.** They arrive with a `Since` version; nothing else changes. `manifestVersion` rises only if an existing field changes meaning.
 - **Deprecation.** A field to be removed is marked deprecated here and keeps working for at least one release; it is removed only together with a higher `engines.orca` requirement, and its name is never reused.
-- **Reserved contribution points.** `contributes.agentHarnesses`, `skills`, `mcpServers`, `hooks`, `taskSources`, `connections`, `statusBarItems` and `sidebarCards` are held for planned features and must stay empty until their format is defined. Each will arrive as an additive point with its own `Since`, without a new manifest format. `skills`, `mcpServers` and `hooks` keep the meaning agent-plugin formats such as Claude Code's give them; `agents` stays unclaimed because those formats use it for subagent files.
+- **Reserved contribution points.** `contributes.agentHarnesses`, `skills`, `mcpServers`, `hooks`, `taskSources`, `connections` and `statusBarItems` are held for planned features and must stay empty until their format is defined. Each will arrive as an additive point with its own `Since`, without a new manifest format. `skills`, `mcpServers` and `hooks` keep the meaning agent-plugin formats such as Claude Code's give them; `agents` stays unclaimed because those formats use it for subagent files.
 
 ## Planned contribution points
 
@@ -244,7 +256,6 @@ Each reserved point is planned as declared data that Orca renders and enforces, 
 - `connections`: Account providers with a host-run sign-in, so a plugin never handles credentials itself.
 - `agentHarnesses`: New coding-agent harnesses described as data: how to launch them and read their status.
 - `statusBarItems`: Declarative status bar widgets (label, icon, tooltip) whose values a worker updates.
-- `sidebarCards`: Declarative left-sidebar cards with fixed layouts whose values a worker updates.
 - `mcpServers`: MCP server definitions that Orca offers to the agents it launches.
 - `skills`: Agent skills shipped as files that Orca installs for the agents it launches.
 - `hooks`: Agent lifecycle hooks, such as before and after a tool call, for the agents Orca launches.

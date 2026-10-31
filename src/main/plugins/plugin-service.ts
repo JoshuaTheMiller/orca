@@ -48,6 +48,7 @@ import type { PluginChangeEvent } from '../../shared/plugins/events/plugin-chang
 import { waitForPluginRefreshSettlement } from './plugin-refresh-settlement'
 import { assertPluginWorkerCommand } from './plugin-command-invocation'
 import { deliverPluginEvent } from './plugin-event-delivery'
+import { PluginSidebarCards } from './plugin-sidebar-cards'
 import { PluginInstallationState } from './installation/plugin-installation-state'
 
 export class PluginService {
@@ -58,6 +59,7 @@ export class PluginService {
   readonly contentPacks: PluginContentPackRegistry
   readonly panels: PluginPanelController
   readonly settings: PluginSettingsAccess
+  readonly sidebarCards: PluginSidebarCards
   private readonly changeListeners = new Set<(event: PluginChangeEvent) => void>()
   private readonly housekeeping = new PluginServiceHousekeeping()
   private runtimeDelegate: PluginRuntimeDelegate | null = null
@@ -78,6 +80,16 @@ export class PluginService {
     )
     this.audit = new PluginAuditLog(getPluginsDataDir(options.userDataPath))
     this.settings = createPluginServiceSettings(this)
+    this.sidebarCards = new PluginSidebarCards({
+      isDeclared: (pluginKey, cardId) =>
+        this.findApprovedPlugin(pluginKey, true)?.manifest.contributes.sidebarCards.some(
+          (card) => card.id === cardId
+        ) ?? false,
+      announceVisibility: (pluginKey, cardId, visible) =>
+        this.announceSidebarCardVisibility(pluginKey, cardId, visible),
+      itemsChanged: (pluginKey, cardId) =>
+        this.options.onSidebarCardItemsChanged?.({ pluginKey, cardId })
+    })
     const resolveApproved = (pluginKey: string, allowRefreshPause = false) =>
       this.findApprovedPlugin(pluginKey, allowRefreshPause)
     this.panels = new PluginPanelController({
@@ -91,6 +103,7 @@ export class PluginService {
       entryPath: options.hostEntryPath ?? '',
       maxActive: options.maxActiveWorkers,
       idleReapMs: options.idleReapMs,
+      isKeptAlive: (pluginKey) => this.sidebarCards.isShown(pluginKey),
       workerFactory: options.workerFactory,
       contentVerifier: this.contentVerifier,
       capabilities: (pluginKey) => this.getGrantedCapabilities(pluginKey),
@@ -113,6 +126,8 @@ export class PluginService {
   }
 
   private notifyChanged(contentPacksChanged: boolean): void {
+    // Why here: every disable, removal and update passes through, and rows must end with the plugin.
+    this.sidebarCards.prune()
     for (const listener of this.changeListeners) {
       listener({ contentPacksChanged })
     }
@@ -266,6 +281,8 @@ export class PluginService {
               delegate: this.runtimeDelegate,
               pluginsDataDir: getPluginsDataDir(this.options.userDataPath),
               sidebarNavValues: (key) => readPluginSidebarNavValues(this, key),
+              setSidebarCardItems: (key, cardId, items) =>
+                this.sidebarCards.setItems(key, cardId, items),
               settings: this.settings
             })
           : null,
@@ -285,6 +302,32 @@ export class PluginService {
       throw new Error(`plugin ${pluginKey} registered no handler for ${commandId}`)
     }
     return handle.invokeCommand(commandId, args)
+  }
+
+  /** A card shown for the first time starts its worker, then the plugin hears about it; hiding it only reports. */
+  private announceSidebarCardVisibility(pluginKey: string, cardId: string, visible: boolean): void {
+    const plugin = this.findApprovedPlugin(pluginKey)
+    if (!plugin || this.disposed) {
+      return
+    }
+    const report = (): void =>
+      this.emitEvent('sidebarCards.visibilityChanged', { cardId, visible }, pluginKey)
+    if (!visible) {
+      report()
+      return
+    }
+    // Why ensure even when unsubscribed: rows come from the worker, which may set them at startup.
+    void this.workerController
+      .ensure(plugin)
+      .then(report)
+      .catch((error) =>
+        this.installed.captureLog(
+          pluginKey,
+          'warn'
+        )(
+          `sidebar card ${cardId} could not start its worker: ${error instanceof Error ? error.message : String(error)}`
+        )
+      )
   }
 
   /** `onlyPluginKey` limits delivery to one plugin, for events about that plugin's own state. */

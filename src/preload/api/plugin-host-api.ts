@@ -32,14 +32,18 @@ export type {
   PluginHostListEntry,
   PluginHostNewFile,
   PluginHostSetting,
+  PluginHostSidebarCard,
   PluginHostSidebarNavItem,
   PluginHostPanel,
   PluginHostStatus
 } from '../../shared/plugins/plugin-list-entry'
 import type { PluginHostListEntry } from '../../shared/plugins/plugin-list-entry'
+import type { PluginSidebarCardItem } from '../../shared/plugins/contributions/plugin-sidebar-card-items'
 
 export type PluginSettingValue = boolean | string
 export type PluginSettingWriteOutcome = { ok: true } | { ok: false; error: string }
+export type PluginSidebarCardRef = { pluginKey: string; cardId: string }
+export type PluginSidebarCardOpenFileOutcome = { ok: true } | { ok: false; error: string }
 export type PluginSettingChangedEvent = { pluginKey: string; key: string; value: unknown }
 
 export type PluginHostLogLine = {
@@ -229,6 +233,16 @@ export type PluginsApi = {
   resetSetting: (args: { pluginKey: string; key: string }) => Promise<PluginSettingWriteOutcome>
   /** Fires after a declared or untyped setting takes a new value, whoever changed it. */
   onSettingChanged: (callback: (change: PluginSettingChangedEvent) => void) => () => void
+  /** The rows a plugin's worker last set for one of its sidebar cards; empty before it sets any. */
+  getSidebarCardItems: (args: PluginSidebarCardRef) => Promise<PluginSidebarCardItem[]>
+  /** Tells main which card this window shows (null for none), so the plugin's worker hears of it. */
+  setSidebarCardShown: (card: PluginSidebarCardRef | null) => Promise<void>
+  /** Opens the file a row names, through the plugin's `editor:open` capability. */
+  openSidebarCardFile: (
+    args: PluginSidebarCardRef & { itemId: string }
+  ) => Promise<PluginSidebarCardOpenFileOutcome>
+  /** Fires after a worker sets a card's rows. */
+  onSidebarCardItemsChanged: (callback: (change: PluginSidebarCardRef) => void) => () => void
   /** What automatic updates last did. Older hosts reject the call; treat that as nothing. */
   getAutoUpdateState: () => Promise<PluginAutoUpdateState>
   /** Held updates not yet told to the user, each returned once per version; never approves. */
