@@ -22,6 +22,9 @@ export const PLUGIN_AGENT_SESSIONS_OPEN_SINCE = '1.4.253'
 /** First release that reads `contributes.pages` and the `pages.open` host method. */
 export const PLUGIN_PAGES_SINCE = '1.4.254'
 
+/** First release that lets a contribution icon be a plugin-relative SVG file. */
+export const PLUGIN_IMAGE_ICONS_SINCE = '1.4.255'
+
 type PluginFieldDoc = {
   description: string
   'x-orca-since': string

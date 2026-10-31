@@ -69,7 +69,7 @@ A sidebar panel. Requires the `sandboxed-ui` execution profile or higher.
 | --- | --- | --- | --- | --- |
 | `id` | string | yes | 1.4.160 | Panel id, unique among this plugin's panels. The reserved names `constructor` and `prototype` are refused. Example: `"dashboard"` |
 | `title` | string | yes | 1.4.160 | Title shown on the panel tab and its tooltip. Example: `"Dashboard"` |
-| `icon` | `"activity"` \| `"bar-chart-3"` \| `"bell"` \| `"blocks"` \| `"book"` \| `"bot"` \| `"bug"` \| `"calendar"` \| `"cloud"` \| `"code"` \| `"database"` \| `"file-text"` \| `"flag"` \| `"folder"` \| `"gauge"` \| `"globe"` \| `"hammer"` \| `"layers"` \| `"lightbulb"` \| `"package"` \| `"plug"` \| `"puzzle"` \| `"rocket"` \| `"star"` \| `"terminal"` \| `"wrench"` \| `"zap"` | no | 1.4.160 | Icon shown in the right-sidebar activity bar. Defaults to `plug`. Example: `"database"` |
+| `icon` | `"activity"` \| `"bar-chart-3"` \| `"bell"` \| `"blocks"` \| `"book"` \| `"bot"` \| `"bug"` \| `"calendar"` \| `"cloud"` \| `"code"` \| `"database"` \| `"file-text"` \| `"flag"` \| `"folder"` \| `"gauge"` \| `"globe"` \| `"hammer"` \| `"layers"` \| `"lightbulb"` \| `"package"` \| `"plug"` \| `"puzzle"` \| `"rocket"` \| `"star"` \| `"terminal"` \| `"wrench"` \| `"zap"` \| string | no | 1.4.160 | Icon shown in the right-sidebar activity bar: a built-in name, or the path of an SVG file in the plugin. Defaults to `plug`. Example: `"database"` |
 | `entry` | string | yes | 1.4.160 | HTML file, relative to the plugin root, rendered inside a panel frame. It is trusted code: install panels you trust. Relative to the plugin root; `..` segments and Windows device names such as `CON` are refused. Example: `"dist/panel.html"` |
 
 ## PageContribution

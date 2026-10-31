@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import { create } from 'zustand'
+import { clearPluginSvgIconCache } from '@/components/plugins/PluginSvgIcon'
 import { ensurePluginAutoUpdatesWatched } from './plugin-auto-updates'
 import type { PluginHostListEntry, PluginHostPanel } from '../../../preload/api-types'
 
@@ -75,6 +76,7 @@ export const usePluginPanelsStore = create<PluginPanelsState>()((set) => ({
       const plugins = await pluginsApi.list()
       if (generation === pluginListGeneration) {
         pluginListRetryAttempt = 0
+        clearPluginSvgIconCache()
         set((state) => ({
           plugins,
           fetchStatus: 'ready',

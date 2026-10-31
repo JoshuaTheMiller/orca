@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { safePluginDisplayText } from '../manifest/plugin-display-text'
+import { pluginSvgIconPathSchema } from '../images/plugin-svg-icon'
 import { pluginIdSchema, pluginRelativePathSchema } from '../manifest/plugin-manifest-fields'
 import {
   pluginPathFieldDoc,
@@ -66,11 +67,11 @@ export const pluginPanelContributionSchema = z
       ])
     ),
     icon: z
-      .enum(PLUGIN_PANEL_ICONS)
+      .union([z.enum(PLUGIN_PANEL_ICONS), pluginSvgIconPathSchema])
       .optional()
       .meta(
         pluginFieldDoc(
-          'Icon shown in the right-sidebar activity bar. Defaults to `plug`.',
+          'Icon shown in the right-sidebar activity bar: a built-in name, or the path of an SVG file in the plugin. Defaults to `plug`.',
           PLUGIN_SCHEMA_SINCE_V1,
           ['database']
         )

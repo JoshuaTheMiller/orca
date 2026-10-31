@@ -11,6 +11,8 @@ export type PluginHostPanel = {
   title: string
   /** Lucide icon name declared in the plugin manifest. */
   icon?: string
+  /** Slot of the SVG icon the panel declares, read with readContributionSvgIcon; absent for a built-in name. */
+  svgIconSlot?: string
   tabKey: `plugin:${string}`
 }
 

@@ -8,6 +8,10 @@ import {
   pluginInstalledImageUrl,
   type PluginHostImages
 } from '../../shared/plugins/images/plugin-image-url'
+import {
+  isPluginSvgIconPath,
+  pluginSvgIconSlotField
+} from '../../shared/plugins/images/plugin-svg-icon'
 import { pluginInstalledHostImages } from './plugin-manifest-images'
 import type { PluginService } from './plugin-service'
 import { listPluginVmRecipeCommands } from '../../shared/plugins/artifacts/plugin-vm-recipe-artifact'
@@ -171,10 +175,15 @@ export async function buildPluginList(
           kind: capability.kind,
           description: PLUGIN_CAPABILITY_DESCRIPTIONS[capability.kind]
         })),
-        panels: plugin.manifest.contributes.panels.map((panel) => ({
+        panels: plugin.manifest.contributes.panels.map((panel, index) => ({
           id: panel.id,
           title: panel.title,
-          ...(panel.icon ? { icon: panel.icon } : {}),
+          // Why not `icon` for an SVG: clients that predate SVG icons would treat the path as a name.
+          ...(isPluginSvgIconPath(panel.icon)
+            ? pluginSvgIconSlotField('panel', index, panel.icon)
+            : panel.icon
+              ? { icon: panel.icon }
+              : {}),
           tabKey: pluginPanelTabKey(plugin.pluginKey, panel.id)
         })),
         pages: plugin.manifest.contributes.pages.map((page) => ({

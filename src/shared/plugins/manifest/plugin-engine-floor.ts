@@ -54,6 +54,11 @@ function walk(
   if (schema instanceof z.ZodPipe) {
     return walk(schema.def.in, value, path, current)
   }
+  if (schema instanceof z.ZodUnion) {
+    // Why the first option that accepts the value: each option carries its own since.
+    const option = schema.def.options.find((candidate) => z.safeParse(candidate, value).success)
+    return option ? walk(option, value, path, current) : current
+  }
   if (schema instanceof z.ZodArray && Array.isArray(value)) {
     return value.reduce<Floor | null>(
       (acc, item, index) => walk(schema.def.element, item, [...path, index], acc),

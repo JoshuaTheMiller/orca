@@ -9,7 +9,12 @@ import {
 import { parsePluginVmRecipeArtifact } from '../../shared/plugins/artifacts/plugin-vm-recipe-artifact'
 import { PLUGIN_IMAGE_RULES } from '../../shared/plugins/images/plugin-image-fields'
 import { PLUGIN_NEW_FILE_TEMPLATE_MAX_BYTES } from '../../shared/plugins/contributions/plugin-new-file-contribution'
+import {
+  isPluginSvgIconPath,
+  PLUGIN_SVG_ICON_MAX_BYTES
+} from '../../shared/plugins/images/plugin-svg-icon'
 import { validatePluginImageArtifacts } from './plugin-image-artifact-validation'
+import { validatePluginSvgIconArtifacts } from './plugin-svg-icon-artifacts'
 
 export type PluginArtifactValidationResult = { ok: true } | { ok: false; error: string }
 
@@ -44,9 +49,12 @@ function declaredArtifactPaths(manifest: PluginManifest): DeclaredArtifact[] {
         ]
       : []),
     ...declaredFile('worker entry', manifest.main, PLUGIN_WORKER_ENTRY_MAX_BYTES),
-    ...c.panels.flatMap((panel) =>
-      declaredFile(`panel "${panel.id}" entry`, panel.entry, PLUGIN_PANEL_ENTRY_MAX_BYTES)
-    ),
+    ...c.panels.flatMap((panel) => [
+      ...declaredFile(`panel "${panel.id}" entry`, panel.entry, PLUGIN_PANEL_ENTRY_MAX_BYTES),
+      ...(isPluginSvgIconPath(panel.icon)
+        ? declaredFile(`panel "${panel.id}" icon`, panel.icon, PLUGIN_SVG_ICON_MAX_BYTES)
+        : [])
+    ]),
     ...c.pages.flatMap((page) =>
       declaredFile(`page "${page.id}" entry`, page.entry, PLUGIN_PANEL_ENTRY_MAX_BYTES)
     ),
@@ -220,6 +228,14 @@ export async function validatePluginInstallContent(
   )
   if (!images.ok) {
     return images
+  }
+  const svgIcons = await validatePluginSvgIconArtifacts(
+    rootDir,
+    manifest,
+    readContainedPluginArtifactBytes
+  )
+  if (!svgIcons.ok) {
+    return svgIcons
   }
   const vmRecipeIds = new Set<string>()
   for (const contribution of manifest.contributes.vmRecipes) {

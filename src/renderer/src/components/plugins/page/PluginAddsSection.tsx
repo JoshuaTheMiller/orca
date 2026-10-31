@@ -28,6 +28,7 @@ import { useAppStore } from '@/store'
 import { getShortcutPlatform } from '@/lib/shortcut-platform'
 import { usePluginLanguagePackStore } from '@/store/plugin-language-packs'
 import type { ActivePluginCommand } from '@/store/plugin-panels'
+import { PluginSvgIcon } from '../PluginSvgIcon'
 import { usePluginIconThemes } from '@/store/plugin-icon-themes'
 import { usePluginSyntaxes } from '@/store/plugin-syntax-packs'
 import { ShortcutKeyCombo } from '../../ShortcutKeyCombo'
@@ -197,6 +198,17 @@ function contributionRowId(row: PluginContribution): string {
   return row.key.slice(row.kind.length + 1)
 }
 
+/** The kind's icon, or a panel's own SVG icon when the installed plugin declares one. */
+function rowIcon(plugin: PluginHostListEntry | null, row: PluginContribution): React.ReactNode {
+  const slot =
+    row.kind === 'panels' ? plugin?.panels[Number(contributionRowId(row))]?.svgIconSlot : undefined
+  return plugin && slot ? (
+    <PluginSvgIcon source={{ pluginKey: plugin.pluginKey, slot }} fallback={PanelRight} size={16} />
+  ) : (
+    CONTRIBUTION_ICON[row.kind]
+  )
+}
+
 /**
  * The "try it" control for a row, only while the plugin is on and Orca's live registration
  * (not the manifest) backs it, so the control never promises something that isn't there.
@@ -349,7 +361,7 @@ export function PluginAddsSection({
       {rows.map((row) => (
         <DetailRow
           key={row.key}
-          icon={CONTRIBUTION_ICON[row.kind]}
+          icon={rowIcon(plugin, row)}
           title={row.title}
           detail={row.detail}
           detailTone={row.tone}
