@@ -14,6 +14,7 @@ import {
 } from '../plugins/installation/plugin-install'
 import { applyPluginConsent, applyPluginEnablement } from '../plugins/plugin-enablement'
 import { readApprovedPluginNewFileTemplate } from '../plugins/plugin-new-file-template'
+import { readDeclaredPluginSvgIcon } from '../plugins/plugin-svg-icon-artifacts'
 import type { PluginService } from '../plugins/plugin-service'
 import { bindPluginPanelOwnerLifecycle } from '../plugins/panels/plugin-panel-owner-lifecycle'
 import { isQualifiedPluginKey } from '../../shared/plugins/manifest/plugin-manifest'
@@ -52,6 +53,11 @@ const readCustomEditorEntryArgsSchema = z.object({
 const readNewFileTemplateArgsSchema = z.object({
   pluginKey: z.string().min(1),
   newFileId: z.string().min(1)
+})
+
+const readContributionSvgIconArgsSchema = z.object({
+  pluginKey: z.string().min(1),
+  slot: z.string().min(1)
 })
 
 const invokeCommandArgsSchema = z.object({
@@ -205,6 +211,12 @@ export function registerPluginHandlers(
     const parsed = readNewFileTemplateArgsSchema.parse(args)
     await pluginService.whenReady()
     return readApprovedPluginNewFileTemplate(pluginService, parsed.pluginKey, parsed.newFileId)
+  })
+
+  ipcMain.handle('plugins:readContributionSvgIcon', async (_event, args: unknown) => {
+    const parsed = readContributionSvgIconArgsSchema.parse(args)
+    await pluginService.whenReady()
+    return readDeclaredPluginSvgIcon(pluginService, parsed.pluginKey, parsed.slot)
   })
 
   // Renderer forwards frame host calls; main enforces capabilities and surfaces.

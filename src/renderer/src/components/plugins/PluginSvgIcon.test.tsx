@@ -2,24 +2,29 @@
 import '@testing-library/jest-dom/vitest'
 import { cleanup, render, waitFor } from '@testing-library/react'
 import { Plug } from 'lucide-react'
-import { afterEach, describe, expect, it, vi } from 'vitest'
-import { pluginInstalledImageUrl } from '../../../../shared/plugins/images/plugin-image-url'
-import { PluginSvgIcon } from './PluginSvgIcon'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { clearPluginSvgIconCache, PluginSvgIcon } from './PluginSvgIcon'
 import { resolvePluginPanelIcon } from '../right-sidebar/plugin-panel-activity-items'
 
 const GOOD =
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24z"/></svg>'
-let count = 0
-// Why unique: loaded masks are cached per URL for the life of the module.
-const freshUrl = () => pluginInstalledImageUrl('acme.demo', 'a'.repeat(64), `panel-${count++}`)
+const source = { pluginKey: 'acme.demo', slot: 'panel-0' }
 
-function respond(body: string | null) {
+function bridge(result: string | null | Error) {
+  const read = vi.fn(async () => {
+    if (result instanceof Error) {
+      throw result
+    }
+    return result
+  })
   vi.stubGlobal(
-    'fetch',
-    vi.fn(async () => (body === null ? new Response(null, { status: 404 }) : new Response(body)))
+    'window',
+    Object.assign(window, { api: { plugins: { readContributionSvgIcon: read } } })
   )
+  return read
 }
 
+beforeEach(() => clearPluginSvgIconCache())
 afterEach(() => {
   cleanup()
   vi.unstubAllGlobals()
@@ -27,10 +32,11 @@ afterEach(() => {
 
 describe('PluginSvgIcon', () => {
   it('draws the SVG as a currentColor mask, without putting its markup in the DOM', async () => {
-    respond(GOOD)
-    const { container } = render(<PluginSvgIcon url={freshUrl()} fallback={Plug} size={18} />)
+    const read = bridge(GOOD)
+    const { container } = render(<PluginSvgIcon source={source} fallback={Plug} size={18} />)
     const icon = container.querySelector<HTMLElement>('[data-plugin-svg-icon]')!
     await waitFor(() => expect(icon.style.maskImage).toContain('data:image/svg+xml'))
+    expect(read).toHaveBeenCalledWith(source)
     expect(icon.style.width).toBe('18px')
     expect(icon.className).toContain('bg-current')
     expect(decodeURIComponent(icon.style.maskImage)).toContain('<path d=')
@@ -38,35 +44,39 @@ describe('PluginSvgIcon', () => {
     expect(container.querySelector('path')).toBeNull()
   })
 
-  it('falls back to the built-in icon when the fetch fails', async () => {
-    respond(null)
-    const { container } = render(<PluginSvgIcon url={freshUrl()} fallback={Plug} />)
+  it('falls back to the built-in icon when main returns nothing or the read fails', async () => {
+    for (const result of [null, new Error('gone')]) {
+      clearPluginSvgIconCache()
+      bridge(result)
+      const { container, unmount } = render(<PluginSvgIcon source={source} fallback={Plug} />)
+      await waitFor(() => expect(container.querySelector('svg')).not.toBeNull())
+      expect(container.querySelector('[data-plugin-svg-icon]')).toBeNull()
+      unmount()
+    }
+  })
+
+  it('falls back when the text fails the safety rules', async () => {
+    bridge(GOOD.replace('<path', '<script/><path'))
+    const { container } = render(<PluginSvgIcon source={source} fallback={Plug} />)
     await waitFor(() => expect(container.querySelector('svg')).not.toBeNull())
     expect(container.querySelector('[data-plugin-svg-icon]')).toBeNull()
   })
 
-  it('falls back when the bytes fail the safety rules', async () => {
-    respond(GOOD.replace('<path', '<script/><path'))
-    const { container } = render(<PluginSvgIcon url={freshUrl()} fallback={Plug} />)
+  it('falls back on a host without the read method', async () => {
+    vi.stubGlobal('window', Object.assign(window, { api: { plugins: {} } }))
+    const { container } = render(<PluginSvgIcon source={source} fallback={Plug} />)
     await waitFor(() => expect(container.querySelector('svg')).not.toBeNull())
-    expect(container.querySelector('[data-plugin-svg-icon]')).toBeNull()
-  })
-
-  it('never fetches a URL that is not a served plugin image', () => {
-    respond(GOOD)
-    const { container } = render(<PluginSvgIcon url="https://evil.test/a.svg" fallback={Plug} />)
-    expect(container.querySelector('svg')).not.toBeNull()
-    expect(fetch).not.toHaveBeenCalled()
   })
 })
 
-describe('resolvePluginPanelIcon with an SVG URL', () => {
-  it('returns a stable component per URL, and ignores URLs that are not served images', () => {
-    const url = freshUrl()
-    const icon = resolvePluginPanelIcon(undefined, url)
+describe('resolvePluginPanelIcon with an SVG source', () => {
+  it('returns a stable component per source until the cache is cleared', () => {
+    const icon = resolvePluginPanelIcon(undefined, source)
     expect(icon).not.toBe(Plug)
-    expect(resolvePluginPanelIcon(undefined, url)).toBe(icon)
-    expect(resolvePluginPanelIcon(undefined, 'https://evil.test/a.svg')).toBe(Plug)
+    expect(resolvePluginPanelIcon(undefined, source)).toBe(icon)
+    expect(resolvePluginPanelIcon(undefined, { ...source, slot: 'panel-1' })).not.toBe(icon)
+    clearPluginSvgIconCache()
+    expect(resolvePluginPanelIcon(undefined, source)).not.toBe(icon)
     expect(resolvePluginPanelIcon('plug', undefined)).toBe(Plug)
   })
 })

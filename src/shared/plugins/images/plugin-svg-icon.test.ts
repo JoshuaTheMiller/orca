@@ -5,7 +5,9 @@ import {
   PLUGIN_MANIFEST_V2_SINCE
 } from '../manifest/plugin-schema-field-docs'
 import {
+  declaredPluginSvgIconPaths,
   isPluginSvgIconPath,
+  pluginSvgIconSlotField,
   PLUGIN_SVG_ICON_MAX_BYTES,
   pluginSvgIconError
 } from './plugin-svg-icon'
@@ -54,6 +56,26 @@ describe('panel icon schema', () => {
     expect(isPluginSvgIconPath('images/star.svg')).toBe(true)
     expect(isPluginSvgIconPath('star')).toBe(false)
     expect(isPluginSvgIconPath(undefined)).toBe(false)
+  })
+})
+
+describe('declaredPluginSvgIconPaths', () => {
+  it('names each SVG icon by contribution kind and index, skipping built-in names', () => {
+    const parsed = parsePluginManifest({
+      ...manifest('star', PLUGIN_IMAGE_ICONS_SINCE),
+      contributes: {
+        panels: [
+          { id: 'a', title: 'A', icon: 'star', entry: 'a.html' },
+          { id: 'b', title: 'B', icon: 'images/b.svg', entry: 'b.html' },
+          { id: 'c', title: 'C', entry: 'c.html' }
+        ]
+      }
+    })
+    expect(parsed.ok && declaredPluginSvgIconPaths(parsed.manifest)).toEqual([
+      { path: 'images/b.svg', slot: 'panel-1' }
+    ])
+    expect(pluginSvgIconSlotField('panel', 1, 'images/b.svg')).toEqual({ svgIconSlot: 'panel-1' })
+    expect(pluginSvgIconSlotField('panel', 1, 'star')).toEqual({})
   })
 })
 

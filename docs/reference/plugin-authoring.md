@@ -150,7 +150,8 @@ loading the plugin.
 Orca draws the SVG as a single-color mask the size of the built-in icons, so it takes the theme's
 text color and ignores any color in the file: only its shape counts (opaque areas and strokes).
 Draw it in black on a transparent background with a `viewBox`. If the file cannot be loaded, Orca
-shows the default `plug` icon. Orca refuses to install a plugin whose icon:
+shows the default `plug` icon. Orca reads the file itself and checks it again every time it loads
+the icon, so a file edited after install is dropped if it breaks these rules. Orca refuses to install a plugin whose icon:
 
 - is missing, over 32 KB, not UTF-8, or not well-formed SVG with an `<svg>` root;
 - contains `<script>`, `<foreignObject>`, `<iframe>`, `<object>`, `<embed>`, a DOCTYPE or entity

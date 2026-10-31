@@ -1,16 +1,12 @@
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 import { parsePluginManifest } from '../../shared/plugins/manifest/plugin-manifest'
 import type { PluginManifest } from '../../shared/plugins/manifest/plugin-manifest'
 import { PLUGIN_IMAGE_ICONS_SINCE } from '../../shared/plugins/manifest/plugin-schema-field-docs'
-import { pluginInstalledImageUrl } from '../../shared/plugins/images/plugin-image-url'
-import { PluginImageCache } from './plugin-image-cache'
 import { validatePluginInstallContent } from './plugin-artifact-validation'
-
-vi.mock('electron', () => ({ protocol: { handle: vi.fn() } }))
-const { createPluginImageRequestHandler } = await import('./plugin-image-protocol')
+import { readDeclaredPluginSvgIcon } from './plugin-svg-icon-artifacts'
 
 const roots: string[] = []
 const GOOD =
@@ -85,32 +81,52 @@ describe('SVG panel icon install validation', () => {
   })
 })
 
-describe('SVG panel icon serving', () => {
-  it('serves the icon as SVG by slot, and re-checks it on every read', async () => {
+describe('reading a declared SVG icon', () => {
+  const find = (root: string, manifest: PluginManifest) => ({
+    findValidPlugin: (pluginKey: string) =>
+      pluginKey === 'acme.demo'
+        ? {
+            pluginKey,
+            rootDir: root,
+            manifest,
+            consentFingerprint: 'x',
+            contentHash: 'b'.repeat(64),
+            isDev: false
+          }
+        : null
+  })
+
+  it('returns the validated text for a declared slot', async () => {
     const { root, manifest } = await pluginWith(GOOD)
-    const hash = 'b'.repeat(64)
-    const handler = createPluginImageRequestHandler({
-      cache: new PluginImageCache(root),
-      findValidPlugin: () => ({
-        pluginKey: 'acme.demo',
-        rootDir: root,
-        manifest,
-        consentFingerprint: 'x',
-        contentHash: hash,
-        isDev: false
-      })
-    })
-    const url = pluginInstalledImageUrl('acme.demo', hash, 'panel-0')
-    const ok = await handler(new Request(url))
-    expect(ok.status).toBe(200)
-    expect(ok.headers.get('content-type')).toBe('image/svg+xml')
-    expect(ok.headers.get('x-content-type-options')).toBe('nosniff')
-    expect(await ok.text()).toBe(GOOD)
-    const unknownSlot = await handler(
-      new Request(pluginInstalledImageUrl('acme.demo', hash, 'panel-3'))
-    )
-    expect(unknownSlot.status).toBe(404)
+    expect(await readDeclaredPluginSvgIcon(find(root, manifest), 'acme.demo', 'panel-0')).toBe(GOOD)
+  })
+
+  it('returns null for an unknown plugin and for undeclared slots', async () => {
+    const { root, manifest } = await pluginWith(GOOD)
+    const service = find(root, manifest)
+    expect(await readDeclaredPluginSvgIcon(service, 'acme.other', 'panel-0')).toBeNull()
+    for (const slot of ['panel-1', 'panel-', 'editor-0', 'icon', '../images/star.svg']) {
+      expect(await readDeclaredPluginSvgIcon(service, 'acme.demo', slot), slot).toBeNull()
+    }
+  })
+
+  it('does not serve a file that is declared but is not an SVG icon', async () => {
+    const { root, manifest } = await pluginWith(GOOD)
+    await writeFile(join(root, 'secret.txt'), 'secret')
+    expect(
+      await readDeclaredPluginSvgIcon(find(root, manifest), 'acme.demo', 'panel.entry')
+    ).toBeNull()
+  })
+
+  it('re-validates on every read', async () => {
+    const { root, manifest } = await pluginWith(GOOD)
+    const service = find(root, manifest)
+    expect(await readDeclaredPluginSvgIcon(service, 'acme.demo', 'panel-0')).toBe(GOOD)
     await writeFile(join(root, 'images', 'star.svg'), GOOD.replace('<path', '<script/><path'))
-    expect((await handler(new Request(url))).status).toBe(404)
+    expect(await readDeclaredPluginSvgIcon(service, 'acme.demo', 'panel-0')).toBeNull()
+    await writeFile(join(root, 'images', 'star.svg'), `${GOOD}<!--${'a'.repeat(33 * 1024)}-->`)
+    expect(await readDeclaredPluginSvgIcon(service, 'acme.demo', 'panel-0')).toBeNull()
+    await rm(join(root, 'images', 'star.svg'))
+    expect(await readDeclaredPluginSvgIcon(service, 'acme.demo', 'panel-0')).toBeNull()
   })
 })

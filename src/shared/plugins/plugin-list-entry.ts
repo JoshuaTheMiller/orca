@@ -10,8 +10,8 @@ export type PluginHostPanel = {
   title: string
   /** Lucide icon name declared in the plugin manifest. */
   icon?: string
-  /** orca-plugin-image URL of an SVG icon the panel declares; absent for a built-in name. */
-  iconUrl?: string
+  /** Slot of the SVG icon the panel declares, read with readContributionSvgIcon; absent for a built-in name. */
+  svgIconSlot?: string
   tabKey: `plugin:${string}`
 }
 

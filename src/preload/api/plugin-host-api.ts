@@ -155,6 +155,8 @@ export type PluginsApi = {
   }) => Promise<PluginFrameEntry | null>
   /** A new file's starting text (its template, or empty); null if the plugin is off or lacks it. */
   readNewFileTemplate?: (args: { pluginKey: string; newFileId: string }) => Promise<string | null>
+  /** Validated text of a contribution's SVG icon; null if the plugin, slot or file is not usable. */
+  readContributionSvgIcon?: (args: { pluginKey: string; slot: string }) => Promise<string | null>
   invokeCommand: (args: {
     pluginKey: string
     commandId: string

@@ -4,11 +4,5 @@ import { PLUGIN_IMAGE_SCHEME } from '../../shared/plugins/images/plugin-image-ur
  *  handler so startup does not load the plugin module graph. */
 export const PLUGIN_IMAGE_CUSTOM_SCHEME: Electron.CustomScheme = {
   scheme: PLUGIN_IMAGE_SCHEME,
-  privileges: {
-    standard: true,
-    secure: true,
-    stream: true,
-    supportFetchAPI: true,
-    corsEnabled: true
-  }
+  privileges: { standard: true, secure: true, stream: true }
 }

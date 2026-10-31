@@ -7,7 +7,10 @@ import {
   pluginInstalledImageUrl,
   type PluginHostImages
 } from '../../shared/plugins/images/plugin-image-url'
-import { isPluginSvgIconPath } from '../../shared/plugins/images/plugin-svg-icon'
+import {
+  isPluginSvgIconPath,
+  pluginSvgIconSlotField
+} from '../../shared/plugins/images/plugin-svg-icon'
 import { pluginInstalledHostImages } from './plugin-manifest-images'
 import type { PluginService } from './plugin-service'
 import { listPluginVmRecipeCommands } from '../../shared/plugins/artifacts/plugin-vm-recipe-artifact'
@@ -133,19 +136,6 @@ export async function buildPluginList(
         path !== undefined && plugin.manifest.manifestVersion === 2
           ? { icon: pluginInstalledImageUrl(plugin.pluginKey, plugin.contentHash ?? 'dev', slot) }
           : {}
-      // Why not `icon`: clients that predate SVG icons would treat the path as an unknown name.
-      const panelIcon = (panel: { icon?: string }, index: number) =>
-        isPluginSvgIconPath(panel.icon)
-          ? {
-              iconUrl: pluginInstalledImageUrl(
-                plugin.pluginKey,
-                plugin.contentHash ?? 'dev',
-                `panel-${index}`
-              )
-            }
-          : panel.icon
-            ? { icon: panel.icon }
-            : {}
       const bundled = lockEntry?.source.kind === 'bundled'
       const official =
         bundled ||
@@ -182,7 +172,12 @@ export async function buildPluginList(
         panels: plugin.manifest.contributes.panels.map((panel, index) => ({
           id: panel.id,
           title: panel.title,
-          ...panelIcon(panel, index),
+          // Why not `icon` for an SVG: clients that predate SVG icons would treat the path as a name.
+          ...(isPluginSvgIconPath(panel.icon)
+            ? pluginSvgIconSlotField('panel', index, panel.icon)
+            : panel.icon
+              ? { icon: panel.icon }
+              : {}),
           tabKey: pluginPanelTabKey(plugin.pluginKey, panel.id)
         })),
         customEditors: plugin.manifest.contributes.customEditors.map((editor, index) => ({

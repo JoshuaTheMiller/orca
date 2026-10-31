@@ -11,7 +11,6 @@ import {
   PLUGIN_IMAGE_SCHEME,
   parsePluginImageUrl
 } from '../../shared/plugins/images/plugin-image-url'
-import { readPluginSvgIcon, declaredPluginSvgIcons } from './plugin-svg-icon-artifacts'
 import { readContainedPluginArtifactBytes } from './plugin-artifact-validation'
 import type { ValidDiscoveredPlugin } from './plugin-discovery'
 import { declaredPluginImages } from './plugin-image-artifact-validation'
@@ -32,17 +31,6 @@ async function readInstalledImage(
 ): Promise<ServedImage | null> {
   if (contentHash !== (plugin.isDev ? 'dev' : plugin.contentHash)) {
     return null
-  }
-  const svgIcon = declaredPluginSvgIcons(plugin.manifest).find(
-    (candidate) => candidate.slot === slot
-  )
-  if (svgIcon) {
-    const bytes = await readPluginSvgIcon(
-      plugin.rootDir,
-      svgIcon.path,
-      readContainedPluginArtifactBytes
-    )
-    return { bytes, mimeType: 'image/svg+xml' }
   }
   const image = declaredPluginImages(plugin.manifest).find((candidate) => candidate.slot === slot)
   if (!image) {
@@ -87,10 +75,7 @@ export function createPluginImageRequestHandler(
           'Content-Length': String(image.bytes.byteLength),
           // Why immutable is safe: every URL names exact bytes (a hash or an install hash).
           'Cache-Control': 'private, max-age=31536000, immutable',
-          'X-Content-Type-Options': 'nosniff',
-          // Why: the renderer fetches SVG icons to build a mask, which is a cross-origin read.
-          'Access-Control-Allow-Origin': '*',
-          'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'"
+          'X-Content-Type-Options': 'nosniff'
         }
       })
     } catch {

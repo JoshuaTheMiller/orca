@@ -33,6 +33,8 @@ export const pluginsApi = {
     pluginKey: string
     editorId: string
   }): Promise<PluginFrameEntry | null> => ipcRenderer.invoke('plugins:readCustomEditorEntry', args),
+  readContributionSvgIcon: (args: { pluginKey: string; slot: string }): Promise<string | null> =>
+    ipcRenderer.invoke('plugins:readContributionSvgIcon', args),
   readNewFileTemplate: (args: { pluginKey: string; newFileId: string }): Promise<string | null> =>
     ipcRenderer.invoke('plugins:readNewFileTemplate', args),
   invokeCommand: (args: { pluginKey: string; commandId: string; args?: unknown }) =>

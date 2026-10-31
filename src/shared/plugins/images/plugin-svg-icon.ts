@@ -1,3 +1,4 @@
+import type { PluginManifest } from '../manifest/plugin-manifest'
 import { pluginRelativePathSchema } from '../manifest/plugin-manifest-fields'
 import { pluginPathFieldDoc, PLUGIN_IMAGE_ICONS_SINCE } from '../manifest/plugin-schema-field-docs'
 
@@ -213,4 +214,38 @@ export function pluginSvgIconError(bytes: Uint8Array): string | null {
 /** A CSS-mask-ready data URL; the caller has run pluginSvgIconError on the same bytes. */
 export function pluginSvgMaskUrl(svg: string): string {
   return `data:image/svg+xml,${encodeURIComponent(svg)}`
+}
+
+/** Contribution kinds that may carry an SVG icon. Another contribution point adds its kind here
+ *  and lists its icon paths below; the slot, IPC read and renderer icon then work unchanged. */
+export type PluginSvgIconKind = 'panel'
+
+const SVG_ICON_PATHS: Record<
+  PluginSvgIconKind,
+  (manifest: PluginManifest) => (string | undefined)[]
+> = { panel: (manifest) => manifest.contributes.panels.map((panel) => panel.icon) }
+
+/** The slot id of a contribution's SVG icon: its kind and its index in the manifest list. */
+export function pluginSvgIconSlot(kind: PluginSvgIconKind, index: number): string {
+  return `${kind}-${index}`
+}
+
+/** The slot the host sends for a contribution icon, or {} when it is a built-in name or absent. */
+export function pluginSvgIconSlotField(
+  kind: PluginSvgIconKind,
+  index: number,
+  icon: string | undefined
+): { svgIconSlot?: string } {
+  return isPluginSvgIconPath(icon) ? { svgIconSlot: pluginSvgIconSlot(kind, index) } : {}
+}
+
+/** Every SVG icon a manifest declares, with the slot it is read under. */
+export function declaredPluginSvgIconPaths(
+  manifest: PluginManifest
+): { path: string; slot: string }[] {
+  return (Object.keys(SVG_ICON_PATHS) as PluginSvgIconKind[]).flatMap((kind) =>
+    SVG_ICON_PATHS[kind](manifest).flatMap((icon, index) =>
+      isPluginSvgIconPath(icon) ? [{ path: icon, slot: pluginSvgIconSlot(kind, index) }] : []
+    )
+  )
 }

@@ -21,7 +21,7 @@ export function pluginShaImageUrl(sha256: string): string {
 }
 
 /** `slot` is `icon`, `cover`, `screenshot-<index>`, or a contribution's icon: `editor-<index>`
- *  (custom editors), `new-file-<index>` (new files) or `panel-<index>` (an SVG panel icon). */
+ *  (custom editors) or `new-file-<index>` (new files). */
 export function pluginInstalledImageUrl(
   pluginKey: string,
   contentHash: string,
@@ -52,7 +52,7 @@ export function parsePluginImageUrl(url: string): PluginImageReference | null {
     contentHash &&
     slot &&
     /^(?:[0-9a-f]{64}|dev)$/.test(contentHash) &&
-    /^(?:icon|cover|(?:screenshot|editor|new-file|panel)-\d{1,2})$/.test(slot)
+    /^(?:icon|cover|(?:screenshot|editor|new-file)-\d{1,2})$/.test(slot)
   ) {
     return { kind: 'installed', pluginKey: decodeURIComponent(key), contentHash, slot }
   }

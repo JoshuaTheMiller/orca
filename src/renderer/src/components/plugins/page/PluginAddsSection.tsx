@@ -189,10 +189,10 @@ function contributionRowId(row: PluginContribution): string {
 
 /** The kind's icon, or a panel's own SVG icon when the installed plugin declares one. */
 function rowIcon(plugin: PluginHostListEntry | null, row: PluginContribution): React.ReactNode {
-  const iconUrl =
-    row.kind === 'panels' ? plugin?.panels[Number(contributionRowId(row))]?.iconUrl : undefined
-  return iconUrl ? (
-    <PluginSvgIcon url={iconUrl} fallback={PanelRight} size={16} />
+  const slot =
+    row.kind === 'panels' ? plugin?.panels[Number(contributionRowId(row))]?.svgIconSlot : undefined
+  return plugin && slot ? (
+    <PluginSvgIcon source={{ pluginKey: plugin.pluginKey, slot }} fallback={PanelRight} size={16} />
   ) : (
     CONTRIBUTION_ICON[row.kind]
   )
