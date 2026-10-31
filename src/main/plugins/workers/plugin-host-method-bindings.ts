@@ -13,6 +13,9 @@ import {
 import type { PluginEditorPlacement } from '../../../shared/plugins/workers/plugin-host-editor-api'
 import { shortPluginBranchName } from '../../../shared/plugins/events/plugin-events'
 
+/** A handler failure that is the caller's params, not the host's action; reported as invalid_params. */
+export class PluginHostInvalidParamsError extends Error {}
+
 export type PluginWorktreeContext = {
   worktreeId: string
   branch: string
@@ -31,11 +34,11 @@ export type PluginHostServices = {
     title: string
     body?: string
   }): Promise<{ delivered: boolean }>
-  /** Opens a local absolute file in an editor tab; rejects when it is missing, not a file, or `active-workspace` has no workspace to open in. */
+  /** Opens a local absolute file in an editor tab; rejects when it is missing, not a file, or `active-workspace` has no workspace to open in; throws PluginHostInvalidParamsError for an unknown `projectId`. */
   openEditorFile(
     absolutePath: string,
     position?: { line: number; column?: number },
-    placement?: PluginEditorPlacement
+    options?: { placement?: PluginEditorPlacement; projectId?: string }
   ): Promise<{ opened: boolean }>
   /** The plugin's sidebar toggle and checkbox values, defaults applied. */
   sidebarNavValues(pluginId: string): Record<string, boolean>
@@ -186,7 +189,9 @@ const HANDLERS: Record<PluginHostMethodName, BoundPluginHostMethod> = {
       params.path,
       // Why: a column alone names no place in the file.
       params.line === undefined ? undefined : { line: params.line, column: params.column },
-      ...(params.placement ? [params.placement] : [])
+      ...(params.placement || params.projectId
+        ? [{ placement: params.placement, projectId: params.projectId }]
+        : [])
     )
   ),
   'sidebarNav.getValues': bind(api['sidebarNav.getValues'], async (_params, ctx) => ({

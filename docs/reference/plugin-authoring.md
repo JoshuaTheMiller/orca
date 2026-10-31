@@ -155,7 +155,7 @@ orca.events.on('sidebarNav.valueChanged', ({ setting, value }) => {
 ### Opening files
 
 With the `editor:open` capability, a worker, panel or custom editor calls
-`orca.host.call('editor.openFile', { path, line?, column?, placement? })` and gets `{ opened }`.
+`orca.host.call('editor.openFile', { path, line?, column?, placement?, projectId? })` and gets `{ opened }`.
 `path` is absolute. With the default `placement: "auto"`, a file inside one of the user's
 workspaces opens in an editor tab there, so a matching custom editor applies; any other file opens
 in the floating workspace, the way a file opened from the operating system does.
@@ -168,6 +168,16 @@ remote (SSH or a paired host), because the path names a file on this computer. A
 inside the focused workspace opens there as usual. A path that does not exist, or is not a file,
 fails with `action_failed`. `column` is used only together with `line`. Each call is recorded in
 the audit log by file name.
+
+`projectId` (host API 1.2, optional) is the id of the project the user acted on, and it takes
+precedence over `placement`. Pass it from a project item click: the id is a repository id for a
+git project and a project-group id for a folder project. The file opens as a tab of the project's
+most recently used workspace, as with `active-workspace` even when the file lies outside that
+workspace, and Orca switches the window to it. A project with no usable workspace gets, in order:
+the folder workspace Orca creates for a folder project, the focused workspace, then the floating
+workspace. An id that names no project fails with `invalid_params`, and a project on a remote
+(SSH or paired) host fails with `action_failed` like `active-workspace` does. Without `projectId`
+nothing changes, so pass it only when you know the project.
 
 ### Custom editors
 

@@ -32,6 +32,7 @@ import { assertRuntimeReadWslDistroRunning } from '../runtime-wsl-background-rea
 import { stat as statLocalPath } from 'node:fs/promises'
 import { basename, isAbsolute } from 'node:path'
 import { FLOATING_TERMINAL_WORKTREE_ID } from '../../../shared/constants'
+import { resolveProjectWorkspaceId } from './project-workspace-resolution'
 
 type RuntimeFileAccessHost = Pick<
   RuntimeFileCommandHost,
@@ -40,6 +41,7 @@ type RuntimeFileAccessHost = Pick<
   | 'resolveKnownWorkspaceFileTarget'
   | 'openFile'
   | 'openDiff'
+  | 'createFolderWorkspace'
 >
 
 export class RuntimeFileAccess {
@@ -80,11 +82,12 @@ export class RuntimeFileAccess {
 
   /** Opens a local absolute file in an editor tab: in the workspace that owns the path, else in
    *  the floating workspace the way OS-opened documents are, so any matching custom editor applies.
-   *  With `activeWorktreeId` it opens as a tab of that workspace instead, even from outside its root. */
+   *  With `activeWorktreeId` it opens as a tab of that workspace instead, even from outside its root.
+   *  With `projectId` the project's own workspace wins (see resolveProjectWorkspaceId), then `activeWorktreeId`, then the floating workspace. */
   async openLocalAbsoluteFile(
     absolutePath: string,
     position?: RuntimeFileOpenPosition,
-    options?: { activeWorktreeId?: string }
+    options?: { activeWorktreeId?: string; projectId?: string }
   ): Promise<{ worktree: string }> {
     if (!isAbsolute(absolutePath)) {
       throw new Error('path must be absolute')
@@ -93,7 +96,10 @@ export class RuntimeFileAccess {
       absolutePath,
       LOCAL_EXECUTION_HOST_ID
     )
-    const activeId = options?.activeWorktreeId
+    const projectWorkspaceId = options?.projectId
+      ? await resolveProjectWorkspaceId(this.host, options.projectId)
+      : null
+    const activeId = projectWorkspaceId ?? options?.activeWorktreeId
     if (activeId && activeId !== FLOATING_TERMINAL_WORKTREE_ID && owner?.worktree.id !== activeId) {
       return this.openOutsideActiveWorkspace(absolutePath, activeId, position)
     }

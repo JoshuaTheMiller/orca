@@ -126,7 +126,7 @@ Writes one setting the plugin owns.
 Opens a file by absolute path in an editor tab, in its workspace when it is inside one.
 
 ```ts
-(params: { path: string; line?: number; column?: number; placement?: "auto" | "active-workspace" }) => { opened: boolean }
+(params: { path: string; line?: number; column?: number; placement?: "auto" | "active-workspace"; projectId?: string }) => { opened: boolean }
 ```
 
 ### `sidebarNav.getValues`

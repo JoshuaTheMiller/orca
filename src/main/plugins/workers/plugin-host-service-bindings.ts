@@ -1,5 +1,9 @@
 import { PLUGIN_WORKSPACE_TERMINAL_LIMIT } from '../../../shared/plugins/workers/plugin-host-api'
-import type { PluginHostServices } from './plugin-host-methods'
+import {
+  PluginHostInvalidParamsError,
+  type PluginHostServices
+} from './plugin-host-method-bindings'
+import { UnknownProjectError } from '../../runtime/files/unknown-project-error'
 import { PluginSecretsStore } from '../plugin-secrets-store'
 import { PluginKvStore } from '../plugin-storage-store'
 import type { RuntimeFileOpenPosition } from '../../../shared/runtime-file-contracts'
@@ -30,8 +34,8 @@ export type PluginRuntimeDelegate = {
   openLocalAbsoluteFile(
     absolutePath: string,
     position?: RuntimeFileOpenPosition,
-    /** Open as a tab of this workspace even when the file lies outside it. */
-    options?: { activeWorktreeId?: string }
+    /** Open as a tab of this workspace even when the file lies outside it; `projectId` outranks it with the project's own workspace. */
+    options?: { activeWorktreeId?: string; projectId?: string }
   ): Promise<unknown>
 }
 
@@ -70,15 +74,24 @@ export function bindPluginHostServices(input: {
       return { accepted: result.accepted }
     },
     dispatchPluginNotification: (notification) => delegate.dispatchPluginNotification(notification),
-    openEditorFile: async (absolutePath, position, placement) => {
-      if (placement === 'active-workspace') {
+    openEditorFile: async (absolutePath, position, options) => {
+      const projectId = options?.projectId
+      if (projectId || options?.placement === 'active-workspace') {
         const context = await delegate.resolveActiveWorktreeContext()
-        if (!context) {
+        // Why: a project open falls back to the floating workspace; only a bare active-workspace request needs a focus.
+        if (!context && !projectId) {
           throw new Error('no active workspace is available to open the file in')
         }
-        await delegate.openLocalAbsoluteFile(absolutePath, position, {
-          activeWorktreeId: context.worktreeId
-        })
+        try {
+          await delegate.openLocalAbsoluteFile(absolutePath, position, {
+            ...(context ? { activeWorktreeId: context.worktreeId } : {}),
+            ...(projectId ? { projectId } : {})
+          })
+        } catch (error) {
+          throw error instanceof UnknownProjectError
+            ? new PluginHostInvalidParamsError('projectId: unknown project')
+            : error
+        }
         return { opened: true }
       }
       await delegate.openLocalAbsoluteFile(absolutePath, position)

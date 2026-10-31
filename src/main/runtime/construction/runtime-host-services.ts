@@ -48,6 +48,7 @@ import { countRepoTerminalsNotKnownExited } from '../project-removal-impact'
 export abstract class OrcaRuntimeWithPreservedBranchCleanup extends OrcaRuntimeWithTerminalDrivers {
   declare addRepo: RuntimeRepositoryCommandSurface['addRepo']
   declare cloneRepo: RuntimeRepositoryCommandSurface['cloneRepo']
+  declare createFolderWorkspace: RuntimeRepositoryCommandSurface['createFolderWorkspace']
   protected abstract tryGetWorkspaceSessionHostIdForWorktree(
     worktreeId: string
   ): ExecutionHostId | null
