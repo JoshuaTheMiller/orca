@@ -24,6 +24,10 @@ vi.mock('../ui/tooltip', () => ({
 }))
 
 import PluginFullPage from './PluginFullPage'
+import { clearPluginSvgIconCache } from '../plugins/PluginSvgIcon'
+
+const SVG_TEXT =
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24z"/></svg>'
 import { usePluginPageRequestsStore } from '@/store/plugin-pages'
 import { usePluginPanelsStore } from '@/store/plugin-panels'
 
@@ -218,5 +222,25 @@ describe('PluginFullPage', () => {
     readPageEntry.mockResolvedValue(null)
     await renderPage()
     expect(container.textContent).toContain('The plugin page could not be loaded.')
+  })
+
+  it('draws the header icon from the page SVG and keeps the built-in icon otherwise', async () => {
+    const read = vi.fn().mockResolvedValue(SVG_TEXT)
+    Object.assign(window.api.plugins, { readContributionSvgIcon: read })
+    clearPluginSvgIconCache()
+    const entry = pluginEntry()
+    usePluginPanelsStore.setState({
+      plugins: [
+        { ...entry, pages: [{ ...entry.pages![0]!, icon: undefined, svgIconSlot: 'page-0' }] }
+      ],
+      fetchStatus: 'ready'
+    })
+    await renderPage()
+    expect(read).toHaveBeenCalledWith({ pluginKey: 'acme.reports', slot: 'page-0' })
+    await vi.waitFor(() =>
+      expect(
+        container.querySelector<HTMLElement>('[data-plugin-svg-icon]')?.style.maskImage
+      ).toContain('data:image/svg+xml')
+    )
   })
 })

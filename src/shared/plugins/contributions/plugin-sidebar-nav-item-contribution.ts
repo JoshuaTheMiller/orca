@@ -6,6 +6,7 @@ import {
   PLUGIN_SETTINGS_SINCE,
   PLUGIN_SIDEBAR_NAV_ITEMS_SINCE
 } from '../manifest/plugin-schema-field-docs'
+import { pluginSvgIconPathSchema } from '../images/plugin-svg-icon'
 import { PLUGIN_PANEL_ICONS } from './plugin-panel-contribution'
 
 export const PLUGIN_SIDEBAR_NAV_ITEM_LIMIT = 8
@@ -30,11 +31,11 @@ export const pluginSidebarNavItemContributionSchema = z
       )
     ),
     icon: z
-      .enum(PLUGIN_PANEL_ICONS)
+      .union([z.enum(PLUGIN_PANEL_ICONS), pluginSvgIconPathSchema])
       .optional()
       .meta(
         pluginFieldDoc(
-          'Icon shown beside the label. Defaults to `plug`.',
+          'Icon shown beside the label: a built-in name, or the path of an SVG file in the plugin. Defaults to `plug`.',
           PLUGIN_SIDEBAR_NAV_ITEMS_SINCE,
           ['database']
         )

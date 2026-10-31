@@ -10,7 +10,8 @@ import {
 } from '../../shared/plugins/images/plugin-image-url'
 import {
   isPluginSvgIconPath,
-  pluginSvgIconSlotField
+  pluginSvgIconSlotField,
+  type PluginSvgIconKind
 } from '../../shared/plugins/images/plugin-svg-icon'
 import { pluginInstalledHostImages } from './plugin-manifest-images'
 import type { PluginService } from './plugin-service'
@@ -142,6 +143,13 @@ export async function buildPluginList(
         path !== undefined && plugin.manifest.manifestVersion === 2
           ? { icon: pluginInstalledImageUrl(plugin.pluginKey, plugin.contentHash ?? 'dev', slot) }
           : {}
+      // Why not `icon` for an SVG: clients that predate SVG icons would treat the path as a name.
+      const builtInOrSvgIcon = (
+        kind: PluginSvgIconKind,
+        index: number,
+        icon: string | undefined
+      ): { icon?: string; svgIconSlot?: string } =>
+        isPluginSvgIconPath(icon) ? pluginSvgIconSlotField(kind, index, icon) : icon ? { icon } : {}
       const bundled = lockEntry?.source.kind === 'bundled'
       const official =
         bundled ||
@@ -178,18 +186,13 @@ export async function buildPluginList(
         panels: plugin.manifest.contributes.panels.map((panel, index) => ({
           id: panel.id,
           title: panel.title,
-          // Why not `icon` for an SVG: clients that predate SVG icons would treat the path as a name.
-          ...(isPluginSvgIconPath(panel.icon)
-            ? pluginSvgIconSlotField('panel', index, panel.icon)
-            : panel.icon
-              ? { icon: panel.icon }
-              : {}),
+          ...builtInOrSvgIcon('panel', index, panel.icon),
           tabKey: pluginPanelTabKey(plugin.pluginKey, panel.id)
         })),
-        pages: plugin.manifest.contributes.pages.map((page) => ({
+        pages: plugin.manifest.contributes.pages.map((page, index) => ({
           id: page.id,
           title: page.title,
-          ...(page.icon ? { icon: page.icon } : {}),
+          ...builtInOrSvgIcon('page', index, page.icon),
           viewKey: pluginPageViewKey(plugin.pluginKey, page.id)
         })),
         customEditors: plugin.manifest.contributes.customEditors.map((editor, index) => ({
@@ -207,10 +210,10 @@ export async function buildPluginList(
           extension: newFile.extension,
           ...contributionIcon(`new-file-${index}`, newFile.icon)
         })),
-        sidebarNavItems: plugin.manifest.contributes.sidebarNavItems.map((item) => ({
+        sidebarNavItems: plugin.manifest.contributes.sidebarNavItems.map((item, index) => ({
           id: item.id,
           title: item.title,
-          ...(item.icon ? { icon: item.icon } : {}),
+          ...builtInOrSvgIcon('nav', index, item.icon),
           // Why omitted for commands: it is the default, and older readers only know command items.
           ...(item.kind && item.kind !== 'command' ? { kind: item.kind } : {}),
           ...(item.command === undefined ? {} : { command: item.command }),
@@ -219,10 +222,10 @@ export async function buildPluginList(
           ...(item.parent === undefined ? {} : { parent: item.parent }),
           ...(item.when === undefined ? {} : { when: item.when })
         })),
-        projectItems: plugin.manifest.contributes.projectItems.map((item) => ({
+        projectItems: plugin.manifest.contributes.projectItems.map((item, index) => ({
           id: item.id,
           title: item.title,
-          ...(item.icon ? { icon: item.icon } : {}),
+          ...builtInOrSvgIcon('project', index, item.icon),
           command: item.command,
           ...(item.titleSetting === undefined ? {} : { titleSetting: item.titleSetting }),
           ...(item.when === undefined ? {} : { when: item.when })
@@ -236,10 +239,10 @@ export async function buildPluginList(
           ...(setting.options === undefined ? {} : { options: setting.options }),
           ...(setting.maxLength === undefined ? {} : { maxLength: setting.maxLength })
         })),
-        sidebarCards: plugin.manifest.contributes.sidebarCards.map((card) => ({
+        sidebarCards: plugin.manifest.contributes.sidebarCards.map((card, index) => ({
           id: card.id,
           title: card.title,
-          ...(card.icon ? { icon: card.icon } : {}),
+          ...builtInOrSvgIcon('card', index, card.icon),
           ...(card.emptyText === undefined ? {} : { emptyText: card.emptyText }),
           ...(card.when === undefined ? {} : { when: card.when })
         })),

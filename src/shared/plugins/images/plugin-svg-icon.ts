@@ -218,12 +218,18 @@ export function pluginSvgMaskUrl(svg: string): string {
 
 /** Contribution kinds that may carry an SVG icon. Another contribution point adds its kind here
  *  and lists its icon paths below; the slot, IPC read and renderer icon then work unchanged. */
-export type PluginSvgIconKind = 'panel'
+export type PluginSvgIconKind = 'panel' | 'nav' | 'project' | 'page' | 'card'
 
 const SVG_ICON_PATHS: Record<
   PluginSvgIconKind,
   (manifest: PluginManifest) => (string | undefined)[]
-> = { panel: (manifest) => manifest.contributes.panels.map((panel) => panel.icon) }
+> = {
+  panel: (manifest) => manifest.contributes.panels.map((panel) => panel.icon),
+  nav: (manifest) => manifest.contributes.sidebarNavItems.map((item) => item.icon),
+  project: (manifest) => manifest.contributes.projectItems.map((item) => item.icon),
+  page: (manifest) => manifest.contributes.pages.map((page) => page.icon),
+  card: (manifest) => manifest.contributes.sidebarCards.map((card) => card.icon)
+}
 
 /** The slot id of a contribution's SVG icon: its kind and its index in the manifest list. */
 export function pluginSvgIconSlot(kind: PluginSvgIconKind, index: number): string {

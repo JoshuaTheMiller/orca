@@ -654,7 +654,7 @@ was opened from.
 
 ### Custom icons
 
-A panel's `icon` is either a built-in icon name (`"plug"`, `"database"`, …) or the path of an SVG
+The `icon` of a panel, page, sidebar nav item, project item or sidebar card is either a built-in icon name (`"plug"`, `"database"`, …) or the path of an SVG
 file in your plugin, such as `"images/star.svg"`. A manifest that uses an SVG path needs
 `"engines": { "orca": ">=1.4.255" }` or newer; older Orca reports the requirement instead of
 loading the plugin.

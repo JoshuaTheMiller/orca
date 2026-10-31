@@ -3,6 +3,7 @@ import type { RefinementCtx } from 'zod'
 import { safePluginDisplayText } from '../manifest/plugin-display-text'
 import { pluginIdSchema } from '../manifest/plugin-manifest-fields'
 import { pluginFieldDoc, PLUGIN_SIDEBAR_CARDS_SINCE } from '../manifest/plugin-schema-field-docs'
+import { pluginSvgIconPathSchema } from '../images/plugin-svg-icon'
 import { PLUGIN_PANEL_ICONS } from './plugin-panel-contribution'
 import type { PluginSettingContribution } from './plugin-setting-contribution'
 
@@ -27,9 +28,15 @@ export const pluginSidebarCardContributionSchema = z
       )
     ),
     icon: z
-      .enum(PLUGIN_PANEL_ICONS)
+      .union([z.enum(PLUGIN_PANEL_ICONS), pluginSvgIconPathSchema])
       .optional()
-      .meta(pluginFieldDoc('Icon shown in the switcher. Defaults to `plug`.', SINCE, ['database'])),
+      .meta(
+        pluginFieldDoc(
+          'Icon shown in the switcher: a built-in name, or the path of an SVG file in the plugin. Defaults to `plug`.',
+          SINCE,
+          ['database']
+        )
+      ),
     emptyText: safePluginDisplayText(z.string().min(1).max(160))
       .optional()
       .meta(

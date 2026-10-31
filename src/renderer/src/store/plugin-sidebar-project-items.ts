@@ -16,6 +16,8 @@ export type ActivePluginProjectItem = {
   title: string
   /** Lucide icon name from the closed panel icon set; absent means the default. */
   icon?: string
+  /** Slot of its SVG icon, read with readContributionSvgIcon; absent for a built-in name. */
+  svgIconSlot?: string
   pluginKey: string
   pluginName: string
   runnable: ActivePluginCommand
@@ -69,6 +71,7 @@ export function collectActivePluginProjectItems(
           id: item.id,
           title: item.title,
           ...(item.icon ? { icon: item.icon } : {}),
+          ...(item.svgIconSlot ? { svgIconSlot: item.svgIconSlot } : {}),
           pluginKey: plugin.pluginKey,
           pluginName: plugin.name,
           runnable: fromPlugin(plugin, command),

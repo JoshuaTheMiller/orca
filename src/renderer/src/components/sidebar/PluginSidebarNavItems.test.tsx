@@ -36,6 +36,10 @@ vi.mock('@/components/ui/context-menu', () => ({
 }))
 
 import { PluginSidebarNavItems } from './PluginSidebarNavItems'
+import { clearPluginSvgIconCache } from '../plugins/PluginSvgIcon'
+
+const SVG_TEXT =
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24z"/></svg>'
 
 const plugin = { pluginKey: 'samples.graph', pluginName: 'Graph' }
 const command: ActivePluginSidebarNavItem = {
@@ -235,5 +239,21 @@ describe('PluginSidebarNavItems stateful items', () => {
     const container = await render()
 
     expect(container.innerHTML).toBe('')
+  })
+
+  it('draws a nav item declared with an SVG icon as a mask, and the built-in icon otherwise', async () => {
+    const read = vi.fn().mockResolvedValue(SVG_TEXT)
+    Object.assign(window, { api: { plugins: { readContributionSvgIcon: read } } })
+    clearPluginSvgIconCache()
+    mocks.items = [{ ...command, svgIconSlot: 'nav-0' }, toggle]
+    const container = await render()
+
+    expect(read).toHaveBeenCalledWith({ pluginKey: 'samples.graph', slot: 'nav-0' })
+    const icon = rowFor(container, 'Open graph').querySelector<HTMLElement>(
+      '[data-plugin-svg-icon]'
+    )
+    expect(icon?.style.maskImage).toContain('data:image/svg+xml')
+    expect(rowFor(container, 'Details').querySelector('[data-plugin-svg-icon]')).toBeNull()
+    expect(rowFor(container, 'Details').querySelector('svg')).not.toBeNull()
   })
 })

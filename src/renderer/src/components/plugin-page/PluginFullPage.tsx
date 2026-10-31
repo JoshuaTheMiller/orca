@@ -113,9 +113,15 @@ export default function PluginFullPage({ viewKey }: { viewKey: string }): React.
 
   const title = page?.title ?? ''
   // Why createElement: the icon is picked from a closed table of components, not built here.
-  const icon = createElement(resolvePluginPanelIcon(page?.icon), {
-    className: 'size-4 shrink-0 text-muted-foreground'
-  })
+  const icon = createElement(
+    resolvePluginPanelIcon(
+      page?.icon,
+      page?.svgIconSlot ? { pluginKey: page.pluginKey, slot: page.svgIconSlot } : undefined
+    ),
+    {
+      className: 'size-4 shrink-0 text-muted-foreground'
+    }
+  )
   const backLabel = translate('auto.components.plugin.page.PluginFullPage.back', 'Back')
 
   let body: React.ReactNode

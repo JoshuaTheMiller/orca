@@ -56,10 +56,16 @@ function PluginSidebarCommandRow({
             unavailable && 'opacity-50'
           )}
         >
-          {React.createElement(resolvePluginPanelIcon(item.icon), {
-            className: 'size-4 shrink-0 text-worktree-sidebar-foreground/30',
-            strokeWidth: 1.75
-          })}
+          {React.createElement(
+            resolvePluginPanelIcon(
+              item.icon,
+              item.svgIconSlot ? { pluginKey: item.pluginKey, slot: item.svgIconSlot } : undefined
+            ),
+            {
+              className: 'size-4 shrink-0 text-worktree-sidebar-foreground/30',
+              strokeWidth: 1.75
+            }
+          )}
           {/* Manifest titles are plugin-owned and render without app-catalog translation. */}
           <span className="flex-1">{item.title}</span>
         </button>

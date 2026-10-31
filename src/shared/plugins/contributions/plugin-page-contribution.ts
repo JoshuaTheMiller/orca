@@ -6,6 +6,7 @@ import {
   pluginFieldDoc,
   PLUGIN_PAGES_SINCE
 } from '../manifest/plugin-schema-field-docs'
+import { pluginSvgIconPathSchema } from '../images/plugin-svg-icon'
 import { PLUGIN_PANEL_ICONS } from './plugin-panel-contribution'
 
 export const PLUGIN_PAGE_LIMIT = 4
@@ -23,11 +24,11 @@ export const pluginPageContributionSchema = z
       pluginFieldDoc('Title shown in the page header.', PLUGIN_PAGES_SINCE, ['Report'])
     ),
     icon: z
-      .enum(PLUGIN_PANEL_ICONS)
+      .union([z.enum(PLUGIN_PANEL_ICONS), pluginSvgIconPathSchema])
       .optional()
       .meta(
         pluginFieldDoc(
-          'Icon shown for the page in Orca. Same names as panel icons. Defaults to `plug`.',
+          'Icon shown for the page in Orca: a built-in panel icon name, or the path of an SVG file in the plugin. Defaults to `plug`.',
           PLUGIN_PAGES_SINCE,
           ['file-text']
         )

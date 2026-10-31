@@ -36,6 +36,11 @@ function declaredFile(label: string, path: string | undefined, maxBytes: number)
   return path === undefined ? [] : [{ label, path, kind: 'file' as const, maxBytes }]
 }
 
+/** A contribution's icon file, when its `icon` is an SVG path rather than a built-in name. */
+function svgIconFile(label: string, icon: string | undefined) {
+  return isPluginSvgIconPath(icon) ? declaredFile(label, icon, PLUGIN_SVG_ICON_MAX_BYTES) : []
+}
+
 function declaredArtifactPaths(manifest: PluginManifest): DeclaredArtifact[] {
   const c = manifest.contributes
   return [
@@ -51,13 +56,15 @@ function declaredArtifactPaths(manifest: PluginManifest): DeclaredArtifact[] {
     ...declaredFile('worker entry', manifest.main, PLUGIN_WORKER_ENTRY_MAX_BYTES),
     ...c.panels.flatMap((panel) => [
       ...declaredFile(`panel "${panel.id}" entry`, panel.entry, PLUGIN_PANEL_ENTRY_MAX_BYTES),
-      ...(isPluginSvgIconPath(panel.icon)
-        ? declaredFile(`panel "${panel.id}" icon`, panel.icon, PLUGIN_SVG_ICON_MAX_BYTES)
-        : [])
+      ...svgIconFile(`panel "${panel.id}" icon`, panel.icon)
     ]),
-    ...c.pages.flatMap((page) =>
-      declaredFile(`page "${page.id}" entry`, page.entry, PLUGIN_PANEL_ENTRY_MAX_BYTES)
-    ),
+    ...c.pages.flatMap((page) => [
+      ...declaredFile(`page "${page.id}" entry`, page.entry, PLUGIN_PANEL_ENTRY_MAX_BYTES),
+      ...svgIconFile(`page "${page.id}" icon`, page.icon)
+    ]),
+    ...c.sidebarNavItems.flatMap((item) => svgIconFile(`nav item "${item.id}" icon`, item.icon)),
+    ...c.projectItems.flatMap((item) => svgIconFile(`project item "${item.id}" icon`, item.icon)),
+    ...c.sidebarCards.flatMap((card) => svgIconFile(`sidebar card "${card.id}" icon`, card.icon)),
     ...c.customEditors.flatMap((editor) => [
       ...declaredFile(
         `custom editor "${editor.id}" entry`,

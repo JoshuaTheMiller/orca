@@ -1,12 +1,13 @@
 // @vitest-environment happy-dom
 import '@testing-library/jest-dom/vitest'
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import type { PluginHostListEntry } from '../../../../../preload/api-types'
 import { useAppStore } from '@/store'
 import { usePluginLanguagePackStore } from '@/store/plugin-language-packs'
 import { usePluginSyntaxStore } from '@/store/plugin-syntax-packs'
 import { PluginAddsSection } from './PluginAddsSection'
+import { clearPluginSvgIconCache } from '../PluginSvgIcon'
 
 const toast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn(), message: vi.fn() }))
 vi.mock('sonner', () => ({ toast }))
@@ -124,4 +125,27 @@ it('opens a live panel over the workspace Settings came from', () => {
   expect(state.activeView).toBe('terminal')
   expect(state.rightSidebarTab).toBe('plugin:samples.hello-orca/hello')
   expect(state.rightSidebarOpen).toBe(true)
+})
+
+it('draws each contribution that declares an SVG icon with its mask', async () => {
+  const read = vi
+    .fn()
+    .mockResolvedValue(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24z"/></svg>'
+    )
+  Object.assign(window.api.plugins, { readContributionSvgIcon: read })
+  clearPluginSvgIconCache()
+  renderAdds({
+    ...hello,
+    pages: [
+      { id: 'g', title: 'Notes', svgIconSlot: 'page-0', viewKey: 'plugin:samples.hello-orca/g' }
+    ],
+    sidebarNavItems: [{ id: 'n', title: 'Nav', svgIconSlot: 'nav-0' }],
+    projectItems: [{ id: 'p', title: 'Proj', svgIconSlot: 'project-0', command: 'ping' }],
+    sidebarCards: [{ id: 'c', title: 'Card', svgIconSlot: 'card-0' }]
+  })
+  await waitFor(() => expect(document.querySelectorAll('[data-plugin-svg-icon]').length).toBe(4))
+  for (const slot of ['page-0', 'nav-0', 'project-0', 'card-0']) {
+    expect(read).toHaveBeenCalledWith({ pluginKey: 'samples.hello-orca', slot })
+  }
 })

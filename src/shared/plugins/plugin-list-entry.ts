@@ -31,6 +31,8 @@ export type PluginHostPage = {
   title: string
   /** Lucide icon name declared in the plugin manifest. */
   icon?: string
+  /** Slot of the SVG icon it declares, read with readContributionSvgIcon; absent for a built-in name. */
+  svgIconSlot?: string
   /** The top-level view that shows it: `plugin:<publisher>.<id>/<pageId>`. */
   viewKey: PluginPageTopLevelView
 }
@@ -61,6 +63,8 @@ export type PluginHostSidebarNavItem = {
   title: string
   /** Lucide icon name from the closed panel icon set; absent means the default. */
   icon?: string
+  /** Slot of the SVG icon it declares, read with readContributionSvgIcon; absent for a built-in name. */
+  svgIconSlot?: string
   /** `command` when absent: older hosts only sent command items. */
   kind?: 'command' | 'toggle' | 'checkbox'
   /** Id of one of the plugin's own commands; set on command items only. */
@@ -80,6 +84,8 @@ export type PluginHostSidebarCard = {
   title: string
   /** Lucide icon name from the closed panel icon set; absent means the default. */
   icon?: string
+  /** Slot of the SVG icon it declares, read with readContributionSvgIcon; absent for a built-in name. */
+  svgIconSlot?: string
   emptyText?: string
   /** Id of a boolean entry in `settings` that must be true for the card to be offered. */
   when?: string
@@ -90,6 +96,8 @@ export type PluginHostProjectItem = {
   title: string
   /** Lucide icon name from the closed panel icon set; absent means the default. */
   icon?: string
+  /** Slot of the SVG icon it declares, read with readContributionSvgIcon; absent for a built-in name. */
+  svgIconSlot?: string
   /** Id of one of the plugin's own commands. */
   command: string
   /** Id of a string entry in `settings` whose value is the row's default title. */

@@ -25,10 +25,13 @@ import {
   Star,
   Terminal,
   Wrench,
-  Zap,
-  type LucideIcon
+  Zap
 } from 'lucide-react'
-import { pluginSvgIconComponent, type PluginSvgIconSource } from '../plugins/PluginSvgIcon'
+import {
+  pluginSvgIconComponent,
+  type PluginIconComponent,
+  type PluginSvgIconSource
+} from '../plugins/PluginSvgIcon'
 import type { ActivePluginPanel } from '@/store/plugin-panels'
 import type { ActivityBarItem } from './activity-bar-buttons'
 import {
@@ -36,7 +39,7 @@ import {
   type PluginPanelIconName
 } from '../../../../shared/plugins/contributions/plugin-panel-contribution'
 
-type PluginPanelIcon = LucideIcon
+type PluginPanelIcon = PluginIconComponent
 
 // Why: importing lucide's full `icons` map would bundle every icon and defeat
 // tree-shaking, so plugin manifests pick from this closed set (fallback: Plug).

@@ -43,6 +43,10 @@ vi.mock('./PluginProjectItemRenameDialog', () => ({
 }))
 
 import { renderPluginProjectItemVirtualRow } from './plugin-project-item-row'
+import { clearPluginSvgIconCache } from '@/components/plugins/PluginSvgIcon'
+
+const SVG_TEXT =
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24z"/></svg>'
 
 const plugin = { pluginKey: 'samples.board', pluginName: 'Board' }
 const row: PluginProjectItemRenderRow = {
@@ -207,5 +211,28 @@ describe('plugin project item row', () => {
     expect(container.querySelector<HTMLButtonElement>('[data-plugin-project-item]')?.disabled).toBe(
       true
     )
+  })
+
+  it('draws an SVG icon as a mask for its slot', async () => {
+    const read = vi.fn().mockResolvedValue(SVG_TEXT)
+    Object.assign(window, { api: { plugins: { readContributionSvgIcon: read } } })
+    clearPluginSvgIconCache()
+    const scoped = { ...row, item: { ...row.item, svgIconSlot: 'project-0' } }
+    const container = document.createElement('div')
+    document.body.appendChild(container)
+    const root = createRoot(container)
+    roots.push(root)
+    await act(async () => {
+      root.render(
+        renderPluginProjectItemVirtualRow({
+          row: scoped,
+          vItem,
+          measureVirtualRowElement: () => undefined
+        })
+      )
+    })
+    expect(read).toHaveBeenCalledWith({ pluginKey: 'samples.board', slot: 'project-0' })
+    const icon = container.querySelector<HTMLElement>('[data-plugin-svg-icon]')
+    expect(icon?.style.maskImage).toContain('data:image/svg+xml')
   })
 })

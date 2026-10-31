@@ -62,9 +62,17 @@ export function PluginSidebarViewSwitcher({
           <DropdownMenuRadioItem value="workspaces">{projectsTitle}</DropdownMenuRadioItem>
           {cards.map((card) => (
             <DropdownMenuRadioItem key={card.body} value={card.body} title={card.pluginName}>
-              {React.createElement(resolvePluginPanelIcon(card.icon), {
-                className: 'size-3.5 shrink-0'
-              })}
+              {React.createElement(
+                resolvePluginPanelIcon(
+                  card.icon,
+                  card.svgIconSlot
+                    ? { pluginKey: card.pluginKey, slot: card.svgIconSlot }
+                    : undefined
+                ),
+                {
+                  className: 'size-3.5 shrink-0'
+                }
+              )}
               {card.title}
             </DropdownMenuRadioItem>
           ))}

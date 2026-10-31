@@ -5,7 +5,12 @@ import {
   pluginSvgMaskUrl
 } from '../../../../shared/plugins/images/plugin-svg-icon'
 
-export type PluginIconComponent = React.ComponentType<{ size?: number; className?: string }>
+// Why strokeWidth: the sidebar rows pass it to lucide icons; a mask icon has no stroke and ignores it.
+export type PluginIconComponent = React.ComponentType<{
+  size?: number
+  className?: string
+  strokeWidth?: number
+}>
 
 /** Which contribution icon to read: the plugin and the slot its list entry names. */
 export type PluginSvgIconSource = { pluginKey: string; slot: string }

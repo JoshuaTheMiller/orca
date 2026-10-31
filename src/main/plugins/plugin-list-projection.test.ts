@@ -195,3 +195,46 @@ describe('buildPluginList sidebar nav items', () => {
     ])
   })
 })
+
+describe('buildPluginList SVG icons', () => {
+  it('sends a slot instead of an icon for an SVG on every contribution point', async () => {
+    const withSvg = pluginManifestSchema.parse({
+      manifestVersion: 2,
+      execution: 'trusted-worker',
+      main: 'main.mjs',
+      id: 'icons',
+      publisher: 'samples',
+      name: 'Icons',
+      version: '1.0.0',
+      engines: { orca: '>=1.4.255' },
+      capabilities: [],
+      contributes: {
+        commands: [{ id: 'go', title: 'Go', action: 'view.tasks' }],
+        sidebarNavItems: [
+          { id: 'a', title: 'A', icon: 'images/a.svg', command: 'go' },
+          { id: 'b', title: 'B', icon: 'star', command: 'go' }
+        ],
+        projectItems: [{ id: 'p', title: 'P', icon: 'images/p.svg', command: 'go' }],
+        sidebarCards: [{ id: 'c', title: 'C', icon: 'images/c.svg' }]
+      }
+    })
+    const plugin: ValidDiscoveredPlugin = {
+      pluginKey: 'samples.icons',
+      rootDir: join(tmpdir(), 'plugins', 'samples.icons'),
+      manifest: withSvg,
+      consentFingerprint: 'sha256-current',
+      contentHash: null,
+      isDev: true
+    }
+
+    const [entry] = await buildPluginList(serviceWith(plugin), emptyPluginLockfile())
+
+    expect(entry?.sidebarNavItems).toMatchObject([
+      { id: 'a', svgIconSlot: 'nav-0' },
+      { id: 'b', icon: 'star' }
+    ])
+    expect(entry?.sidebarNavItems?.[0]).not.toHaveProperty('icon')
+    expect(entry?.projectItems).toMatchObject([{ id: 'p', svgIconSlot: 'project-0' }])
+    expect(entry?.sidebarCards).toMatchObject([{ id: 'c', svgIconSlot: 'card-0' }])
+  })
+})
