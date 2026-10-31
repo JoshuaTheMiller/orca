@@ -6,6 +6,9 @@ export const PLUGIN_MANIFEST_V2_SINCE = '1.4.245'
 /** First release that derives the publisher, so a format 2 manifest may leave `publisher` out. */
 export const PLUGIN_DERIVED_PUBLISHER_SINCE = '1.4.246'
 
+/** First release that lets a contribution icon be a plugin-relative SVG file. */
+export const PLUGIN_IMAGE_ICONS_SINCE = '1.4.255'
+
 type PluginFieldDoc = {
   description: string
   'x-orca-since': string

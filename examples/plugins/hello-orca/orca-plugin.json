@@ -6,11 +6,13 @@
   "name": "Hello Orca",
   "version": "1.0.0",
   "description": "Sample plugin combining a panel, a worker command, and event subscriptions.",
-  "engines": { "orca": ">=1.4.245" },
+  "engines": { "orca": ">=1.4.255" },
   "pluginApi": 1,
   "main": "main.mjs",
   "contributes": {
-    "panels": [{ "id": "hello", "title": "Hello Orca", "icon": "plug", "entry": "panel.html" }],
+    "panels": [
+      { "id": "hello", "title": "Hello Orca", "icon": "images/star.svg", "entry": "panel.html" }
+    ],
     "commands": [{ "id": "hello-ping", "title": "Hello: Ping" }],
     "events": [{ "on": "workspace.created" }, { "on": "agent.status.changed" }]
   },

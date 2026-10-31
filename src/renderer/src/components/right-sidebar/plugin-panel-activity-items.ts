@@ -27,6 +27,8 @@ import {
   Wrench,
   Zap
 } from 'lucide-react'
+import { pluginSvgIconComponent } from '../plugins/PluginSvgIcon'
+import { parsePluginImageUrl } from '../../../../shared/plugins/images/plugin-image-url'
 import type { ActivePluginPanel } from '@/store/plugin-panels'
 import type { ActivityBarItem } from './activity-bar-buttons'
 import {
@@ -68,7 +70,15 @@ const PLUGIN_PANEL_ICON_COMPONENTS: Record<PluginPanelIconName, PluginPanelIcon>
   zap: Zap
 }
 
-export function resolvePluginPanelIcon(iconName: string | undefined): PluginPanelIcon {
+/** A built-in icon by name, or the panel's own SVG (`iconUrl`, an orca-plugin-image URL) with Plug as
+ *  the fallback if it fails to load. */
+export function resolvePluginPanelIcon(
+  iconName: string | undefined,
+  iconUrl?: string
+): PluginPanelIcon {
+  if (iconUrl && parsePluginImageUrl(iconUrl)) {
+    return pluginSvgIconComponent(iconUrl, Plug)
+  }
   if (!iconName) {
     return Plug
   }
@@ -83,7 +93,7 @@ export function getPluginPanelActivityItems(
 ): ActivityBarItem[] {
   return panels.map((panel) => ({
     id: panel.tabKey,
-    icon: resolvePluginPanelIcon(panel.icon),
+    icon: resolvePluginPanelIcon(panel.icon, panel.iconUrl),
     // Manifest titles are plugin-owned and render without app-catalog translation.
     title: panel.title,
     shortcut: '',

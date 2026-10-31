@@ -136,6 +136,28 @@ Theme changes do not reload the frame: the shell updates the `--orca-*` variable
 `light`/`dark` class on `<html>` in place and emits `theme`. Restyle from the variables, or
 listen with `orca.on('theme', …)`, to follow it.
 
+### Custom icons
+
+A panel's `icon` is either a built-in icon name (`"plug"`, `"database"`, …) or the path of an SVG
+file in your plugin, such as `"images/star.svg"`. A manifest that uses an SVG path needs
+`"engines": { "orca": ">=1.4.255" }` or newer; older Orca reports the requirement instead of
+loading the plugin.
+
+```json
+{ "id": "hello", "title": "Hello Orca", "icon": "images/star.svg", "entry": "panel.html" }
+```
+
+Orca draws the SVG as a single-color mask the size of the built-in icons, so it takes the theme's
+text color and ignores any color in the file: only its shape counts (opaque areas and strokes).
+Draw it in black on a transparent background with a `viewBox`. If the file cannot be loaded, Orca
+shows the default `plug` icon. Orca refuses to install a plugin whose icon:
+
+- is missing, over 32 KB, not UTF-8, or not well-formed SVG with an `<svg>` root;
+- contains `<script>`, `<foreignObject>`, `<iframe>`, `<object>`, `<embed>`, a DOCTYPE or entity
+  declaration, or an `<animate>`/`<set>` that targets an `href`;
+- has an event-handler attribute (`onclick`, `onload`, …) or a `javascript:` value;
+- references anything but a `#fragment` through `href`, `xlink:href`, `url(…)` or `@import`.
+
 ## 2. Load it while you work
 
 1. Settings → Plugins: click **Turn on plugins**.
