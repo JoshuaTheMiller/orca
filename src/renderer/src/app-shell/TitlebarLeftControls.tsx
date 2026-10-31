@@ -16,6 +16,7 @@ import {
 import { useShortcutLabel } from '../hooks/useShortcutLabel'
 import { useAppStore } from '../store'
 import { hasCustomTitleBar, hasMacTrafficLights } from './app-window-chrome'
+import { BUILD_FLAVOR_NAME } from './build-flavor'
 import type { AppChromeLayout } from './use-app-chrome-layout'
 
 /** Reuse left chrome across full-width and sidebar-width headers so controls/popovers stay consistent. */
@@ -43,6 +44,9 @@ export function TitlebarLeftControls({ layout }: { layout: AppChromeLayout }): R
           /* Replace native Windows/Linux chrome with logo and application-menu access. */
           <>
             <img src={logo} alt="" aria-hidden className="titlebar-logo" />
+            <div className="titlebar-app-name" aria-label={BUILD_FLAVOR_NAME}>
+              <span className="titlebar-app-name-main">{BUILD_FLAVOR_NAME}</span>
+            </div>
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
@@ -64,13 +68,8 @@ export function TitlebarLeftControls({ layout }: { layout: AppChromeLayout }): R
         {layout.showSidebar && !hasCustomTitleBar && layout.showTitlebarAppName && (
           <ContextMenu>
             <ContextMenuTrigger asChild>
-              <div
-                className="titlebar-app-name"
-                aria-label={translate('auto.App.5096cbbc86', 'Orca')}
-              >
-                <span className="titlebar-app-name-main">
-                  {translate('auto.App.5096cbbc86', 'Orca')}
-                </span>
+              <div className="titlebar-app-name" aria-label={BUILD_FLAVOR_NAME}>
+                <span className="titlebar-app-name-main">{BUILD_FLAVOR_NAME}</span>
               </div>
             </ContextMenuTrigger>
             <ContextMenuContent>
