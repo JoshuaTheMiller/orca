@@ -2,14 +2,16 @@ import { satisfiesOrcaEngineRange } from '../manifest/plugin-manifest-engine-ran
 import {
   PLUGIN_DERIVED_PUBLISHER_SINCE,
   PLUGIN_MANIFEST_V2_SINCE,
-  PLUGIN_SCHEMA_SINCE_V1
+  PLUGIN_SCHEMA_SINCE_V1,
+  PLUGIN_SIDEBAR_NAV_ITEMS_SINCE
 } from '../manifest/plugin-schema-field-docs'
 
 /** The newest "since" this build's schemas cite: everything up to it is readable here. */
 export const PLUGIN_SCHEMA_NEWEST_SINCE = [
   PLUGIN_SCHEMA_SINCE_V1,
   PLUGIN_MANIFEST_V2_SINCE,
-  PLUGIN_DERIVED_PUBLISHER_SINCE
+  PLUGIN_DERIVED_PUBLISHER_SINCE,
+  PLUGIN_SIDEBAR_NAV_ITEMS_SINCE
 ].reduce((newest, version) => (satisfiesOrcaEngineRange(version, `>=${newest}`) ? version : newest))
 
 /**

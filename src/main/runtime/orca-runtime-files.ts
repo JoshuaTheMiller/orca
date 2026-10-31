@@ -18,6 +18,7 @@ export class RuntimeFileCommands {
   private readonly terminalPaths: RuntimeTerminalPathResolver
 
   readonly openMobileFile: RuntimeFileAccess['openMobileFile']
+  readonly openLocalAbsoluteFile: RuntimeFileAccess['openLocalAbsoluteFile']
   readonly openMobileDiff: RuntimeFileAccess['openMobileDiff']
   readonly listRuntimeMarkdownDocuments: RuntimeFileAccess['listRuntimeMarkdownDocuments']
   readonly pathsExistRuntimeFiles: RuntimeFileAccess['pathsExistRuntimeFiles']
@@ -57,6 +58,7 @@ export class RuntimeFileCommands {
     this.watches = new RuntimeFileWatches(host)
     this.terminalPaths = new RuntimeTerminalPathResolver(host, this.artifacts)
     this.openMobileFile = this.access.openMobileFile.bind(this.access)
+    this.openLocalAbsoluteFile = this.access.openLocalAbsoluteFile.bind(this.access)
     this.openMobileDiff = this.access.openMobileDiff.bind(this.access)
     this.listRuntimeMarkdownDocuments = this.access.listRuntimeMarkdownDocuments.bind(this.access)
     this.pathsExistRuntimeFiles = this.access.pathsExistRuntimeFiles.bind(this.access)

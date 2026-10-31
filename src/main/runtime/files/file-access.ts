@@ -22,13 +22,24 @@ import {
   resolveFileExplorerPath,
   resolveFileExplorerPaths
 } from './file-target'
-import { parseExecutionHostId, type ExecutionHostId } from '../../../shared/execution-host'
+import {
+  LOCAL_EXECUTION_HOST_ID,
+  parseExecutionHostId,
+  type ExecutionHostId
+} from '../../../shared/execution-host'
 import type { FileStat } from '../../providers/filesystem-provider-contract'
 import { assertRuntimeReadWslDistroRunning } from '../runtime-wsl-background-read-gate'
+import { stat as statLocalPath } from 'node:fs/promises'
+import { basename, isAbsolute } from 'node:path'
+import { FLOATING_TERMINAL_WORKTREE_ID } from '../../../shared/constants'
 
 type RuntimeFileAccessHost = Pick<
   RuntimeFileCommandHost,
-  'requireStore' | 'resolveRuntimeFileTarget' | 'openFile' | 'openDiff'
+  | 'requireStore'
+  | 'resolveRuntimeFileTarget'
+  | 'resolveKnownWorkspaceFileTarget'
+  | 'openFile'
+  | 'openDiff'
 >
 
 export class RuntimeFileAccess {
@@ -65,6 +76,52 @@ export class RuntimeFileAccess {
       ...(position ? [position] : [])
     )
     return { worktree: worktree.id, relativePath, kind, opened: true }
+  }
+
+  /** Opens a local absolute file in an editor tab: in the workspace that owns the path, else in
+   *  the floating workspace the way OS-opened documents are, so any matching custom editor applies. */
+  async openLocalAbsoluteFile(
+    absolutePath: string,
+    position?: RuntimeFileOpenPosition
+  ): Promise<{ worktree: string }> {
+    if (!isAbsolute(absolutePath)) {
+      throw new Error('path must be absolute')
+    }
+    const owner = await this.host.resolveKnownWorkspaceFileTarget?.(
+      absolutePath,
+      LOCAL_EXECUTION_HOST_ID
+    )
+    if (owner) {
+      await this.assertOpenTargetIsFile(absolutePath, owner)
+      await this.host.openFile(
+        owner.worktree.id,
+        absolutePath,
+        owner.relativePath,
+        runtimeOwnerForTarget(owner),
+        undefined,
+        ...(position ? [position] : [])
+      )
+      return { worktree: owner.worktree.id }
+    }
+    // Why the node fs: no workspace owns the path, so no provider does either.
+    let stats: Awaited<ReturnType<typeof statLocalPath>>
+    try {
+      stats = await statLocalPath(absolutePath)
+    } catch (error) {
+      throw isENOENT(error) ? new Error(`file not found: ${basename(absolutePath)}`) : error
+    }
+    if (!stats.isFile()) {
+      throw new Error(`not a file: ${basename(absolutePath)}`)
+    }
+    await this.host.openFile(
+      FLOATING_TERMINAL_WORKTREE_ID,
+      absolutePath,
+      basename(absolutePath),
+      null,
+      undefined,
+      ...(position ? [position] : [])
+    )
+    return { worktree: FLOATING_TERMINAL_WORKTREE_ID }
   }
 
   private async assertOpenTargetIsFile(

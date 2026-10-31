@@ -11,6 +11,7 @@ function createServices(storageSet: PluginHostServices['storage']['set']): Plugi
     listWorktreeTerminals: vi.fn().mockResolvedValue([]),
     sendTerminalText: vi.fn().mockResolvedValue({ accepted: true }),
     dispatchPluginNotification: vi.fn().mockResolvedValue({ delivered: true }),
+    openEditorFile: vi.fn().mockResolvedValue({ opened: true }),
     storage: {
       get: vi.fn(),
       set: storageSet,
@@ -133,7 +134,8 @@ function createTerminalHarness(terminalHandles: string[]): {
       terminals: terminalHandles.map((handle) => ({ handle, title: null }))
     }),
     sendTerminal: vi.fn().mockResolvedValue({ accepted: true }),
-    dispatchPluginNotification: vi.fn().mockResolvedValue({ delivered: true })
+    dispatchPluginNotification: vi.fn().mockResolvedValue({ delivered: true }),
+    openLocalAbsoluteFile: vi.fn().mockResolvedValue({ worktree: 'worktree-1' })
   }
   return {
     delegate,
@@ -294,5 +296,98 @@ describe('terminal.sendText', () => {
 
     expect(outcome).toEqual({ ok: true, value: { accepted: true } })
     expect(delegate.sendTerminal).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('editor.openFile', () => {
+  const openFile = (
+    params: unknown,
+    options: {
+      surface?: 'worker' | 'panel' | 'editor'
+      granted?: 'editor:open'[]
+      services?: PluginHostServices
+    } = {}
+  ) => {
+    const audit = { record: vi.fn().mockResolvedValue(undefined) }
+    const services = options.services ?? createServices(vi.fn())
+    return {
+      audit,
+      services,
+      outcome: executePluginHostCall({
+        pluginId: 'samples.demo',
+        method: 'editor.openFile',
+        params,
+        surface: options.surface ?? 'worker',
+        grantedCapabilities: options.granted ?? ['editor:open'],
+        services,
+        audit
+      })
+    }
+  }
+
+  it('opens the file with its position and audits the file name only', async () => {
+    const { outcome, services, audit } = openFile({
+      path: '/Users/private/notes/graph.json',
+      line: 4,
+      column: 2
+    })
+
+    await expect(outcome).resolves.toEqual({ ok: true, value: { opened: true } })
+    expect(services.openEditorFile).toHaveBeenCalledWith('/Users/private/notes/graph.json', {
+      line: 4,
+      column: 2
+    })
+    const summaries = audit.record.mock.calls.map(([entry]) => entry.summary)
+    expect(summaries).toEqual(['file=graph.json', 'file=graph.json'])
+  })
+
+  it('ignores a column given without a line', async () => {
+    const { outcome, services } = openFile({ path: String.raw`C:\notes\a.md`, column: 3 })
+
+    await outcome
+    expect(services.openEditorFile).toHaveBeenCalledWith(String.raw`C:\notes\a.md`, undefined)
+  })
+
+  it('serves the panel and editor surfaces too', async () => {
+    for (const surface of ['panel', 'editor'] as const) {
+      await expect(openFile({ path: '/a.md' }, { surface }).outcome).resolves.toEqual({
+        ok: true,
+        value: { opened: true }
+      })
+    }
+  })
+
+  it('refuses a relative path and a missing capability', async () => {
+    await expect(openFile({ path: 'notes/a.md' }).outcome).resolves.toMatchObject({
+      ok: false,
+      code: 'invalid_params'
+    })
+    await expect(
+      openFile({ path: '/a.md' }, { granted: [] as never }).outcome
+    ).resolves.toMatchObject({
+      ok: false,
+      code: 'capability_denied'
+    })
+  })
+
+  it('reports a file the runtime cannot open as action_failed', async () => {
+    const services = createServices(vi.fn())
+    vi.mocked(services.openEditorFile).mockRejectedValue(new Error('file not found: a.md'))
+
+    await expect(openFile({ path: '/gone/a.md' }, { services }).outcome).resolves.toEqual({
+      ok: false,
+      code: 'action_failed',
+      error: 'file not found: a.md'
+    })
+  })
+
+  it('binds the service to the runtime delegate', async () => {
+    const { delegate, services } = createTerminalHarness([])
+
+    await expect(openFile({ path: '/w/a.md', line: 1 }, { services }).outcome).resolves.toEqual({
+      ok: true,
+      value: { opened: true }
+    })
+    expect(delegate.openLocalAbsoluteFile).toHaveBeenCalledWith('/w/a.md', { line: 1 })
   })
 })

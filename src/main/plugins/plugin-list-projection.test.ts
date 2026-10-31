@@ -141,3 +141,39 @@ describe('buildPluginList I/O', () => {
     expect(fsCalls.count).toBe(0)
   })
 })
+
+describe('buildPluginList sidebar nav items', () => {
+  it('projects each declared item', async () => {
+    const withNav = pluginManifestSchema.parse({
+      manifestVersion: 2,
+      execution: 'declarative',
+      id: 'graph',
+      publisher: 'samples',
+      name: 'Graph',
+      version: '1.0.0',
+      engines: { orca: '>=1.4.247' },
+      contributes: {
+        commands: [{ id: 'graph.open', title: 'Graph: Open', action: 'view.tasks' }],
+        sidebarNavItems: [
+          { id: 'graph', title: 'Graph', icon: 'database', command: 'graph.open' },
+          { id: 'plain', title: 'Plain', command: 'graph.open' }
+        ]
+      }
+    })
+    const plugin: ValidDiscoveredPlugin = {
+      pluginKey: 'samples.graph',
+      rootDir: join(tmpdir(), 'plugins', 'samples.graph'),
+      manifest: withNav,
+      consentFingerprint: 'sha256-current',
+      contentHash: null,
+      isDev: true
+    }
+
+    const [entry] = await buildPluginList(serviceWith(plugin), emptyPluginLockfile())
+
+    expect(entry?.sidebarNavItems).toEqual([
+      { id: 'graph', title: 'Graph', icon: 'database', command: 'graph.open' },
+      { id: 'plain', title: 'Plain', command: 'graph.open' }
+    ])
+  })
+})

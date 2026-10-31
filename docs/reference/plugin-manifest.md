@@ -42,6 +42,7 @@ Add `"$schema": "https://raw.githubusercontent.com/stablyai/orca/main/docs/schem
 | `contributes.syntaxes` | [SyntaxContribution](#syntaxcontribution)[] | no | 1.4.245 | Syntax highlighting for editor languages. At most 16. |
 | `contributes.customEditors` | [CustomEditorContribution](#customeditorcontribution)[] | no | 1.4.245 | Editors that open files of given types in the editor tab. At most 16. |
 | `contributes.newFiles` | [NewFileContribution](#newfilecontribution)[] | no | 1.4.245 | Untitled files the user can create from the + menu and the command palette. At most 16. |
+| `contributes.sidebarNavItems` | [SidebarNavItemContribution](#sidebarnavitemcontribution)[] | no | 1.4.247 | Entries in the left sidebar nav list that run a command of this plugin. At most 8. |
 | `contributes.agentHarnesses` | any[] | no | 1.4.245 | Reserved for coding-agent harness definitions; must be empty until their format is defined. |
 | `contributes.skills` | any[] | no | 1.4.245 | Reserved for agent skills; must be empty until their format is defined. |
 | `contributes.mcpServers` | any[] | no | 1.4.245 | Reserved for MCP server definitions; must be empty until their format is defined. |
@@ -167,13 +168,24 @@ A kind of untitled file the user can create from the tab bar + menu or the comma
 | `template` | string | no | 1.4.245 | UTF-8 file copied into the new file, at most 256 KB. Without one the file starts empty. Relative to the plugin root; `..` segments and Windows device names such as `CON` are refused. Example: `"templates/empty.excalidraw"` |
 | `icon` | string | no | 1.4.245 | Square image shown beside the menu item. Defaults to the plugin icon. PNG, WEBP, static, at least 128×128, square, at most 256 KB. Relative to the plugin root; `..` segments and Windows device names such as `CON` are refused. Example: `"images/editor-icon.png"` |
 
+## SidebarNavItemContribution
+
+An entry in the left sidebar nav list, under Search, that runs one of the same plugin's commands. Requires the `declarative` execution profile or higher.
+
+| Field | Type | Required | Since | Description |
+| --- | --- | --- | --- | --- |
+| `id` | string | yes | 1.4.247 | Nav item id, unique among this plugin's nav items. The reserved names `constructor` and `prototype` are refused. Example: `"open-graph"` |
+| `title` | string | yes | 1.4.247 | Label of the entry in the left sidebar nav list. Example: `"Graph"` |
+| `icon` | `"activity"` \| `"bar-chart-3"` \| `"bell"` \| `"blocks"` \| `"book"` \| `"bot"` \| `"bug"` \| `"calendar"` \| `"cloud"` \| `"code"` \| `"database"` \| `"file-text"` \| `"flag"` \| `"folder"` \| `"gauge"` \| `"globe"` \| `"hammer"` \| `"layers"` \| `"lightbulb"` \| `"package"` \| `"plug"` \| `"puzzle"` \| `"rocket"` \| `"star"` \| `"terminal"` \| `"wrench"` \| `"zap"` | no | 1.4.247 | Icon shown beside the label. Defaults to `plug`. Example: `"database"` |
+| `command` | string | yes | 1.4.247 | Id of one of this plugin's `contributes.commands`. Clicking the item runs it as the command palette would. Example: `"graph.open"` |
+
 ## Capability
 
 A host API the plugin may call once the user consents.
 
 | Field | Type | Required | Since | Description |
 | --- | --- | --- | --- | --- |
-| `kind` | `"workspace:read"` \| `"agent:read"` \| `"terminal:send"` \| `"notifications:show"` \| `"storage:own"` \| `"secrets:own"` \| `"settings:own"` | yes | 1.4.160 | Capability granted on user consent. |
+| `kind` | `"workspace:read"` \| `"agent:read"` \| `"terminal:send"` \| `"notifications:show"` \| `"storage:own"` \| `"secrets:own"` \| `"settings:own"` \| `"editor:open"` | yes | 1.4.160 | Capability granted on user consent. |
 
 ## Screenshot
 

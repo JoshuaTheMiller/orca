@@ -44,6 +44,15 @@ export type PluginHostNewFile = {
   icon?: string
 }
 
+export type PluginHostSidebarNavItem = {
+  id: string
+  title: string
+  /** Lucide icon name from the closed panel icon set; absent means the default. */
+  icon?: string
+  /** Id of one of the plugin's own commands. */
+  command: string
+}
+
 export type PluginHostListEntry = {
   pluginKey: string
   consentFingerprint: string | null
@@ -74,6 +83,8 @@ export type PluginHostListEntry = {
   customEditors?: PluginHostCustomEditor[]
   /** Absent on hosts that predate new-file templates. */
   newFiles?: PluginHostNewFile[]
+  /** Absent on hosts that predate sidebar nav items. */
+  sidebarNavItems?: PluginHostSidebarNavItem[]
   commands: {
     id: string
     title: string

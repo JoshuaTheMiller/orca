@@ -7,6 +7,7 @@ import {
 } from '../../../../../shared/plugins/contributions/plugin-contribution-points'
 import type { PluginManifest } from '../../../../../shared/plugins/manifest/plugin-manifest'
 import { getIntlLocale, translate } from '@/i18n/i18n'
+import { describeSidebarNavItemRows } from './plugin-sidebar-nav-item-rows'
 
 /** The manifest points shown as named rows; commands, shortcuts and events have their own lists. */
 export type PluginContributionKind = Exclude<
@@ -45,6 +46,7 @@ export type PluginContributionSource = {
   }[]
   vmRecipes: readonly string[]
   newFiles: readonly { title: string; extension: string }[]
+  sidebarNavItems: readonly { title: string }[]
 }
 
 export const EMPTY_CONTRIBUTION_SOURCE: PluginContributionSource = {
@@ -56,7 +58,8 @@ export const EMPTY_CONTRIBUTION_SOURCE: PluginContributionSource = {
   panels: [],
   customEditors: [],
   vmRecipes: [],
-  newFiles: []
+  newFiles: [],
+  sidebarNavItems: []
 }
 
 const FILE_LIST_LIMIT = 4
@@ -95,7 +98,8 @@ export function manifestContributionSource(manifest: PluginManifest): PluginCont
     panels: contributes.panels.map((panel) => panel.title),
     customEditors: contributes.customEditors,
     vmRecipes: contributes.vmRecipes.map((recipe) => nameFromContributionPath(recipe.path)),
-    newFiles: contributes.newFiles
+    newFiles: contributes.newFiles,
+    sidebarNavItems: contributes.sidebarNavItems
   }
 }
 
@@ -133,7 +137,8 @@ export function summaryContributionSource(
       filenames: []
     })),
     vmRecipes: of('vmRecipes').map((item) => nameFromContributionPath(item.name)),
-    newFiles: of('newFiles').map((item) => ({ title: item.name, extension: item.detail ?? '' }))
+    newFiles: of('newFiles').map((item) => ({ title: item.name, extension: item.detail ?? '' })),
+    sidebarNavItems: of('sidebarNavItems').map((item) => ({ title: item.name }))
   }
 }
 
@@ -288,6 +293,7 @@ export function describePluginContributions(
       tone: 'default'
     })
   }
+  rows.push(...describeSidebarNavItemRows(source.sidebarNavItems))
   for (const [index, title] of source.vmRecipes.entries()) {
     rows.push({
       key: `vmRecipes:${index}`,

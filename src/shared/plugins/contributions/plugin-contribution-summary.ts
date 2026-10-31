@@ -89,6 +89,12 @@ export function pluginContributionSummary(
       c.newFiles,
       (newFile) => newFile.title,
       (newFile) => newFile.extension
+    ),
+    ...named(
+      'sidebarNavItems',
+      c.sidebarNavItems,
+      (item) => item.title,
+      (item) => item.command
     )
   ].slice(0, PLUGIN_CONTRIBUTION_SUMMARY_LIMIT)
 }

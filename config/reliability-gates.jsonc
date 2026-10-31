@@ -5994,7 +5994,7 @@
         "pnpm exec vitest run --config config/vitest.config.ts src/renderer/src/store/slices/browser-workspace-doc-location.test.ts src/renderer/src/components/browser-pane/workspace-doc/HtmlDocPreview.toolbar.test.tsx src/shared/doc-preview-scheme.test.ts",
         "pnpm exec vitest run --config config/vitest.config.ts src/renderer/src/store/slices/browser-workspace-doc-location.test.ts",
         // The hardening round: the third url door, the group projection, and both directions of the focus handoff.
-        "pnpm exec vitest run --config config/vitest.config.ts src/renderer/src/store/slices/browser-workspace-doc-location.test.ts src/renderer/src/runtime/sync-runtime-graph-editor-diff-tabs.test.ts src/renderer/src/components/browser-pane/workspace-doc/workspace-doc-page-pane.test.tsx src/renderer/src/components/browser-pane/workspace-doc/HtmlDocPreview.toolbar.test.tsx",
+        "pnpm exec vitest run --config config/vitest.config.ts src/renderer/src/store/slices/browser-workspace-doc-location.test.ts src/renderer/src/runtime/sync-runtime-graph-editor-diff-tabs.test.ts src/renderer/src/components/browser-pane/workspace-doc/HtmlDocPreview.toolbar.test.tsx",
         "pnpm exec vitest run --config config/vitest.config.ts src/renderer/src/components/browser-pane/workspace-doc/HtmlDocPreview.failure-message.test.tsx",
         "pnpm exec vitest run --config config/vitest.config.ts src/preload/doc-preview-link-interception.test.ts src/main/browser/doc-preview-guest-policy.test.ts src/main/window/main-window-webview-security.test.ts src/main/ipc/doc-preview-grant-ipc.test.ts",
         "pnpm exec vitest run --config config/vitest.config.ts src/main/ipc/browser-preview-tool-authorization.test.ts src/main/browser/doc-preview-guest-policy.test.ts src/main/ipc/browser.test.ts",
@@ -6049,7 +6049,6 @@
         "src/renderer/src/components/browser-pane/workspace-doc/use-doc-preview-guest-tools.test.ts",
         "src/renderer/src/components/editor/EditorPanelShell.header.test.tsx",
         "src/renderer/src/components/browser-pane/workspace-doc/HtmlDocPreview.toolbar.test.tsx",
-        "src/renderer/src/components/browser-pane/workspace-doc/workspace-doc-page-pane.test.tsx",
         "src/shared/doc-preview-scheme.test.ts",
         "src/renderer/src/lib/doc-preview-grants.test.ts",
         "src/renderer/src/components/browser-pane/workspace-doc/HtmlDocPreview.failure-message.test.tsx",
@@ -6293,13 +6292,6 @@
           ]
         },
         {
-          "file": "src/renderer/src/components/browser-pane/workspace-doc/workspace-doc-page-pane.test.tsx",
-          "assertions": [
-            "the pane offers its guest focus when the reader is in this very preview",
-            "it refuses while the reader is in a terminal in front of it, in a different browser tab, or while its own page is not the active one"
-          ]
-        },
-        {
           "file": "src/renderer/src/components/browser-pane/workspace-doc/HtmlDocPreview.toolbar.test.tsx",
           "assertions": [
             "a preview that is the reader's surface hands its guest focus, and one that is not leaves focus alone",
@@ -6329,6 +6321,7 @@
           "runner": "local",
           "platform": "macos",
           "command": "pnpm exec vitest run --config config/vitest.config.ts src/renderer/src/store/slices/browser-workspace-doc-location.test.ts src/renderer/src/runtime/sync-runtime-graph-editor-diff-tabs.test.ts src/renderer/src/components/browser-pane/workspace-doc/workspace-doc-page-pane.test.tsx src/renderer/src/components/browser-pane/workspace-doc/HtmlDocPreview.toolbar.test.tsx",
+          "currentCommand": "pnpm exec vitest run --config config/vitest.config.ts src/renderer/src/store/slices/browser-workspace-doc-location.test.ts src/renderer/src/runtime/sync-runtime-graph-editor-diff-tabs.test.ts src/renderer/src/components/browser-pane/workspace-doc/HtmlDocPreview.toolbar.test.tsx",
           "result": "failed",
           "durationSeconds": 7,
           "summary": "The adversarial pass answered the request for its own group-projection probe after this round landed, and it had measured a third observable this test was missing: the held-back group also has to leave the published layout tree, or the phone renders a split whose second pane can never hold anything. Adopted as a fourth assertion and re-run against the same sole delta, which now fails on the dangling-reference check and, with that check blinded, on the layout alone — group-left and group-right against the group-right the clean tree publishes. The two probes agreed on everything else, including that the tab list is unchanged under this mutant, which is why an assertion reading only the tab list cannot reach the site at all."
@@ -6338,6 +6331,7 @@
           "runner": "local",
           "platform": "macos",
           "command": "pnpm exec vitest run --config config/vitest.config.ts src/renderer/src/store/slices/browser-workspace-doc-location.test.ts src/renderer/src/runtime/sync-runtime-graph-editor-diff-tabs.test.ts src/renderer/src/components/browser-pane/workspace-doc/workspace-doc-page-pane.test.tsx src/renderer/src/components/browser-pane/workspace-doc/HtmlDocPreview.toolbar.test.tsx",
+          "currentCommand": "pnpm exec vitest run --config config/vitest.config.ts src/renderer/src/store/slices/browser-workspace-doc-location.test.ts src/renderer/src/runtime/sync-runtime-graph-editor-diff-tabs.test.ts src/renderer/src/components/browser-pane/workspace-doc/HtmlDocPreview.toolbar.test.tsx",
           "result": "passed",
           "durationSeconds": 3,
           "summary": "The adversarial pass's four coverage findings, landed and pinned: 58/58. The third url door now keeps a document page blank and names it by its document, the group projection holds a document back from published groups as well as from the tab list, the pane's focus handoff is pinned in the widening direction as well as the narrowing one, and the handoff is re-offered when the window takes focus back."
@@ -6347,6 +6341,7 @@
           "runner": "local",
           "platform": "macos",
           "command": "pnpm exec vitest run --config config/vitest.config.ts src/renderer/src/store/slices/browser-workspace-doc-location.test.ts src/renderer/src/runtime/sync-runtime-graph-editor-diff-tabs.test.ts src/renderer/src/components/browser-pane/workspace-doc/workspace-doc-page-pane.test.tsx src/renderer/src/components/browser-pane/workspace-doc/HtmlDocPreview.toolbar.test.tsx",
+          "currentCommand": "pnpm exec vitest run --config config/vitest.config.ts src/renderer/src/store/slices/browser-workspace-doc-location.test.ts src/renderer/src/runtime/sync-runtime-graph-editor-diff-tabs.test.ts src/renderer/src/components/browser-pane/workspace-doc/HtmlDocPreview.toolbar.test.tsx",
           "result": "failed",
           "durationSeconds": 3,
           "summary": "Three sole-delta mutants on the third url door, each failing only the new store test: committing the reported url onto a document page, dropping the document from the title normalizer there (which renames the tab New Tab, since a blank url is what that fallback reads), and marking a blank document page loading. The ordinary-page half of the same test passes under all three, so the door is pinned as a document-only refusal rather than as a door that writes nothing."
@@ -6356,6 +6351,7 @@
           "runner": "local",
           "platform": "macos",
           "command": "pnpm exec vitest run --config config/vitest.config.ts src/renderer/src/store/slices/browser-workspace-doc-location.test.ts src/renderer/src/runtime/sync-runtime-graph-editor-diff-tabs.test.ts src/renderer/src/components/browser-pane/workspace-doc/workspace-doc-page-pane.test.tsx src/renderer/src/components/browser-pane/workspace-doc/HtmlDocPreview.toolbar.test.tsx",
+          "currentCommand": "pnpm exec vitest run --config config/vitest.config.ts src/renderer/src/store/slices/browser-workspace-doc-location.test.ts src/renderer/src/runtime/sync-runtime-graph-editor-diff-tabs.test.ts src/renderer/src/components/browser-pane/workspace-doc/HtmlDocPreview.toolbar.test.tsx",
           "result": "failed",
           "durationSeconds": 3,
           "summary": "Two sole-delta mutants on the mobile publish boundary. Dropping the document from the group projection's browser ids fails only the new grouped test — the tab list stays correct because the per-tab guard still refuses the tab, and what breaks is a published group whose order and active tab name a tab the phone is never sent. This is the survivor the adversarial pass reported: it survives the whole suite without this test, because no other test in it has tab groups. Dropping the per-tab guard instead fails only the ungrouped test, so the two halves of the boundary are pinned separately."
@@ -6365,6 +6361,7 @@
           "runner": "local",
           "platform": "macos",
           "command": "pnpm exec vitest run --config config/vitest.config.ts src/renderer/src/store/slices/browser-workspace-doc-location.test.ts src/renderer/src/runtime/sync-runtime-graph-editor-diff-tabs.test.ts src/renderer/src/components/browser-pane/workspace-doc/workspace-doc-page-pane.test.tsx src/renderer/src/components/browser-pane/workspace-doc/HtmlDocPreview.toolbar.test.tsx",
+          "currentCommand": "pnpm exec vitest run --config config/vitest.config.ts src/renderer/src/store/slices/browser-workspace-doc-location.test.ts src/renderer/src/runtime/sync-runtime-graph-editor-diff-tabs.test.ts src/renderer/src/components/browser-pane/workspace-doc/HtmlDocPreview.toolbar.test.tsx",
           "result": "failed",
           "durationSeconds": 3,
           "summary": "Three sole-delta mutants widening the focus handoff, the direction the adversarial pass found uncovered: dropping the page-activity half, dropping the active-tab-type half, and dropping the active-browser-tab half each fail exactly one of the pane's refusals — the inactive page, the terminal in front, and the other browser tab respectively. The presence half of that test passes under all three, so a pane that had stopped offering focus at all would still fail rather than pass the refusals vacuously."
@@ -6374,6 +6371,7 @@
           "runner": "local",
           "platform": "macos",
           "command": "pnpm exec vitest run --config config/vitest.config.ts src/renderer/src/store/slices/browser-workspace-doc-location.test.ts src/renderer/src/runtime/sync-runtime-graph-editor-diff-tabs.test.ts src/renderer/src/components/browser-pane/workspace-doc/workspace-doc-page-pane.test.tsx src/renderer/src/components/browser-pane/workspace-doc/HtmlDocPreview.toolbar.test.tsx",
+          "currentCommand": "pnpm exec vitest run --config config/vitest.config.ts src/renderer/src/store/slices/browser-workspace-doc-location.test.ts src/renderer/src/runtime/sync-runtime-graph-editor-diff-tabs.test.ts src/renderer/src/components/browser-pane/workspace-doc/HtmlDocPreview.toolbar.test.tsx",
           "result": "failed",
           "durationSeconds": 3,
           "summary": "One sole-delta mutant dropping the window-focus re-offer: the guest is focused once at mount and never again after the window comes back, which is the desktop gap behind it — another app taking the front leaves the preview's only route out shut until the pane remounts. It fails only the new re-offer test, and the refusing-preview case beside it stays green, so the re-offer is pinned as gated rather than unconditional."
@@ -10813,7 +10811,7 @@
       "providers": ["local", "remote-runtime", "ssh", "wsl"],
       "coveredPlatforms": ["macos"],
       "coveredProviders": ["local", "remote-runtime", "ssh", "wsl"],
-      "coverageNotes": "Platform-neutral deterministic tests separate the durable Active Server preference from per-client connection, selected-workspace, browser-session, Add Project, and execution-host routing. The composed regression models Local desktop -> connect/navigate Windows 2 -> reveal a local terminal -> restart. Multi-client browser host overrides, multi-server profile caches, generic settings IPC rejection, local and remote workspace ownership, Add Project eligibility/owner capture/stale-result fencing, host-qualified group/folder/worktree identity, and restart reset of transient routing are covered. A visible macOS Orca desktop server plus separate paired Electron and web clients prove selected-runtime Add Project operations and disabled creation when the only listed host is blocked or unavailable; headless-server parity also passed. Live Linux, Windows, WSL, and SSH Add Project journeys remain uncollected.",
+      "coverageNotes": "Platform-neutral deterministic tests separate the durable Active Server preference from per-client connection, selected-workspace, browser-session, Add Project, and execution-host routing. The composed regression models Local desktop -> connect/navigate Windows 2 -> reveal a local terminal -> restart. Multi-client browser host overrides, multi-server profile caches, generic settings IPC rejection, local and remote workspace ownership, Add Project eligibility/owner capture/stale-result fencing, host-qualified group/folder/worktree identity, and restart reset of transient routing are covered. A visible macOS Orca desktop server plus separate paired Electron and web clients prove selected-runtime Add Project operations and disabled creation when the only listed host is blocked or unavailable; headless-server parity also passed. Live Linux, Windows, WSL, and SSH Add Project journeys remain uncollected. The static wrapper-rendering suite was removed during the low-value-test audit; its supplied-prop host-browser and control-visibility output assertions are no longer checked by that suite. This removal supplies no new runtime-routing evidence.",
       "motivatingLinks": [
         "https://github.com/stablyai/orca/pull/9687",
         "https://linear.app/stably/issue/STA-4024/p1-paired-web-add-project-enables-unavailable-host-fallback-after-pr"
@@ -10823,7 +10821,7 @@
       "commands": [
         "pnpm exec vitest run --config config/vitest.config.ts src/main/ipc/settings.test.ts src/main/ipc/runtime-environments/runtime-environments-pairing.test.ts src/renderer/src/store/slices/settings.test.ts src/renderer/src/store/slices/browser.test.ts src/renderer/src/components/settings/browser-session-host-selection.test.ts src/renderer/src/components/settings/RuntimeEnvironmentsPane.test.ts src/renderer/src/components/sidebar/use-add-repo-host-selection.test.ts src/renderer/src/hooks/useIpcEvents-terminal-create-surfacing.test.ts src/renderer/src/web/web-preload-api-runtime-environment.test.ts --maxWorkers=1",
         "pnpm exec vitest run --config config/vitest.config.ts src/renderer/src/components/sidebar/AddProjectFromFolderDialog.test.tsx src/renderer/src/components/sidebar/NonGitFolderDialog.test.tsx src/renderer/src/components/sidebar/AddRepoDialog.default-checkout.test.ts src/renderer/src/components/sidebar/AddRepoSteps.default-checkout.test.ts src/renderer/src/components/sidebar/project-added-default-checkout.test.ts src/renderer/src/components/sidebar/useAddRepoLocalFolderFlow.test.ts src/renderer/src/components/sidebar/useAddRepoNestedImportFlow.test.ts src/renderer/src/components/sidebar/useAddRepoServerPathFlow.test.ts src/renderer/src/components/sidebar/useAddRepoCloneFlow.test.ts src/renderer/src/components/sidebar/useCreateRepo.default-checkout.test.ts src/renderer/src/components/sidebar/worktree-list/listing/host-filtering.test.ts src/renderer/src/lib/resolved-worktree-execution-host.test.ts src/renderer/src/lib/worktree-runtime-owner.test.ts src/renderer/src/store/selectors.test.ts src/renderer/src/store/slices/repos-catalog-reconciliation.test.ts src/renderer/src/store/slices/repos-project-groups.test.ts src/renderer/src/store/slices/repos-selected-owner-routing.test.ts src/renderer/src/store/slices/selected-host-active-workspace-identity.test.ts src/renderer/src/store/slices/worktrees-fetch-owner-routing.test.ts --maxWorkers=1",
-        "pnpm exec vitest run --config config/vitest.config.ts src/renderer/src/components/sidebar/use-add-repo-host-selection.test.ts src/renderer/src/components/sidebar/add-repo-browse-authority.test.ts src/renderer/src/components/sidebar/AddRepoDialogStepContent.test.tsx src/renderer/src/components/sidebar/AddRepoStartSteps.test.tsx src/renderer/src/components/sidebar/useAddRepoServerPathFlow.test.ts src/renderer/src/store/slices/repos-paired-runtime-add.test.ts --maxWorkers=1",
+        "pnpm exec vitest run --config config/vitest.config.ts src/renderer/src/components/sidebar/use-add-repo-host-selection.test.ts src/renderer/src/components/sidebar/add-repo-browse-authority.test.ts src/renderer/src/components/sidebar/AddRepoStartSteps.test.tsx src/renderer/src/components/sidebar/useAddRepoServerPathFlow.test.ts src/renderer/src/store/slices/repos-paired-runtime-add.test.ts --maxWorkers=1",
         "pnpm exec vitest run --config config/vitest.config.ts src/renderer/src/components/sidebar/AddProjectFromFolderDialog.test.tsx src/renderer/src/components/sidebar/NonGitFolderDialog.test.tsx src/renderer/src/components/sidebar/AddRepoDialog.default-checkout.test.ts src/renderer/src/components/sidebar/AddRepoSteps.default-checkout.test.ts src/renderer/src/components/sidebar/project-added-default-checkout.test.ts src/renderer/src/components/sidebar/useAddRepoLocalFolderFlow.test.ts src/renderer/src/components/sidebar/useAddRepoNestedImportFlow.test.ts src/renderer/src/components/sidebar/useAddRepoServerPathFlow.test.ts src/renderer/src/components/sidebar/useAddRepoCloneFlow.test.ts src/renderer/src/components/sidebar/useCreateRepo.default-checkout.test.ts src/renderer/src/components/sidebar/worktree-list/listing/host-filtering.test.ts src/renderer/src/lib/resolved-worktree-execution-host.test.ts src/renderer/src/lib/worktree-runtime-owner.test.ts src/renderer/src/store/selectors.test.ts src/renderer/src/store/slices/repos-catalog-reconciliation.test.ts src/renderer/src/store/slices/repos-project-groups.test.ts src/renderer/src/store/slices/repos-selected-owner-routing.test.ts src/renderer/src/store/slices/selected-host-active-workspace-identity.test.ts src/renderer/src/store/slices/worktrees-fetch-owner-routing.test.ts src/renderer/src/runtime/web-runtime-session.test.ts --maxWorkers=1",
         "pnpm run ensure:electron-runtime && npx playwright test tests/e2e/pr11346-selected-runtime-add.spec.ts --config tests/playwright.config.ts --project electron-headful --workers=1 --reporter=line",
         "pnpm run ensure:electron-runtime && npx playwright test tests/e2e/pr11346-selected-runtime-add.spec.ts --config tests/playwright.config.ts --project electron-headless --workers=1 --reporter=line",
@@ -10844,7 +10842,6 @@
         "src/renderer/src/components/sidebar/AddProjectFromFolderDialog.test.tsx",
         "src/renderer/src/components/sidebar/NonGitFolderDialog.test.tsx",
         "src/renderer/src/components/sidebar/AddRepoDialog.default-checkout.test.ts",
-        "src/renderer/src/components/sidebar/AddRepoDialogStepContent.test.tsx",
         "src/renderer/src/components/sidebar/AddRepoStartSteps.test.tsx",
         "src/renderer/src/components/sidebar/AddRepoSteps.default-checkout.test.ts",
         "src/renderer/src/components/sidebar/project-added-default-checkout.test.ts",
@@ -10880,10 +10877,6 @@
           "assertions": [
             "paired runtime browsing opens the host browser without invoking native pickFolders while desktop local and SSH routes remain intact"
           ]
-        },
-        {
-          "file": "src/renderer/src/components/sidebar/AddRepoDialogStepContent.test.tsx",
-          "assertions": ["paired runtime browsing renders the in-app host filesystem browser"]
         },
         {
           "file": "src/renderer/src/components/sidebar/AddRepoStartSteps.test.tsx",
@@ -20739,20 +20732,20 @@
       "invariant": "A single-cell capacity check reads only that cell while retaining snapshot freshness, incarnation, outstanding reservation and missing-limit policy; new placement retains the full fleet inventory.",
       "oracle": "With 32 capped cells, an existing active host stays on its pinned cell and reads one headroom row; new placement reads all 32. Missing, expired or prior-incarnation snapshots, capacity exhaustion and outstanding debt still refuse the active pinned host; an uncapped cell remains admissible.",
       "commands": [
-        "ORCA_BACKGROUND_LAUNCH=1 pnpm --dir cloud/apps/relay exec vitest run ../../../cloud/apps/relay/src/assignment-headroom-scope.test.ts ../../../cloud/apps/relay/src/assignment-connection-headroom.test.ts ../../../cloud/apps/relay/src/assignment-store.test.ts ../../../cloud/apps/relay/src/assignment-store-lock-order.test.ts ../../../cloud/apps/relay/src/cell-inventory-lock-contention.test.ts ../../../cloud/apps/relay/src/assignment-isolated-cell-replacement.test.ts ../../../cloud/apps/relay/src/regional-rehome-target-selection.test.ts --silent=false"
+        "ORCA_BACKGROUND_LAUNCH=1 pnpm --dir cloud/apps/relay exec vitest run ../../../cloud/apps/relay/src/assignment/assignment-headroom-scope.test.ts ../../../cloud/apps/relay/src/assignment/assignment-connection-headroom.test.ts ../../../cloud/apps/relay/src/assignment-store.test.ts ../../../cloud/apps/relay/src/assignment/assignment-store-lock-order.test.ts ../../../cloud/apps/relay/src/cell-inventory-lock-contention.test.ts ../../../cloud/apps/relay/src/assignment-isolated-cell-replacement.test.ts ../../../cloud/apps/relay/src/regional-rehome-target-selection.test.ts --silent=false"
       ],
       "testFiles": [
-        "cloud/apps/relay/src/assignment-headroom-scope.test.ts",
-        "cloud/apps/relay/src/assignment-connection-headroom.test.ts",
+        "cloud/apps/relay/src/assignment/assignment-headroom-scope.test.ts",
+        "cloud/apps/relay/src/assignment/assignment-connection-headroom.test.ts",
         "cloud/apps/relay/src/assignment-store.test.ts",
-        "cloud/apps/relay/src/assignment-store-lock-order.test.ts",
+        "cloud/apps/relay/src/assignment/assignment-store-lock-order.test.ts",
         "cloud/apps/relay/src/cell-inventory-lock-contention.test.ts",
         "cloud/apps/relay/src/assignment-isolated-cell-replacement.test.ts",
         "cloud/apps/relay/src/regional-rehome-target-selection.test.ts"
       ],
       "assertionRefs": [
         {
-          "file": "cloud/apps/relay/src/assignment-headroom-scope.test.ts",
+          "file": "cloud/apps/relay/src/assignment/assignment-headroom-scope.test.ts",
           "assertions": [
             "reads one cell for a sticky assignment even when the capped fleet grows",
             "still considers the full fleet for a new placement",
@@ -20767,7 +20760,7 @@
           "date": "2026-09-25",
           "runner": "local",
           "platform": "macos",
-          "command": "ORCA_BACKGROUND_LAUNCH=1 pnpm --dir cloud/apps/relay exec vitest run ../../../cloud/apps/relay/src/assignment-headroom-scope.test.ts ../../../cloud/apps/relay/src/assignment-connection-headroom.test.ts ../../../cloud/apps/relay/src/assignment-store.test.ts ../../../cloud/apps/relay/src/assignment-store-lock-order.test.ts ../../../cloud/apps/relay/src/cell-inventory-lock-contention.test.ts ../../../cloud/apps/relay/src/assignment-isolated-cell-replacement.test.ts ../../../cloud/apps/relay/src/regional-rehome-target-selection.test.ts --silent=false",
+          "command": "ORCA_BACKGROUND_LAUNCH=1 pnpm --dir cloud/apps/relay exec vitest run ../../../cloud/apps/relay/src/assignment/assignment-headroom-scope.test.ts ../../../cloud/apps/relay/src/assignment/assignment-connection-headroom.test.ts ../../../cloud/apps/relay/src/assignment-store.test.ts ../../../cloud/apps/relay/src/assignment/assignment-store-lock-order.test.ts ../../../cloud/apps/relay/src/cell-inventory-lock-contention.test.ts ../../../cloud/apps/relay/src/assignment-isolated-cell-replacement.test.ts ../../../cloud/apps/relay/src/regional-rehome-target-selection.test.ts --silent=false",
           "result": "passed",
           "durationSeconds": 0.513,
           "summary": "189 tests across seven files passed; independent root rerun also passed189 tests. Relay typecheck passed separately."

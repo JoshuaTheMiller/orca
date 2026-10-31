@@ -2,6 +2,7 @@ import { PLUGIN_WORKSPACE_TERMINAL_LIMIT } from '../../../shared/plugins/workers
 import type { PluginHostServices } from './plugin-host-methods'
 import { PluginSecretsStore } from '../plugin-secrets-store'
 import { PluginKvStore } from '../plugin-storage-store'
+import type { RuntimeFileOpenPosition } from '../../../shared/runtime-file-contracts'
 import type { TerminalInputKind } from '../../../shared/terminal-input-kind'
 
 export type PluginRuntimeDelegate = {
@@ -26,6 +27,7 @@ export type PluginRuntimeDelegate = {
     title: string
     body?: string
   }): Promise<{ delivered: boolean }>
+  openLocalAbsoluteFile(absolutePath: string, position?: RuntimeFileOpenPosition): Promise<unknown>
 }
 
 export function bindPluginHostServices(input: {
@@ -61,6 +63,10 @@ export function bindPluginHostServices(input: {
       return { accepted: result.accepted }
     },
     dispatchPluginNotification: (notification) => delegate.dispatchPluginNotification(notification),
+    openEditorFile: async (absolutePath, position) => {
+      await delegate.openLocalAbsoluteFile(absolutePath, position)
+      return { opened: true }
+    },
     storage: {
       get: (key, itemKey) => new PluginKvStore(pluginsDataDir, key, 'storage.json').get(itemKey),
       set: (key, itemKey, value) =>

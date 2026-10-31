@@ -25,6 +25,7 @@ type ContributionValidationManifest = {
     syntaxes: (IdentifiedContribution & PluginFileMatch & { scopeName: string })[]
     customEditors: (IdentifiedContribution & PluginFileMatch)[]
     newFiles: IdentifiedContribution[]
+    sidebarNavItems: (IdentifiedContribution & { command: string })[]
   }
   capabilities: { kind: string }[]
 }
@@ -62,7 +63,8 @@ export function validatePluginManifestContributions(
     'iconThemes',
     'syntaxes',
     'customEditors',
-    'newFiles'
+    'newFiles',
+    'sidebarNavItems'
   ] as const) {
     rejectDuplicateValues(
       manifest.contributes[path],
@@ -138,6 +140,15 @@ export function validatePluginManifestContributions(
         code: 'custom',
         path: ['contributes', 'commands', index, 'action'],
         message: `unknown built-in action: ${command.action}`
+      })
+    }
+  }
+  for (const [index, item] of manifest.contributes.sidebarNavItems.entries()) {
+    if (!commands.has(item.command)) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['contributes', 'sidebarNavItems', index, 'command'],
+        message: `unknown contributed command: ${item.command}`
       })
     }
   }

@@ -12,10 +12,10 @@ A plugin is a folder (in practice its own Git repository) with `orca-plugin.json
 Start from `examples/plugins/orca-gleam-syntax`, which carries the JSON Schema for editor
 completion, or from one of:
 
-| Example                              | Execution        | Shows                                |
-| ------------------------------------ | ---------------- | ------------------------------------ |
-| `examples/plugins/orca-gleam-syntax` | `data`           | A syntax, no code                    |
-| `examples/plugins/hello-orca`        | `trusted-worker` | A panel, a worker command and events |
+| Example                              | Execution        | Shows                                                    |
+| ------------------------------------ | ---------------- | -------------------------------------------------------- |
+| `examples/plugins/orca-gleam-syntax` | `data`           | A syntax, no code                                        |
+| `examples/plugins/hello-orca`        | `trusted-worker` | A panel, a worker command, a sidebar nav item and events |
 
 Leave `publisher` out. Orca names the publisher after where the plugin comes from, the way a
 [Go module path](https://go.dev/ref/mod#module-path) is its repository path: the owner of the
@@ -44,7 +44,7 @@ Pick the lowest `execution` profile that covers what you contribute; it decides 
 asked to approve:
 
 - `data`: themes, terminal themes, icon themes, syntaxes, translations. Installs in one click.
-- `declarative`: commands that run Orca actions, shortcuts, VM recipes. Reviewed before they
+- `declarative`: commands that run Orca actions, shortcuts, sidebar nav items, VM recipes. Reviewed before they
   are enabled.
 - `sandboxed-ui`: panels and custom editors, in a sandboxed frame that talks to Orca only
   through `window.orca` (see [Frames](#frames-windoworca)) and can call only the host methods
@@ -65,7 +65,7 @@ Before any plugin code runs, the frame shell defines a frozen `window.orca`. It 
 supported way to talk to Orca; the messages underneath are internal and change without notice.
 
 ```js
-orca.api // { major: 1, minor: 0 }: the host API this Orca implements
+orca.api // { major: 1, minor: 1 }: the host API this Orca implements
 if (orca.host.has('workspace.readContext')) {
   // Synchronous: is the method offered to this surface by this Orca?
   const controller = new AbortController()
@@ -90,6 +90,37 @@ Workers get the same calls on the `orca` object passed to `activate(orca)`:
 both return `{ dispose() }`. A command's `signal` aborts when Orca stops waiting for it. In
 `agent.status.changed`, `state` and `mainAgent.state` are one of `working`, `blocked`, `waiting`
 and `done`.
+
+### Sidebar nav items
+
+`contributes.sidebarNavItems` adds entries (at most 8) to the left sidebar's nav list, under
+Search and beside Tasks and Automations. Each is `{ id, title, icon?, command }`: `icon` comes
+from the same closed set as panel icons (default `plug`), and `command` must be the id of one of
+the plugin's own `contributes.commands`, which Orca checks when it reads the manifest. A click
+runs that command exactly as the command palette does, so it can be a built-in action or a worker
+command. Right-click an entry to hide it from the sidebar. Items show only while the plugin is
+enabled.
+
+```json
+{
+  "contributes": {
+    "commands": [{ "id": "graph.open", "title": "Graph: Open" }],
+    "sidebarNavItems": [
+      { "id": "graph", "title": "Graph", "icon": "database", "command": "graph.open" }
+    ]
+  }
+}
+```
+
+### Opening files
+
+With the `editor:open` capability, a worker, panel or custom editor calls
+`orca.host.call('editor.openFile', { path, line?, column? })` and gets `{ opened }`. `path` is
+absolute. A file inside one of the user's workspaces opens in an editor tab there, so a matching
+custom editor applies; any other file opens in the floating workspace, the way a file opened from
+the operating system does. A path that does not exist, or is not a file, fails with
+`action_failed`. `column` is used only together with `line`. Each call is recorded in the audit
+log by file name.
 
 ### Custom editors
 

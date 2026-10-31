@@ -120,6 +120,11 @@ function summarizeParams(method: string, params: unknown): string {
       const title = typeof record.title === 'string' ? record.title : ''
       return `titleChars=${title.length}`
     }
+    case 'editor.openFile': {
+      // Why the name only: a full path can carry a user name or a private folder.
+      const file = typeof record.path === 'string' ? (record.path.split(/[\\/]/).pop() ?? '') : ''
+      return `file=${file}`
+    }
     case 'storage.set':
     case 'storage.delete':
     case 'secrets.set':
