@@ -7,6 +7,7 @@ import {
   Highlighter,
   Languages,
   Palette,
+  PanelLeft,
   PanelRight,
   PenTool,
   Server,
@@ -103,7 +104,8 @@ const CONTRIBUTION_ICON: Record<PluginContributionKind, React.ReactNode> = {
   panels: <PanelRight />,
   customEditors: <PenTool />,
   vmRecipes: <Server />,
-  newFiles: <FilePlus />
+  newFiles: <FilePlus />,
+  sidebarNavItems: <PanelLeft />
 }
 
 type AddsCommand = {
@@ -249,6 +251,7 @@ function useContributionRowActions(
       case 'terminalThemes':
       case 'customEditors':
       case 'vmRecipes':
+      case 'sidebarNavItems':
         // Themes have "Use now" above the list; editors open from their new files; recipes have nothing to try here.
         return null
     }

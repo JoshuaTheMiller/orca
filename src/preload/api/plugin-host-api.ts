@@ -31,6 +31,7 @@ export type {
   PluginHostCustomEditor,
   PluginHostListEntry,
   PluginHostNewFile,
+  PluginHostSidebarNavItem,
   PluginHostPanel,
   PluginHostStatus
 } from '../../shared/plugins/plugin-list-entry'

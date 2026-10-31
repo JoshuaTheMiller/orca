@@ -31,11 +31,16 @@ import {
   PLUGIN_NEW_FILE_LIMIT,
   pluginNewFileContributionSchema
 } from './plugin-new-file-contribution'
+import {
+  PLUGIN_SIDEBAR_NAV_ITEM_LIMIT,
+  pluginSidebarNavItemContributionSchema
+} from './plugin-sidebar-nav-item-contribution'
 import { PLUGIN_PANEL_LIMIT, pluginPanelContributionSchema } from './plugin-panel-contribution'
 import {
   pluginFieldDoc,
   PLUGIN_MANIFEST_V2_SINCE,
-  PLUGIN_SCHEMA_SINCE_V1
+  PLUGIN_SCHEMA_SINCE_V1,
+  PLUGIN_SIDEBAR_NAV_ITEMS_SINCE
 } from '../manifest/plugin-schema-field-docs'
 
 /** Every `contributes` key, in manifest order. Adding a point starts here. */
@@ -51,7 +56,8 @@ export const PLUGIN_CONTRIBUTION_POINTS = [
   'iconThemes',
   'syntaxes',
   'customEditors',
-  'newFiles'
+  'newFiles',
+  'sidebarNavItems'
 ] as const
 
 export type PluginContributionPoint = (typeof PLUGIN_CONTRIBUTION_POINTS)[number]
@@ -197,6 +203,12 @@ export const pluginContributesFields = {
     PLUGIN_NEW_FILE_LIMIT,
     'Untitled files the user can create from the + menu and the command palette.',
     NEXT
+  ),
+  sidebarNavItems: contributionList(
+    pluginSidebarNavItemContributionSchema,
+    PLUGIN_SIDEBAR_NAV_ITEM_LIMIT,
+    'Entries in the left sidebar nav list that run a command of this plugin.',
+    PLUGIN_SIDEBAR_NAV_ITEMS_SINCE
   )
 } satisfies Record<PluginContributionPoint, z.ZodType>
 
@@ -241,5 +253,8 @@ export const PLUGIN_CONTRIBUTION_POINT_POLICY: Record<
   customEditors: { execution: 'sandboxed-ui', catalogType: 'editor', bindsContent: false },
   // Why data and no catalog type: a template is inert text that seeds a file the user asked for;
   // whatever opens that file (a syntax, an editor) carries its own type.
-  newFiles: { execution: 'data', catalogType: null, bindsContent: false }
+  newFiles: { execution: 'data', catalogType: null, bindsContent: false },
+  // Why declarative with no catalog type: it only names a command the plugin already declares,
+  // which carries the execution profile and catalog type of its own.
+  sidebarNavItems: { execution: 'declarative', catalogType: null, bindsContent: false }
 }

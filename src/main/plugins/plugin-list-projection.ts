@@ -95,6 +95,7 @@ export async function buildPluginList(
           panels: [],
           customEditors: [],
           newFiles: [],
+          sidebarNavItems: [],
           commands: [],
           hasWorker: false,
           vmRecipes: [],
@@ -185,6 +186,12 @@ export async function buildPluginList(
           title: newFile.title,
           extension: newFile.extension,
           ...contributionIcon(`new-file-${index}`, newFile.icon)
+        })),
+        sidebarNavItems: plugin.manifest.contributes.sidebarNavItems.map((item) => ({
+          id: item.id,
+          title: item.title,
+          ...(item.icon ? { icon: item.icon } : {}),
+          command: item.command
         })),
         commands: service.contentPacks.commands.preview(plugin.pluginKey).map((command) => ({
           id: command.id,
