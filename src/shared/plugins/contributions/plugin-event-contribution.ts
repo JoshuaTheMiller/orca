@@ -3,6 +3,7 @@ import { PLUGIN_ENUM_SINCE_KEY } from '../manifest/plugin-engine-floor-keys'
 import {
   pluginFieldDoc,
   PLUGIN_MANIFEST_V2_SINCE,
+  PLUGIN_PROJECT_ITEMS_SINCE,
   PLUGIN_SCHEMA_SINCE_V1,
   PLUGIN_SETTINGS_SINCE,
   PLUGIN_SIDEBAR_NAV_ITEMS_SINCE
@@ -16,7 +17,8 @@ export const PLUGIN_EVENT_NAMES = [
   'workspace.removed',
   'agent.status.changed',
   'sidebarNav.valueChanged',
-  'settings.changed'
+  'settings.changed',
+  'projectItems.visible'
 ] as const
 export const PLUGIN_EVENT_SUBSCRIPTION_LIMIT = PLUGIN_EVENT_NAMES.length
 
@@ -28,7 +30,8 @@ export const PLUGIN_EVENT_SINCE: Record<PluginEventName, string> = {
   'workspace.removed': PLUGIN_MANIFEST_V2_SINCE,
   'agent.status.changed': PLUGIN_SCHEMA_SINCE_V1,
   'sidebarNav.valueChanged': PLUGIN_SIDEBAR_NAV_ITEMS_SINCE,
-  'settings.changed': PLUGIN_SETTINGS_SINCE
+  'settings.changed': PLUGIN_SETTINGS_SINCE,
+  'projectItems.visible': PLUGIN_PROJECT_ITEMS_SINCE
 }
 
 /** Format 1 event names, rewritten on parse and still dispatched to handlers registered under them. */
@@ -45,7 +48,9 @@ export const PLUGIN_EVENT_CAPABILITY: Record<PluginEventName, PluginCapabilityKi
   // Why settings:own, like `sidebarNav.getValues`: the value belongs to the receiving plugin alone.
   'sidebarNav.valueChanged': 'settings:own',
   // Why settings:own: the key and value belong to the receiving plugin alone.
-  'settings.changed': 'settings:own'
+  'settings.changed': 'settings:own',
+  // Why workspace:read: the payload names the user's projects and their local paths.
+  'projectItems.visible': 'workspace:read'
 }
 
 export const pluginEventContributionSchema = z
@@ -59,7 +64,7 @@ export const pluginEventContributionSchema = z
   .meta({
     id: 'EventContribution',
     description:
-      "An event subscription. Requires `main`, the `trusted-worker` execution profile and the capability of the event's domain: `workspace:read` for workspace events, `agent:read` for agent events, `settings:own` for sidebar nav value and setting changes."
+      "An event subscription. Requires `main`, the `trusted-worker` execution profile and the capability of the event's domain: `workspace:read` for workspace events, `agent:read` for agent events, `settings:own` for sidebar nav value and setting changes, `workspace:read` for the projects a project item shows under."
   })
 
 export type PluginEventContribution = z.infer<typeof pluginEventContributionSchema>

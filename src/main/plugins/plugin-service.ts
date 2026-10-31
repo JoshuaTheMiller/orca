@@ -43,6 +43,7 @@ import {
 import { PluginContentPackRegistry } from './contributions/plugin-content-pack-registry'
 import { readPluginSidebarNavValues } from './plugin-sidebar-nav-events'
 import { createPluginServiceSettings, type PluginSettingsAccess } from './plugin-settings-access'
+import { createPluginServiceProjectItems, type PluginProjectItems } from './plugin-project-items'
 import type { PluginServiceOptions } from './plugin-service-options'
 import type { PluginChangeEvent } from '../../shared/plugins/events/plugin-change-event'
 import { waitForPluginRefreshSettlement } from './plugin-refresh-settlement'
@@ -58,6 +59,8 @@ export class PluginService {
   readonly contentPacks: PluginContentPackRegistry
   readonly panels: PluginPanelController
   readonly settings: PluginSettingsAccess
+  /** In-memory detail text and visible-project tracking of project items. */
+  readonly projectItems: PluginProjectItems
   private readonly changeListeners = new Set<(event: PluginChangeEvent) => void>()
   private readonly housekeeping = new PluginServiceHousekeeping()
   private runtimeDelegate: PluginRuntimeDelegate | null = null
@@ -78,6 +81,14 @@ export class PluginService {
     )
     this.audit = new PluginAuditLog(getPluginsDataDir(options.userDataPath))
     this.settings = createPluginServiceSettings(this)
+    this.projectItems = createPluginServiceProjectItems(this)
+    // Why on every change: disabling, revoking or uninstalling a plugin ends its row details.
+    this.onChanged(() =>
+      this.projectItems.prune((pluginKey) => {
+        const plugin = this.findValidPlugin(pluginKey)
+        return plugin !== null && this.canStartPluginWork(plugin)
+      })
+    )
     const resolveApproved = (pluginKey: string, allowRefreshPause = false) =>
       this.findApprovedPlugin(pluginKey, allowRefreshPause)
     this.panels = new PluginPanelController({
@@ -266,7 +277,8 @@ export class PluginService {
               delegate: this.runtimeDelegate,
               pluginsDataDir: getPluginsDataDir(this.options.userDataPath),
               sidebarNavValues: (key) => readPluginSidebarNavValues(this, key),
-              settings: this.settings
+              settings: this.settings,
+              projectItems: this.projectItems
             })
           : null,
         audit: this.audit

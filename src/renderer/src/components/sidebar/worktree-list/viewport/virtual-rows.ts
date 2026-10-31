@@ -15,6 +15,7 @@ const SECONDARY_GROUP_HEADER_TOP_MARGIN = 4
 const IMPORTED_WORKTREES_LINE_ROW_HEIGHT = 36
 const PENDING_CREATION_ROW_HEIGHT = 56
 const FOLDER_WORKSPACE_ROW_HEIGHT = 64
+const PLUGIN_PROJECT_ITEM_ROW_HEIGHT = 28
 
 /** Remap anchors when first/last child changes flip a parent between plain and lineage-group keys without moving it. */
 export function buildLineageRowRekeyMap(rows: readonly RenderRow[]): ReadonlyMap<string, string> {
@@ -92,6 +93,9 @@ export function estimateRenderRowSize(
   }
   if (row?.type === 'folder-workspace') {
     return FOLDER_WORKSPACE_ROW_HEIGHT
+  }
+  if (row?.type === 'plugin-project-item') {
+    return PLUGIN_PROJECT_ITEM_ROW_HEIGHT
   }
   return 116
 }

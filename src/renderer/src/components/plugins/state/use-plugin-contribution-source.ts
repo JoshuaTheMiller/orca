@@ -51,7 +51,8 @@ function useInstalledPluginContributionSource(
       vmRecipes: plugin.vmRecipes?.map((recipe) => recipe.name) ?? [],
       newFiles: plugin.newFiles ?? [],
       sidebarNavItems: plugin.sidebarNavItems ?? [],
-      settings: plugin.settings ?? []
+      settings: plugin.settings ?? [],
+      projectItems: plugin.projectItems ?? []
     }
   }, [plugin, appThemes, terminalThemes, iconThemes, syntaxes, languagePacks, failures])
 }

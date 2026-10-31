@@ -19,7 +19,8 @@ const mocks = vi.hoisted(() => ({
 vi.mock('electron', () => ({
   ipcMain: {
     handle: (name: string, handler: (event: unknown, args: unknown) => Promise<unknown>) =>
-      mocks.handlers.set(name, handler)
+      mocks.handlers.set(name, handler),
+    on: () => undefined
   }
 }))
 

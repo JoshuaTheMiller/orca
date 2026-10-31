@@ -19,4 +19,8 @@ export type PluginAppearanceSettings = {
   hiddenPluginSidebarNavItems?: string[]
   /** Values the user set on plugin toggles and checkboxes, keyed `<pluginKey>/<setting>`; a missing key holds the item's default. */
   pluginSidebarNavValues?: Record<string, boolean>
+  /** Plugin project items hidden from the left sidebar, keyed `<pluginKey>/<itemId>`; absent means none. */
+  hiddenPluginProjectItems?: string[]
+  /** Names the user gave plugin project item rows, keyed `<pluginKey>/<itemId>/<projectId>`; they win over the plugin's own title. */
+  pluginProjectItemTitles?: Record<string, string>
 }

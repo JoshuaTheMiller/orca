@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { parsePluginManifest } from '../manifest/plugin-manifest'
+import { satisfiesOrcaEngineRange } from '../manifest/plugin-manifest-engine-range'
 import { PLUGIN_SETTINGS_SINCE } from '../manifest/plugin-schema-field-docs'
 import { PLUGIN_SCHEMA_NEWEST_SINCE } from '../installation/plugin-host-version'
 import { pluginUpdateAccessGrowth } from '../approval/plugin-update-access-growth'
@@ -55,9 +56,11 @@ function refusal(contributes: Record<string, unknown>): string {
 }
 
 describe('contributes.settings', () => {
-  it('is no longer reserved, and is the newest schema since', () => {
+  it('is no longer reserved, and is read by the newest schema since', () => {
     expect(Object.keys(PLUGIN_RESERVED_CONTRIBUTION_POINTS)).not.toContain('settings')
-    expect(PLUGIN_SCHEMA_NEWEST_SINCE).toBe(PLUGIN_SETTINGS_SINCE)
+    expect(satisfiesOrcaEngineRange(PLUGIN_SCHEMA_NEWEST_SINCE, `>=${PLUGIN_SETTINGS_SINCE}`)).toBe(
+      true
+    )
     expect(PLUGIN_SETTINGS_SINCE).toBe('1.4.249')
     expect(parsed().contributes.settings).toEqual([flag, layout, nickname])
   })

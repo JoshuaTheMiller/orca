@@ -163,6 +163,8 @@ export function buildDefaultSettings(args: {
     showMobileButton: true,
     hiddenPluginSidebarNavItems: [],
     pluginSidebarNavValues: {},
+    hiddenPluginProjectItems: [],
+    pluginProjectItemTitles: {},
     showPinnedWorktreesInGroups: false,
     ctrlTabOrderMode: 'mru',
     // Why: Orca-first keeps core shortcuts working from a focused terminal; TUI-ownership users opt in.

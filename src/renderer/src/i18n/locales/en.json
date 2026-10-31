@@ -7328,7 +7328,14 @@
           "idle": "Idle"
         },
         "PluginSidebarNavItems": {
-          "failed": "{{value0}} failed"
+          "failed": "{{value0}} failed",
+          "rename": "Rename…",
+          "resetName": "Reset name",
+          "renameTitle": "Rename row",
+          "renameHint": "This name is shown only on this computer, under {{value0}}.",
+          "nameLabel": "Name",
+          "cancel": "Cancel",
+          "save": "Save"
         }
       },
       "shared": {
@@ -13269,6 +13276,7 @@
           "sidebarNavItem": "Adds to the left sidebar",
           "sidebarNavToggle": "Adds a toggle to the left sidebar",
           "sidebarNavCheckbox": "Adds a checkbox to the left sidebar",
+          "projectItem": "Adds under each project in the left sidebar",
           "settingsTitle": "Settings",
           "settingsOne": "Adds 1 setting",
           "settingsMany": "Adds {{value0}} settings"
@@ -13353,7 +13361,8 @@
           "agentStatusChanged": "When an agent’s status changes",
           "detail": "Background code runs",
           "sidebarNavValueChanged": "When a sidebar toggle or checkbox changes",
-          "settingsChanged": "When one of its settings changes"
+          "settingsChanged": "When one of its settings changes",
+          "projectItemsVisible": "When its project items show under other projects"
         },
         "pluginInstallAction": {
           "installed": "{{value0}} installed",

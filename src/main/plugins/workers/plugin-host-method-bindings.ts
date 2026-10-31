@@ -39,6 +39,13 @@ export type PluginHostServices = {
   ): Promise<{ opened: boolean }>
   /** The plugin's sidebar toggle and checkbox values, defaults applied. */
   sidebarNavValues(pluginId: string): Record<string, boolean>
+  projectItems: {
+    /** Sets or, with empty text, clears the detail of one project item row; refuses an item the plugin does not declare. */
+    setDetail(
+      pluginId: string,
+      input: { itemId: string; projectId: string; text: string }
+    ): { ok: true } | { ok: false; error: string; invalid?: boolean }
+  }
   storage: {
     get(pluginId: string, key: string): PluginJsonValue | undefined
     set(
@@ -194,7 +201,10 @@ const HANDLERS: Record<PluginHostMethodName, BoundPluginHostMethod> = {
   ),
   'sidebarNav.getValues': bind(api['sidebarNav.getValues'], async (_params, ctx) => ({
     values: ctx.services.sidebarNavValues(ctx.pluginId)
-  }))
+  })),
+  'projectItems.setDetail': bind(api['projectItems.setDetail'], async (params, ctx) =>
+    okOrThrow(ctx.services.projectItems.setDetail(ctx.pluginId, params))
+  )
 }
 
 function okOrThrow(

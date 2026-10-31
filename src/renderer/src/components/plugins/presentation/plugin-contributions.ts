@@ -5,6 +5,7 @@ import type { PluginManifest } from '../../../../../shared/plugins/manifest/plug
 import { getIntlLocale, translate } from '@/i18n/i18n'
 import { describeSidebarNavItemRows, navItemFromSummary } from './plugin-sidebar-nav-item-rows'
 import { describeSettingRows, type SettingSource } from './plugin-setting-rows'
+import { describeProjectItemRows, type ProjectItemSource } from './plugin-project-item-rows'
 
 /** The manifest points shown as named rows; commands, shortcuts and events have their own lists. */
 export type PluginContributionKind = Exclude<
@@ -45,6 +46,7 @@ export type PluginContributionSource = {
   newFiles: readonly { title: string; extension: string }[]
   sidebarNavItems: readonly { title: string; kind?: 'command' | 'toggle' | 'checkbox' }[]
   settings: readonly SettingSource[]
+  projectItems: readonly ProjectItemSource[]
 }
 
 export const EMPTY_CONTRIBUTION_SOURCE: PluginContributionSource = {
@@ -58,7 +60,8 @@ export const EMPTY_CONTRIBUTION_SOURCE: PluginContributionSource = {
   vmRecipes: [],
   newFiles: [],
   sidebarNavItems: [],
-  settings: []
+  settings: [],
+  projectItems: []
 }
 
 const FILE_LIST_LIMIT = 4
@@ -99,7 +102,8 @@ export function manifestContributionSource(manifest: PluginManifest): PluginCont
     vmRecipes: contributes.vmRecipes.map((recipe) => nameFromContributionPath(recipe.path)),
     newFiles: contributes.newFiles,
     sidebarNavItems: contributes.sidebarNavItems,
-    settings: contributes.settings
+    settings: contributes.settings,
+    projectItems: contributes.projectItems
   }
 }
 
@@ -139,7 +143,8 @@ export function summaryContributionSource(
     vmRecipes: of('vmRecipes').map((item) => nameFromContributionPath(item.name)),
     newFiles: of('newFiles').map((item) => ({ title: item.name, extension: item.detail ?? '' })),
     sidebarNavItems: of('sidebarNavItems').map(navItemFromSummary),
-    settings: of('settings').map((item) => ({ title: item.name }))
+    settings: of('settings').map((item) => ({ title: item.name })),
+    projectItems: of('projectItems').map((item) => ({ title: item.name }))
   }
 }
 
@@ -295,6 +300,7 @@ export function describePluginContributions(
     })
   }
   rows.push(...describeSidebarNavItemRows(source.sidebarNavItems))
+  rows.push(...describeProjectItemRows(source.projectItems))
   rows.push(...describeSettingRows(source.settings))
   for (const [index, title] of source.vmRecipes.entries()) {
     rows.push({

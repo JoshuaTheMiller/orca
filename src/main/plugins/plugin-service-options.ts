@@ -19,6 +19,13 @@ export type PluginServiceOptions = {
     key: string
     value: PluginJsonValue
   }) => void
+  /** Called after a worker sets or clears the detail text of a project item row, so windows can follow. */
+  onProjectItemDetailChanged?: (change: {
+    pluginKey: string
+    itemId: string
+    projectId: string
+    text: string
+  }) => void
   getPluginKillListEntry?: (pluginKey: string) => PluginKillListEntry | null
   hostEntryPath?: string
   workerFactory?: PluginWorkerFactory

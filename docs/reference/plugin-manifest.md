@@ -32,7 +32,7 @@ Add `"$schema": "https://raw.githubusercontent.com/stablyai/orca/main/docs/schem
 | `contributes` | object | no | 1.4.160 | What the plugin adds to Orca. Every point defaults to empty. |
 | `contributes.panels` | [PanelContribution](#panelcontribution)[] | no | 1.4.160 | Sidebar panels. At most 64. |
 | `contributes.commands` | [CommandContribution](#commandcontribution)[] | no | 1.4.160 | Command palette entries. At most 256. |
-| `contributes.events` | [EventContribution](#eventcontribution)[] | no | 1.4.160 | Events delivered to the plugin worker. At most 5. |
+| `contributes.events` | [EventContribution](#eventcontribution)[] | no | 1.4.160 | Events delivered to the plugin worker. At most 6. |
 | `contributes.languagePacks` | [LanguagePackContribution](#languagepackcontribution)[] | no | 1.4.160 | Interface translations. At most 16. |
 | `contributes.keybindings` | [KeybindingContribution](#keybindingcontribution)[] | no | 1.4.160 | Keyboard shortcuts for contributed commands. At most 256. |
 | `contributes.vmRecipes` | [VmRecipeContribution](#vmrecipecontribution)[] | no | 1.4.160 | Virtual machine environment recipes. At most 64. |
@@ -44,6 +44,7 @@ Add `"$schema": "https://raw.githubusercontent.com/stablyai/orca/main/docs/schem
 | `contributes.newFiles` | [NewFileContribution](#newfilecontribution)[] | no | 1.4.245 | Untitled files the user can create from the + menu and the command palette. At most 16. |
 | `contributes.sidebarNavItems` | [SidebarNavItemContribution](#sidebarnavitemcontribution)[] | no | 1.4.247 | Entries in the left sidebar nav list that run a command of this plugin. At most 8. |
 | `contributes.settings` | [SettingContribution](#settingcontribution)[] | no | 1.4.249 | Typed settings that Orca shows in its own settings and stores with the plugin's other settings. At most 32. |
+| `contributes.projectItems` | [ProjectItemContribution](#projectitemcontribution)[] | no | 1.4.251 | Rows under each project in the left sidebar Projects list that run a command of this plugin. At most 4. |
 | `contributes.agentHarnesses` | any[] | no | 1.4.245 | Reserved for coding-agent harness definitions; must be empty until their format is defined. |
 | `contributes.skills` | any[] | no | 1.4.245 | Reserved for agent skills; must be empty until their format is defined. |
 | `contributes.mcpServers` | any[] | no | 1.4.245 | Reserved for MCP server definitions; must be empty until their format is defined. |
@@ -83,11 +84,11 @@ A command palette entry. Requires the `declarative` execution profile or higher.
 
 ## EventContribution
 
-An event subscription. Requires `main`, the `trusted-worker` execution profile and the capability of the event's domain: `workspace:read` for workspace events, `agent:read` for agent events, `settings:own` for sidebar nav value and setting changes.
+An event subscription. Requires `main`, the `trusted-worker` execution profile and the capability of the event's domain: `workspace:read` for workspace events, `agent:read` for agent events, `settings:own` for sidebar nav value and setting changes, `workspace:read` for the projects a project item shows under.
 
 | Field | Type | Required | Since | Description |
 | --- | --- | --- | --- | --- |
-| `on` | `"workspace.created"` \| `"workspace.removed"` \| `"agent.status.changed"` \| `"sidebarNav.valueChanged"` \| `"settings.changed"` | yes | 1.4.160 | Event delivered to the plugin worker. |
+| `on` | `"workspace.created"` \| `"workspace.removed"` \| `"agent.status.changed"` \| `"sidebarNav.valueChanged"` \| `"settings.changed"` \| `"projectItems.visible"` | yes | 1.4.160 | Event delivered to the plugin worker. |
 
 ## LanguagePackContribution
 
@@ -206,6 +207,19 @@ One choice of an `enum` setting.
 | --- | --- | --- | --- | --- |
 | `value` | string | yes | 1.4.249 | Value stored and returned when the option is chosen. Example: `"dark"` |
 | `label` | string | yes | 1.4.249 | Text shown for the option. Example: `"Dark"` |
+
+## ProjectItemContribution
+
+A row shown first under every project in the left sidebar Projects list: a button that runs one of the same plugin's commands with the project as its argument. Requires the `declarative` execution profile or higher.
+
+| Field | Type | Required | Since | Description |
+| --- | --- | --- | --- | --- |
+| `id` | string | yes | 1.4.251 | Project item id, unique among this plugin's project items. The reserved names `constructor` and `prototype` are refused. Example: `"open-board"` |
+| `title` | string | yes | 1.4.251 | Label of the row under each project in the left sidebar Projects list. Example: `"Board"` |
+| `icon` | `"activity"` \| `"bar-chart-3"` \| `"bell"` \| `"blocks"` \| `"book"` \| `"bot"` \| `"bug"` \| `"calendar"` \| `"cloud"` \| `"code"` \| `"database"` \| `"file-text"` \| `"flag"` \| `"folder"` \| `"gauge"` \| `"globe"` \| `"hammer"` \| `"layers"` \| `"lightbulb"` \| `"package"` \| `"plug"` \| `"puzzle"` \| `"rocket"` \| `"star"` \| `"terminal"` \| `"wrench"` \| `"zap"` | no | 1.4.251 | Icon shown beside the label. Defaults to `plug`. Example: `"database"` |
+| `command` | string | yes | 1.4.251 | Id of one of this plugin's `contributes.commands`. Clicking the row runs it as the command palette would, with `{ project: { id, name, paths, hostId }, itemTitle }` as its argument (`itemTitle` is the row title as the user sees it). A command that maps to a built-in action takes no arguments and ignores them. Example: `"board.open"` |
+| `titleSetting` | string | no | 1.4.251 | Id of a `string` entry in this plugin's `contributes.settings`. While that setting holds text, the row's default title is that text, updating when the user changes it; an empty value falls back to `title`. The user can still rename the row per project. Example: `"board-name"` |
+| `when` | string | no | 1.4.249 | Id of a `boolean` entry in this plugin's `contributes.settings`. The row shows only while that setting is true, and reacts when the user changes it. Example: `"show-board"` |
 
 ## Capability
 

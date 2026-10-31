@@ -42,6 +42,8 @@ export function bindPluginHostServices(input: {
   sidebarNavValues: (pluginKey: string) => Record<string, boolean>
   /** Reads and writes the plugin's settings, declared defaults and validation included. */
   settings: PluginHostServices['settings']
+  /** Keeps the detail text of project item rows. */
+  projectItems: PluginHostServices['projectItems']
 }): PluginHostServices {
   const { delegate, pluginsDataDir } = input
   return {
@@ -87,6 +89,7 @@ export function bindPluginHostServices(input: {
       return { opened: true }
     },
     sidebarNavValues: input.sidebarNavValues,
+    projectItems: input.projectItems,
     storage: {
       get: (key, itemKey) => new PluginKvStore(pluginsDataDir, key, 'storage.json').get(itemKey),
       set: (key, itemKey, value) =>

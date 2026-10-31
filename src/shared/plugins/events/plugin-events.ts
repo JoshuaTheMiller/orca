@@ -71,12 +71,38 @@ export const settingsChangedPayloadSchema = z.object({
   value: z.json()
 })
 
+export const PLUGIN_PROJECT_ITEM_VISIBLE_PROJECT_LIMIT = 500
+
+export const projectItemsVisiblePayloadSchema = z.object({
+  /** The `id` of the project item, as the plugin declared it. */
+  itemId: z.string().min(1).max(64),
+  /** Every project the item currently shows under; empty once it shows nowhere. Collapsed projects, hidden items and unmet `when` settings do not count. */
+  projects: z
+    .array(
+      z.object({
+        id: z.string().min(1).max(2048),
+        name: z.string().max(512),
+        /** Absolute paths on this machine; empty for a project on an SSH or runtime host. */
+        paths: z
+          .array(
+            z
+              .string()
+              .min(1)
+              .max(32 * 1024)
+          )
+          .max(8)
+      })
+    )
+    .max(PLUGIN_PROJECT_ITEM_VISIBLE_PROJECT_LIMIT)
+})
+
 export const PLUGIN_EVENT_PAYLOAD_SCHEMAS = {
   'workspace.created': workspaceCreatedPayloadSchema,
   'workspace.removed': workspaceRemovedPayloadSchema,
   'agent.status.changed': agentStatusChangedPayloadSchema,
   'sidebarNav.valueChanged': sidebarNavValueChangedPayloadSchema,
-  'settings.changed': settingsChangedPayloadSchema
+  'settings.changed': settingsChangedPayloadSchema,
+  'projectItems.visible': projectItemsVisiblePayloadSchema
 } satisfies Record<PluginEventName, z.ZodType>
 
 export type PluginEventPayload<E extends PluginEventName> = z.infer<

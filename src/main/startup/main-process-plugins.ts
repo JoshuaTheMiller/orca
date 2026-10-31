@@ -110,6 +110,13 @@ export async function initializeMainProcessPlugins(runtime: OrcaRuntimeService):
         }
       }
     },
+    onProjectItemDetailChanged: (change) => {
+      for (const window of BrowserWindow.getAllWindows()) {
+        if (!window.isDestroyed()) {
+          window.webContents.send('plugins:projectItemDetailChanged', change)
+        }
+      }
+    },
     getSidebarNavValues: () => state.store?.getSettings().pluginSidebarNavValues ?? {},
     getPluginKillListEntry: (pluginKey) => state.pluginKillListService?.find(pluginKey) ?? null,
     hostEntryPath: resolvePluginHostEntryPath(app.getAppPath(), app.isPackaged)

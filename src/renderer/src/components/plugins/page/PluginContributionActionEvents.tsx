@@ -39,6 +39,11 @@ function eventTitle(event: PluginEventName): string {
         'auto.components.settings.PluginContributionActionEvents.settingsChanged',
         'When one of its settings changes'
       )
+    case 'projectItems.visible':
+      return translate(
+        'auto.components.settings.PluginContributionActionEvents.projectItemsVisible',
+        'When its project items show under other projects'
+      )
   }
 }
 

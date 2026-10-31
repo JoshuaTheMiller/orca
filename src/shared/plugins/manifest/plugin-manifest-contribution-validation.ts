@@ -5,6 +5,8 @@ import {
   PLUGIN_EVENT_CAPABILITY,
   type PluginEventName
 } from '../contributions/plugin-event-contribution'
+import type { PluginProjectItemContribution } from '../contributions/plugin-project-item-contribution'
+import { validatePluginProjectItems } from '../contributions/plugin-project-item-validation'
 import type { PluginSettingContribution } from '../contributions/plugin-setting-contribution'
 import type { PluginSidebarNavItemContribution } from '../contributions/plugin-sidebar-nav-item-contribution'
 import { validatePluginSidebarNavItems } from '../contributions/plugin-sidebar-nav-item-validation'
@@ -30,6 +32,7 @@ type ContributionValidationManifest = {
     newFiles: IdentifiedContribution[]
     sidebarNavItems: PluginSidebarNavItemContribution[]
     settings: PluginSettingContribution[]
+    projectItems: PluginProjectItemContribution[]
   }
   capabilities: { kind: string }[]
 }
@@ -69,7 +72,8 @@ export function validatePluginManifestContributions(
     'customEditors',
     'newFiles',
     'sidebarNavItems',
-    'settings'
+    'settings',
+    'projectItems'
   ] as const) {
     rejectDuplicateValues(
       manifest.contributes[path],
@@ -150,6 +154,12 @@ export function validatePluginManifestContributions(
   }
   validatePluginSidebarNavItems(
     manifest.contributes.sidebarNavItems,
+    new Set(commands.keys()),
+    manifest.contributes.settings,
+    ctx
+  )
+  validatePluginProjectItems(
+    manifest.contributes.projectItems,
     new Set(commands.keys()),
     manifest.contributes.settings,
     ctx

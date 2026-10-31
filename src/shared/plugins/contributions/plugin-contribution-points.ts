@@ -36,6 +36,10 @@ import {
   pluginSidebarNavItemContributionSchema
 } from './plugin-sidebar-nav-item-contribution'
 import {
+  PLUGIN_PROJECT_ITEM_LIMIT,
+  pluginProjectItemContributionSchema
+} from './plugin-project-item-contribution'
+import {
   PLUGIN_SETTING_LIMIT,
   pluginSettingContributionSchema
 } from './plugin-setting-contribution'
@@ -43,6 +47,7 @@ import { PLUGIN_PANEL_LIMIT, pluginPanelContributionSchema } from './plugin-pane
 import {
   pluginFieldDoc,
   PLUGIN_MANIFEST_V2_SINCE,
+  PLUGIN_PROJECT_ITEMS_SINCE,
   PLUGIN_SCHEMA_SINCE_V1,
   PLUGIN_SETTINGS_SINCE,
   PLUGIN_SIDEBAR_NAV_ITEMS_SINCE
@@ -63,7 +68,8 @@ export const PLUGIN_CONTRIBUTION_POINTS = [
   'customEditors',
   'newFiles',
   'sidebarNavItems',
-  'settings'
+  'settings',
+  'projectItems'
 ] as const
 
 export type PluginContributionPoint = (typeof PLUGIN_CONTRIBUTION_POINTS)[number]
@@ -219,6 +225,12 @@ export const pluginContributesFields = {
     PLUGIN_SETTING_LIMIT,
     "Typed settings that Orca shows in its own settings and stores with the plugin's other settings.",
     PLUGIN_SETTINGS_SINCE
+  ),
+  projectItems: contributionList(
+    pluginProjectItemContributionSchema,
+    PLUGIN_PROJECT_ITEM_LIMIT,
+    'Rows under each project in the left sidebar Projects list that run a command of this plugin.',
+    PLUGIN_PROJECT_ITEMS_SINCE
   )
 } satisfies Record<PluginContributionPoint, z.ZodType>
 
@@ -268,5 +280,8 @@ export const PLUGIN_CONTRIBUTION_POINT_POLICY: Record<
   sidebarNavItems: { execution: 'declarative', catalogType: null, bindsContent: false },
   // Why declarative with no catalog type: a setting is inert typed data Orca renders and stores;
   // reading it from code needs `settings:own` and a surface that can call the host API.
-  settings: { execution: 'declarative', catalogType: null, bindsContent: false }
+  settings: { execution: 'declarative', catalogType: null, bindsContent: false },
+  // Why declarative with no catalog type: like a nav item it only names a command the plugin
+  // already declares, though that command receives the user's project (name and local paths).
+  projectItems: { execution: 'declarative', catalogType: null, bindsContent: false }
 }

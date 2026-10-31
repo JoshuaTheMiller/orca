@@ -98,6 +98,12 @@ export function pluginContributionSummary(
       (item) => item.command ?? `${item.kind}:${item.setting}`
     ),
     ...named(
+      'projectItems',
+      c.projectItems,
+      (item) => item.title,
+      (item) => item.command
+    ),
+    ...named(
       'settings',
       c.settings,
       (setting) => setting.title,

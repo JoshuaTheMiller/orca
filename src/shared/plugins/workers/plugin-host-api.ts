@@ -2,6 +2,10 @@ import { z } from 'zod'
 import type { PluginCapabilityKind } from '../capabilities/plugin-capabilities'
 import type { PluginSurface } from '../frames/plugin-protocol'
 import { editorOpenFileParams, editorOpenFileResult } from './plugin-host-editor-api'
+import {
+  projectItemsSetDetailParams,
+  projectItemsSetDetailResult
+} from './plugin-host-project-items-api'
 import { sidebarNavGetValuesParams, sidebarNavGetValuesResult } from './plugin-host-sidebar-nav-api'
 
 /**
@@ -278,6 +282,21 @@ export const PLUGIN_HOST_API = {
     surfaces: ALL_SURFACES,
     params: sidebarNavGetValuesParams,
     result: sidebarNavGetValuesResult
+  }),
+  'projectItems.setDetail': spec({
+    summary:
+      'Sets the short text (at most 16 characters) a project item shows on the right of its row under one project; an empty string clears it.',
+    since: 4,
+    scope: 'plugin-private',
+    // Why settings:own and not a capability of its own: the text is display state of the plugin's
+    // own row, kept in memory by the host. It reads and writes no user data, so a new capability
+    // would only add a prompt.
+    capability: 'settings:own',
+    // Why not a mutation: nothing the user owns changes, and a worker may update it often.
+    mutation: false,
+    surfaces: WORKER_ONLY,
+    params: projectItemsSetDetailParams,
+    result: projectItemsSetDetailResult
   })
 }
 
