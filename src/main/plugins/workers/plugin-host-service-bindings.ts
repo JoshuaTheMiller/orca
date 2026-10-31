@@ -33,6 +33,8 @@ export type PluginRuntimeDelegate = {
 export function bindPluginHostServices(input: {
   delegate: PluginRuntimeDelegate
   pluginsDataDir: string
+  /** One plugin's toggle and checkbox values, defaults applied. */
+  sidebarNavValues: (pluginKey: string) => Record<string, boolean>
 }): PluginHostServices {
   const { delegate, pluginsDataDir } = input
   return {
@@ -67,6 +69,7 @@ export function bindPluginHostServices(input: {
       await delegate.openLocalAbsoluteFile(absolutePath, position)
       return { opened: true }
     },
+    sidebarNavValues: input.sidebarNavValues,
     storage: {
       get: (key, itemKey) => new PluginKvStore(pluginsDataDir, key, 'storage.json').get(itemKey),
       set: (key, itemKey, value) =>

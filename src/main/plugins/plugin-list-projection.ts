@@ -191,7 +191,12 @@ export async function buildPluginList(
           id: item.id,
           title: item.title,
           ...(item.icon ? { icon: item.icon } : {}),
-          command: item.command
+          // Why omitted for commands: it is the default, and older readers only know command items.
+          ...(item.kind && item.kind !== 'command' ? { kind: item.kind } : {}),
+          ...(item.command === undefined ? {} : { command: item.command }),
+          ...(item.setting === undefined ? {} : { setting: item.setting }),
+          ...(item.setting === undefined ? {} : { default: item.default ?? false }),
+          ...(item.parent === undefined ? {} : { parent: item.parent })
         })),
         commands: service.contentPacks.commands.preview(plugin.pluginKey).map((command) => ({
           id: command.id,

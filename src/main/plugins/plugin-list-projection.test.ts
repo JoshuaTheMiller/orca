@@ -156,7 +156,16 @@ describe('buildPluginList sidebar nav items', () => {
         commands: [{ id: 'graph.open', title: 'Graph: Open', action: 'view.tasks' }],
         sidebarNavItems: [
           { id: 'graph', title: 'Graph', icon: 'database', command: 'graph.open' },
-          { id: 'plain', title: 'Plain', command: 'graph.open' }
+          { id: 'plain', title: 'Plain', command: 'graph.open' },
+          { id: 'details', title: 'Details', kind: 'toggle', setting: 'show-details' },
+          {
+            id: 'labels',
+            title: 'Labels',
+            kind: 'checkbox',
+            setting: 'show-labels',
+            default: true,
+            parent: 'details'
+          }
         ]
       }
     })
@@ -173,7 +182,16 @@ describe('buildPluginList sidebar nav items', () => {
 
     expect(entry?.sidebarNavItems).toEqual([
       { id: 'graph', title: 'Graph', icon: 'database', command: 'graph.open' },
-      { id: 'plain', title: 'Plain', command: 'graph.open' }
+      { id: 'plain', title: 'Plain', command: 'graph.open' },
+      { id: 'details', title: 'Details', kind: 'toggle', setting: 'show-details', default: false },
+      {
+        id: 'labels',
+        title: 'Labels',
+        kind: 'checkbox',
+        setting: 'show-labels',
+        default: true,
+        parent: 'details'
+      }
     ])
   })
 })

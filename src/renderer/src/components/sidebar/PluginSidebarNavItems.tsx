@@ -8,18 +8,23 @@ import { isWorkspaceScopedPluginContext } from '../../../../shared/plugins/contr
 import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu'
 import {
   usePluginSidebarNavItems,
-  type ActivePluginSidebarNavItem
+  type ActivePluginSidebarCommandItem
 } from '@/store/plugin-sidebar-nav-items'
+import { isStateNavItem, placePluginSidebarNavItems } from '@/store/plugin-sidebar-nav-placement'
 import { resolvePluginPanelIcon } from '@/components/right-sidebar/plugin-panel-activity-items'
 import { HideSidebarMenu } from './sidebar-nav-controls'
+import { PluginSidebarStateRow } from './PluginSidebarStateRow'
 
 const NO_HIDDEN_ITEMS: readonly string[] = []
+const NO_VALUES: Readonly<Record<string, boolean>> = {}
 
-function PluginSidebarNavItem({
+function PluginSidebarCommandRow({
   item,
+  depth,
   onHide
 }: {
-  item: ActivePluginSidebarNavItem
+  item: ActivePluginSidebarCommandItem
+  depth: 0 | 1
   onHide: (key: string) => void
 }): React.JSX.Element {
   const hasWorkspace = useAppStore((s) => Boolean(s.activeWorktreeId))
@@ -42,9 +47,11 @@ function PluginSidebarNavItem({
           onClick={run}
           disabled={unavailable}
           title={item.pluginName}
+          data-depth={depth}
           className={cn(
             'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] font-medium tracking-tight transition-colors',
             'text-worktree-sidebar-foreground/60 hover:bg-worktree-sidebar-foreground/8',
+            depth === 1 && 'pl-6',
             unavailable && 'opacity-50'
           )}
         >
@@ -61,10 +68,11 @@ function PluginSidebarNavItem({
   )
 }
 
-/** Left-sidebar nav entries that enabled plugins contribute; each runs one of the plugin's commands. */
+/** Left-sidebar nav entries that enabled plugins contribute: command buttons, toggles and checkboxes. */
 export function PluginSidebarNavItems(): React.JSX.Element | null {
   const items = usePluginSidebarNavItems()
   const hidden = useAppStore((s) => s.settings?.hiddenPluginSidebarNavItems ?? NO_HIDDEN_ITEMS)
+  const values = useAppStore((s) => s.settings?.pluginSidebarNavValues ?? NO_VALUES)
   const updateSettings = useAppStore((s) => s.updateSettings)
   const hide = React.useCallback(
     (key: string) => {
@@ -72,15 +80,33 @@ export function PluginSidebarNavItems(): React.JSX.Element | null {
     },
     [hidden, updateSettings]
   )
-  const shown = items.filter((item) => !hidden.includes(item.key))
-  if (shown.length === 0) {
+  const setValue = React.useCallback(
+    (valueKey: string, value: boolean) => {
+      void updateSettings({ pluginSidebarNavValues: { ...values, [valueKey]: value } })
+    },
+    [values, updateSettings]
+  )
+  // Why placed here: a hidden or switched-off toggle takes its children with it.
+  const placed = placePluginSidebarNavItems(items, values, hidden)
+  if (placed.length === 0) {
     return null
   }
   return (
     <>
-      {shown.map((item) => (
-        <PluginSidebarNavItem key={item.key} item={item} onHide={hide} />
-      ))}
+      {placed.map(({ item, depth }) =>
+        isStateNavItem(item) ? (
+          <PluginSidebarStateRow
+            key={item.key}
+            item={item}
+            depth={depth}
+            checked={values[item.valueKey] ?? item.default}
+            onChange={setValue}
+            onHide={hide}
+          />
+        ) : (
+          <PluginSidebarCommandRow key={item.key} item={item} depth={depth} onHide={hide} />
+        )
+      )}
     </>
   )
 }

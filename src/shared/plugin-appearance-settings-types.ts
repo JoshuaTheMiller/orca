@@ -17,4 +17,6 @@ export type PluginAppearanceSettings = {
   terminalPluginPalettes?: TerminalPluginPalette[]
   /** Plugin nav items hidden from the left sidebar, keyed `<pluginKey>/<itemId>`; absent means none. */
   hiddenPluginSidebarNavItems?: string[]
+  /** Values the user set on plugin toggles and checkboxes, keyed `<pluginKey>/<setting>`; a missing key holds the item's default. */
+  pluginSidebarNavValues?: Record<string, boolean>
 }

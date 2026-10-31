@@ -23,6 +23,7 @@ import {
   normalizePluginConsents,
   normalizePluginIdList
 } from '../../shared/plugins/approval/plugin-consent-state'
+import { createPluginSidebarNavEvents } from '../plugins/plugin-sidebar-nav-events'
 import { projectPluginAgentStatusChangedPayload } from '../plugins/plugin-agent-status-event'
 import { setMainPluginLanguagePacks, setMainUiLanguage } from '../i18n/main-i18n'
 import { isUsablePluginLanguagePack } from '../../shared/plugins/languages/plugin-language-pack-coverage'
@@ -102,6 +103,7 @@ export async function initializeMainProcessPlugins(runtime: OrcaRuntimeService):
     getPluginConsents: () => normalizePluginConsents(state.store?.getSettings().pluginConsents),
     getDevPluginPaths: () => normalizePluginIdList(state.store?.getSettings().devPluginPaths),
     getKeybindings: () => state.keybindings?.getOverrides() ?? {},
+    getSidebarNavValues: () => state.store?.getSettings().pluginSidebarNavValues ?? {},
     getPluginKillListEntry: (pluginKey) => state.pluginKillListService?.find(pluginKey) ?? null,
     hostEntryPath: resolvePluginHostEntryPath(app.getAppPath(), app.isPackaged)
   })
@@ -192,7 +194,18 @@ export async function initializeMainProcessPlugins(runtime: OrcaRuntimeService):
         console.warn('[plugins] failed to apply plugin safety-list refresh:', error)
       )
   })
+  const sidebarNavEvents = createPluginSidebarNavEvents({
+    initial: store.getSettings().pluginSidebarNavValues,
+    declaredItems: (pluginKey) =>
+      state.pluginService?.findValidPlugin(pluginKey)?.manifest.contributes.sidebarNavItems ?? [],
+    // Why one plugin: a value belongs to the plugin that declared the toggle.
+    emit: (pluginKey, payload) =>
+      state.pluginService?.emitEvent('sidebarNav.valueChanged', payload, pluginKey)
+  })
   store.onSettingsChanged((updates) => {
+    if ('pluginSidebarNavValues' in updates) {
+      sidebarNavEvents.valuesChanged(updates.pluginSidebarNavValues)
+    }
     if (updates.pluginSystemEnabled === true) {
       requestBundledPluginBootstrap()
       requestOfficialMarketplaceSeed()

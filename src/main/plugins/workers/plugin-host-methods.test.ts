@@ -12,6 +12,7 @@ function createServices(storageSet: PluginHostServices['storage']['set']): Plugi
     sendTerminalText: vi.fn().mockResolvedValue({ accepted: true }),
     dispatchPluginNotification: vi.fn().mockResolvedValue({ delivered: true }),
     openEditorFile: vi.fn().mockResolvedValue({ opened: true }),
+    sidebarNavValues: vi.fn().mockReturnValue({}),
     storage: {
       get: vi.fn(),
       set: storageSet,
@@ -141,7 +142,8 @@ function createTerminalHarness(terminalHandles: string[]): {
     delegate,
     services: bindPluginHostServices({
       delegate,
-      pluginsDataDir: join(tmpdir(), 'plugin-host-methods-test')
+      pluginsDataDir: join(tmpdir(), 'plugin-host-methods-test'),
+      sidebarNavValues: () => ({})
     })
   }
 }
@@ -389,5 +391,48 @@ describe('editor.openFile', () => {
       value: { opened: true }
     })
     expect(delegate.openLocalAbsoluteFile).toHaveBeenCalledWith('/w/a.md', { line: 1 })
+  })
+})
+
+describe('sidebarNav.getValues', () => {
+  const getValues = (
+    surface: 'worker' | 'panel' | 'editor',
+    granted: 'settings:own'[] = ['settings:own'],
+    params: unknown = {}
+  ) => {
+    const services = createServices(vi.fn())
+    vi.mocked(services.sidebarNavValues).mockReturnValue({ 'show-details': true, verbose: false })
+    return {
+      services,
+      outcome: executePluginHostCall({
+        pluginId: 'samples.demo',
+        method: 'sidebarNav.getValues',
+        params,
+        surface,
+        grantedCapabilities: granted,
+        services
+      })
+    }
+  }
+
+  it('returns the plugin own values on every surface, scoped to its key', async () => {
+    for (const surface of ['worker', 'panel', 'editor'] as const) {
+      const { outcome, services } = getValues(surface)
+      await expect(outcome).resolves.toEqual({
+        ok: true,
+        value: { values: { 'show-details': true, verbose: false } }
+      })
+      expect(services.sidebarNavValues).toHaveBeenCalledWith('samples.demo')
+    }
+  })
+
+  it('needs settings:own and takes no params', async () => {
+    await expect(getValues('worker', []).outcome).resolves.toMatchObject({
+      ok: false,
+      code: 'capability_denied'
+    })
+    await expect(
+      getValues('worker', ['settings:own'], { plugin: 'other' }).outcome
+    ).resolves.toMatchObject({ ok: false, code: 'invalid_params' })
   })
 })

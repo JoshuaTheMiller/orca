@@ -40,6 +40,7 @@ import {
   snapshotPluginConsentLists
 } from './plugin-activation-policy'
 import { PluginContentPackRegistry } from './contributions/plugin-content-pack-registry'
+import { readPluginSidebarNavValues } from './plugin-sidebar-nav-events'
 import type { PluginServiceOptions } from './plugin-service-options'
 import type { PluginChangeEvent } from '../../shared/plugins/events/plugin-change-event'
 import { waitForPluginRefreshSettlement } from './plugin-refresh-settlement'
@@ -259,7 +260,8 @@ export class PluginService {
         services: this.runtimeDelegate
           ? bindPluginHostServices({
               delegate: this.runtimeDelegate,
-              pluginsDataDir: getPluginsDataDir(this.options.userDataPath)
+              pluginsDataDir: getPluginsDataDir(this.options.userDataPath),
+              sidebarNavValues: (key) => readPluginSidebarNavValues(this, key)
             })
           : null,
         audit: this.audit
@@ -280,7 +282,8 @@ export class PluginService {
     return handle.invokeCommand(commandId, args)
   }
 
-  emitEvent(event: PluginEventName, payload: unknown): void {
+  /** `onlyPluginKey` limits delivery to one plugin, for events about that plugin's own state. */
+  emitEvent(event: PluginEventName, payload: unknown, onlyPluginKey?: string): void {
     if (!this.options.isPluginSystemEnabled() || this.disposed) {
       return
     }
@@ -288,6 +291,7 @@ export class PluginService {
       event,
       payload,
       plugins: this.installed.discovered,
+      onlyPluginKey,
       workerController: this.workerController,
       isRuntimeApproved: (plugin) => this.canStartPluginWork(plugin),
       grantedCapabilities: (pluginKey) => this.getGrantedCapabilities(pluginKey),

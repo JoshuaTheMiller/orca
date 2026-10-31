@@ -35,6 +35,8 @@ export type PluginHostServices = {
     absolutePath: string,
     position?: { line: number; column?: number }
   ): Promise<{ opened: boolean }>
+  /** The plugin's sidebar toggle and checkbox values, defaults applied. */
+  sidebarNavValues(pluginId: string): Record<string, boolean>
   storage: {
     get(pluginId: string, key: string): PluginJsonValue | undefined
     set(
@@ -183,7 +185,10 @@ const HANDLERS: Record<PluginHostMethodName, BoundPluginHostMethod> = {
       // Why: a column alone names no place in the file.
       params.line === undefined ? undefined : { line: params.line, column: params.column }
     )
-  )
+  ),
+  'sidebarNav.getValues': bind(api['sidebarNav.getValues'], async (_params, ctx) => ({
+    values: ctx.services.sidebarNavValues(ctx.pluginId)
+  }))
 }
 
 function okOrThrow(result: { ok: true } | { ok: false; error: string }): typeof OK {

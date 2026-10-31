@@ -108,8 +108,8 @@ const SPECIFIC_PLUGIN_ROUTES = [
     ['plugin-demo', 'plugin-panel-containment'],
     [
       `${UI}(?:page\\/PluginContributionAction(?:Panel|Command|Events)|state\\/use-plugin-logs)`,
-      `${STORE}(?:panels|sidebar-nav-items)`,
-      'src\\/main\\/plugins\\/(?:panels\\/|workers\\/|plugin-(?:command-|event-delivery|agent-status-event|storage-store|secrets-store|log-buffer))',
+      `${STORE}(?:panels|sidebar-nav-)`,
+      'src\\/main\\/plugins\\/(?:panels\\/|workers\\/|plugin-(?:command-|event-delivery|agent-status-event|sidebar-nav-events|storage-store|secrets-store|log-buffer))',
       'src\\/shared\\/plugins\\/(?:frames\\/|workers\\/|events\\/|capabilities\\/|contributions\\/plugin-(?:command-|event-|panel-|sidebar-nav-|execution-profile))'
     ].join('|'),
     'plugin-panel-navigation-observer'

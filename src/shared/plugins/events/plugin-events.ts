@@ -58,10 +58,17 @@ export const agentStatusChangedPayloadSchema = z.object({
     .optional()
 })
 
+export const sidebarNavValueChangedPayloadSchema = z.object({
+  /** The `setting` of the toggle or checkbox, as the plugin declared it. */
+  setting: z.string().min(1).max(64),
+  value: z.boolean()
+})
+
 export const PLUGIN_EVENT_PAYLOAD_SCHEMAS = {
   'workspace.created': workspaceCreatedPayloadSchema,
   'workspace.removed': workspaceRemovedPayloadSchema,
-  'agent.status.changed': agentStatusChangedPayloadSchema
+  'agent.status.changed': agentStatusChangedPayloadSchema,
+  'sidebarNav.valueChanged': sidebarNavValueChangedPayloadSchema
 } satisfies Record<PluginEventName, z.ZodType>
 
 export type PluginEventPayload<E extends PluginEventName> = z.infer<

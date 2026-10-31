@@ -5,6 +5,8 @@ import {
   PLUGIN_EVENT_CAPABILITY,
   type PluginEventName
 } from '../contributions/plugin-event-contribution'
+import type { PluginSidebarNavItemContribution } from '../contributions/plugin-sidebar-nav-item-contribution'
+import { validatePluginSidebarNavItems } from '../contributions/plugin-sidebar-nav-item-validation'
 import type { PluginFileMatch } from '../contributions/plugin-file-match'
 
 type IdentifiedContribution = { id: string }
@@ -25,7 +27,7 @@ type ContributionValidationManifest = {
     syntaxes: (IdentifiedContribution & PluginFileMatch & { scopeName: string })[]
     customEditors: (IdentifiedContribution & PluginFileMatch)[]
     newFiles: IdentifiedContribution[]
-    sidebarNavItems: (IdentifiedContribution & { command: string })[]
+    sidebarNavItems: PluginSidebarNavItemContribution[]
   }
   capabilities: { kind: string }[]
 }
@@ -143,15 +145,7 @@ export function validatePluginManifestContributions(
       })
     }
   }
-  for (const [index, item] of manifest.contributes.sidebarNavItems.entries()) {
-    if (!commands.has(item.command)) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['contributes', 'sidebarNavItems', index, 'command'],
-        message: `unknown contributed command: ${item.command}`
-      })
-    }
-  }
+  validatePluginSidebarNavItems(manifest.contributes.sidebarNavItems, new Set(commands.keys()), ctx)
   for (const [index, keybinding] of manifest.contributes.keybindings.entries()) {
     const command = commands.get(keybinding.command)
     if (!command) {
