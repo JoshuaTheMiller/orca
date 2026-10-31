@@ -4,6 +4,7 @@ import {
   Command,
   FileCode,
   FilePlus,
+  FolderTree,
   Highlighter,
   Languages,
   Palette,
@@ -109,7 +110,8 @@ const CONTRIBUTION_ICON: Record<PluginContributionKind, React.ReactNode> = {
   newFiles: <FilePlus />,
   sidebarNavItems: <PanelLeft />,
   settings: <SlidersHorizontal />,
-  sidebarCards: <PanelLeftOpen />
+  sidebarCards: <PanelLeftOpen />,
+  projectItems: <FolderTree />
 }
 
 type AddsCommand = {
@@ -256,6 +258,7 @@ function useContributionRowActions(
       case 'customEditors':
       case 'vmRecipes':
       case 'sidebarNavItems':
+      case 'projectItems':
       case 'settings':
       case 'sidebarCards':
         // Themes have "Use now" above the list; editors open from their new files; recipes have nothing to try here.

@@ -8,6 +8,14 @@ import {
   type ActivePluginCommand
 } from './plugin-panels'
 
+/** The boolean plugin setting a contribution waits on (`when`); `default` holds until its value loads. */
+export type PluginSettingGate = {
+  valueKey: string
+  pluginKey: string
+  setting: string
+  default: boolean
+}
+
 type ActiveNavItemBase = Omit<
   PluginHostSidebarNavItem,
   'kind' | 'command' | 'setting' | 'default' | 'when'
@@ -39,14 +47,6 @@ export type ActivePluginSidebarStateItem = ActiveNavItemBase & {
 export type ActivePluginSidebarNavItem =
   | ActivePluginSidebarCommandItem
   | ActivePluginSidebarStateItem
-
-/** The boolean plugin setting a contribution waits on (`when`); `default` holds until its value loads. */
-export type PluginSettingGate = {
-  valueKey: string
-  pluginKey: string
-  setting: string
-  default: boolean
-}
 
 export function gateFor(plugin: PluginHostListEntry, setting: string): PluginSettingGate {
   const declared = plugin.settings?.find((candidate) => candidate.id === setting)

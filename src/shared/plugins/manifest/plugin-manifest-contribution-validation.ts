@@ -5,6 +5,8 @@ import {
   PLUGIN_EVENT_CAPABILITY,
   type PluginEventName
 } from '../contributions/plugin-event-contribution'
+import type { PluginProjectItemContribution } from '../contributions/plugin-project-item-contribution'
+import { validatePluginProjectItems } from '../contributions/plugin-project-item-validation'
 import type { PluginSettingContribution } from '../contributions/plugin-setting-contribution'
 import {
   validatePluginSidebarCards,
@@ -35,6 +37,7 @@ type ContributionValidationManifest = {
     sidebarNavItems: PluginSidebarNavItemContribution[]
     settings: PluginSettingContribution[]
     sidebarCards: PluginSidebarCardContribution[]
+    projectItems: PluginProjectItemContribution[]
   }
   capabilities: { kind: string }[]
 }
@@ -75,7 +78,8 @@ export function validatePluginManifestContributions(
     'newFiles',
     'sidebarNavItems',
     'settings',
-    'sidebarCards'
+    'sidebarCards',
+    'projectItems'
   ] as const) {
     rejectDuplicateValues(
       manifest.contributes[path],
@@ -161,6 +165,12 @@ export function validatePluginManifestContributions(
     ctx
   )
   validatePluginSidebarCards(manifest.contributes.sidebarCards, manifest.contributes.settings, ctx)
+  validatePluginProjectItems(
+    manifest.contributes.projectItems,
+    new Set(commands.keys()),
+    manifest.contributes.settings,
+    ctx
+  )
   for (const [index, keybinding] of manifest.contributes.keybindings.entries()) {
     const command = commands.get(keybinding.command)
     if (!command) {

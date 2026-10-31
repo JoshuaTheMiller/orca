@@ -13,6 +13,8 @@ export const PLUGIN_LINKS_OPEN_SINCE = '1.4.248'
 export const PLUGIN_SETTINGS_SINCE = '1.4.249'
 /** First release with `contributes.sidebarCards`, `sidebarCards.setItems` and `sidebarCards.visibilityChanged`. */
 export const PLUGIN_SIDEBAR_CARDS_SINCE = '1.4.250'
+/** First release with `contributes.projectItems`. */
+export const PLUGIN_PROJECT_ITEMS_SINCE = '1.4.251'
 
 type PluginFieldDoc = {
   description: string

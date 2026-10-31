@@ -52,7 +52,8 @@ function useInstalledPluginContributionSource(
       newFiles: plugin.newFiles ?? [],
       sidebarNavItems: plugin.sidebarNavItems ?? [],
       settings: plugin.settings ?? [],
-      sidebarCards: plugin.sidebarCards ?? []
+      sidebarCards: plugin.sidebarCards ?? [],
+      projectItems: plugin.projectItems ?? []
     }
   }, [plugin, appThemes, terminalThemes, iconThemes, syntaxes, languagePacks, failures])
 }

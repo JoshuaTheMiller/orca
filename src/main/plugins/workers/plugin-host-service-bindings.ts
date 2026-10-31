@@ -46,6 +46,8 @@ export function bindPluginHostServices(input: {
   setSidebarCardItems: PluginHostServices['setSidebarCardItems']
   /** Reads and writes the plugin's settings, declared defaults and validation included. */
   settings: PluginHostServices['settings']
+  /** Keeps the detail text of project item rows. */
+  projectItems: PluginHostServices['projectItems']
 }): PluginHostServices {
   const { delegate, pluginsDataDir, openLink } = input
   return {
@@ -93,6 +95,7 @@ export function bindPluginHostServices(input: {
     sidebarNavValues: input.sidebarNavValues,
     openLink: async (request) => ({ opened: openLink?.(request) ?? false }),
     setSidebarCardItems: input.setSidebarCardItems,
+    projectItems: input.projectItems,
     storage: {
       get: (key, itemKey) => new PluginKvStore(pluginsDataDir, key, 'storage.json').get(itemKey),
       set: (key, itemKey, value) =>

@@ -32,6 +32,7 @@ export type {
   PluginHostCustomEditor,
   PluginHostListEntry,
   PluginHostNewFile,
+  PluginHostProjectItem,
   PluginHostSetting,
   PluginHostSidebarCard,
   PluginHostSidebarNavItem,
@@ -45,6 +46,17 @@ export type PluginSettingValue = boolean | string
 export type PluginSettingWriteOutcome = { ok: true } | { ok: false; error: string }
 export type PluginSidebarCardRef = { pluginKey: string; cardId: string }
 export type PluginSidebarCardOpenFileOutcome = { ok: true } | { ok: false; error: string }
+export type PluginProjectItemDetailChange = {
+  pluginKey: string
+  itemId: string
+  projectId: string
+  text: string
+}
+export type PluginProjectItemVisibility = {
+  pluginKey: string
+  itemId: string
+  projects: { id: string; name: string; paths: string[] }[]
+}
 export type PluginSettingChangedEvent = { pluginKey: string; key: string; value: unknown }
 
 export type PluginHostLogLine = {
@@ -246,6 +258,14 @@ export type PluginsApi = {
   ) => Promise<PluginSidebarCardOpenFileOutcome>
   /** Fires after a worker sets a card's rows. */
   onSidebarCardItemsChanged: (callback: (change: PluginSidebarCardRef) => void) => () => void
+  /** Detail text of every project item row workers have set, for a window that just opened. */
+  getProjectItemDetails: () => Promise<PluginProjectItemDetailChange[]>
+  /** Fires when a worker sets or clears the detail text of a project item row; empty text clears. */
+  onProjectItemDetailChanged: (
+    callback: (change: PluginProjectItemDetailChange) => void
+  ) => () => void
+  /** Tells main which projects each project item shows under in this window, replacing the last report. */
+  reportVisibleProjectItems: (items: PluginProjectItemVisibility[]) => void
   /** What automatic updates last did. Older hosts reject the call; treat that as nothing. */
   getAutoUpdateState: () => Promise<PluginAutoUpdateState>
   /** Held updates not yet told to the user, each returned once per version; never approves. */

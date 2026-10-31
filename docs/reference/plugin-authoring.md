@@ -241,7 +241,7 @@ profile, because its rows come from the worker. Each entry is `{ id, title, icon
   The card is offered only while that setting is true. A `when` that names no setting, or one that
   is not a boolean, is a manifest error.
 
-The worker fills the card with `sidebarCards.setItems` (host API 1.4), which replaces all rows of
+The worker fills the card with `sidebarCards.setItems` (host API 1.5), which replaces all rows of
 one of the plugin's own cards and answers `{ ok: true }`:
 
 | Row field   | Meaning                                                                                                                                                                                                                                                                                                                                |
@@ -324,6 +324,112 @@ export default async function activate(orca) {
   })
 }
 ```
+
+### Project items
+
+`contributes.projectItems` adds rows (at most 4) to the left sidebar's Projects list. Each row
+appears as the **first child of every project**, above its workspaces, styled like the other child
+rows and showing only a title (no badges). It needs the `declarative` execution profile or higher
+and engine `>=1.4.251`.
+
+```json
+{
+  "contributes": {
+    "commands": [{ "id": "board.open", "title": "Board: Open" }],
+    "settings": [
+      { "id": "show-board", "title": "Show board", "type": "boolean", "default": true },
+      { "id": "board-name", "title": "Board name", "type": "string", "default": "Board" }
+    ],
+    "projectItems": [
+      {
+        "id": "open-board",
+        "title": "Board",
+        "icon": "database",
+        "command": "board.open",
+        "titleSetting": "board-name",
+        "when": "show-board"
+      }
+    ]
+  }
+}
+```
+
+- `command` is required and must be one of the plugin's own `contributes.commands`. Clicking the row
+  runs it as the command palette would; a workspace-scoped command (`when: "workspace"`) leaves the
+  row disabled while no workspace is focused.
+- `when` is the id of a `boolean` setting, exactly as on nav items: the row shows only while it is true.
+- `titleSetting` is the id of a `string` setting. While it holds text, that text is the row's default
+  title, updating live; an empty value falls back to `title`.
+- `icon` is one of the panel icons and defaults to `plug`.
+
+The command receives this argument (a worker handler gets it as its first parameter):
+
+```js
+orca.commands.register('board.open', async ({ project, itemTitle }) => {
+  // project: { id, name, paths, hostId }
+  //   id      the project's id in Orca
+  //   name    the name Orca shows for the project
+  //   paths   absolute paths on this machine (the repo root or folder); [] when the project lives
+  //           on an SSH or runtime host, because a remote path means nothing to a local worker
+  //   hostId  'local', 'ssh:<target>' or 'runtime:<id>'
+  // itemTitle: the row's title as the user sees it (a rename wins over titleSetting over title)
+})
+```
+
+A command that maps to a built-in action (`action`) takes no arguments, so it ignores these.
+
+**Where rows appear.** Rows exist only where project headers do: the sidebar grouped by project.
+They follow the header through the sidebar's filters and search (a project the filter hides shows no
+rows, and the rows never count toward a match), disappear while the project is collapsed, and sit
+inside the virtualized list, so a long list costs nothing extra. A project with no workspaces still
+shows them. Project groups (folders of projects) get no rows; their projects do.
+
+**User control.** Right-click a row for **Rename…** (a name for that one project's row, kept on
+this computer under the plugin, item and project; **Reset name** removes it) and **Hide from
+sidebar** (hides the item under every project). A rename wins over `titleSetting` and `title`.
+The plugin is not told about either, other than seeing the title in `itemTitle`.
+
+**Detail text.** A worker can show a short, muted, right-aligned text on a row for one project
+(for example `3/7`) with `projectItems.setDetail` (host API 1.6, worker only, `settings:own`):
+
+```js
+await orca.host.call('projectItems.setDetail', {
+  itemId: 'open-board',
+  projectId: project.id,
+  text: '3/7'
+})
+await orca.host.call('projectItems.setDetail', {
+  itemId: 'open-board',
+  projectId: project.id,
+  text: ''
+}) // clears
+```
+
+`text` is at most 16 characters; an empty string clears it. Orca keeps details in memory per plugin,
+item and project, and drops them when the plugin is disabled or removed (a restart of Orca clears
+them too, so a worker sets them again). It refuses an `itemId` the plugin does not declare with
+`invalid_params`. Why `settings:own` and no capability of its own: the text is display state of the
+plugin's own row and touches no user data, so it is not audit-logged as a mutation.
+
+**Knowing which projects show the item.** A worker with a `projectItems.visible` entry in
+`contributes.events` (needs `workspace:read`, since the payload names projects and their local
+paths) is told whenever the set of projects an item shows under changes:
+
+```js
+orca.events.on('projectItems.visible', ({ itemId, projects }) => {
+  // projects: [{ id, name, paths }], empty once the item shows nowhere
+  for (const project of projects) {
+    // compute the detail for visible projects only
+  }
+})
+```
+
+The first event starts the worker, so a plugin whose rows just appeared does not need a command run
+first. "Showing" means the row is in the list: collapsed projects, hidden items, rows turned off by
+`when` and filtered-out projects do not count, but a row scrolled out of view does. The event goes to
+the owning plugin only.
+
+Project items count as access growth like nav items: an update that adds one asks for approval again.
 
 ### Opening files
 

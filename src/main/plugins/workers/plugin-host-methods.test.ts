@@ -15,6 +15,7 @@ function createServices(storageSet: PluginHostServices['storage']['set']): Plugi
     sidebarNavValues: vi.fn().mockReturnValue({}),
     openLink: vi.fn().mockResolvedValue({ opened: true }),
     setSidebarCardItems: vi.fn().mockReturnValue({ ok: true }),
+    projectItems: { setDetail: vi.fn().mockReturnValue({ ok: true }) },
     storage: {
       get: vi.fn(),
       set: storageSet,
@@ -147,7 +148,8 @@ function createTerminalHarness(terminalHandles: string[]): {
       pluginsDataDir: join(tmpdir(), 'plugin-host-methods-test'),
       sidebarNavValues: () => ({}),
       setSidebarCardItems: () => ({ ok: true }),
-      settings: { getAll: () => ({}), set: () => ({ ok: true }) }
+      settings: { getAll: () => ({}), set: () => ({ ok: true }) },
+      projectItems: { setDetail: () => ({ ok: true }) }
     })
   }
 }
@@ -613,5 +615,63 @@ describe('sidebarCards.setItems', () => {
     await expect(setItems({ cardId: 'issues', items: full }).outcome).resolves.toMatchObject({
       ok: true
     })
+  })
+})
+
+describe('projectItems.setDetail', () => {
+  const setDetail = (
+    surface: 'worker' | 'panel' | 'editor',
+    params: unknown,
+    granted: 'settings:own'[] = ['settings:own'],
+    result: ReturnType<PluginHostServices['projectItems']['setDetail']> = { ok: true }
+  ) => {
+    const services = createServices(vi.fn())
+    vi.mocked(services.projectItems.setDetail).mockReturnValue(result)
+    return {
+      services,
+      outcome: executePluginHostCall({
+        pluginId: 'samples.demo',
+        method: 'projectItems.setDetail',
+        params,
+        surface,
+        grantedCapabilities: granted,
+        services
+      })
+    }
+  }
+  const valid = { itemId: 'board', projectId: 'repo-1', text: '3/7' }
+
+  it('hands the detail to the service under the calling plugin key', async () => {
+    const { outcome, services } = setDetail('worker', valid)
+    await expect(outcome).resolves.toEqual({ ok: true, value: { ok: true } })
+    expect(services.projectItems.setDetail).toHaveBeenCalledWith('samples.demo', valid)
+  })
+
+  it('is worker-only and needs settings:own', async () => {
+    for (const surface of ['panel', 'editor'] as const) {
+      await expect(setDetail(surface, valid).outcome).resolves.toMatchObject({ ok: false })
+    }
+    await expect(setDetail('worker', valid, []).outcome).resolves.toMatchObject({
+      ok: false,
+      code: 'capability_denied'
+    })
+  })
+
+  it('refuses text over 16 characters but accepts an empty string to clear', async () => {
+    await expect(
+      setDetail('worker', { ...valid, text: 'x'.repeat(17) }).outcome
+    ).resolves.toMatchObject({ ok: false, code: 'invalid_params' })
+    await expect(setDetail('worker', { ...valid, text: '' }).outcome).resolves.toMatchObject({
+      ok: true
+    })
+  })
+
+  it('reports an item the plugin does not declare as invalid params', async () => {
+    const { outcome } = setDetail('worker', valid, ['settings:own'], {
+      ok: false,
+      error: 'board is not a project item of this plugin',
+      invalid: true
+    })
+    await expect(outcome).resolves.toMatchObject({ ok: false, code: 'invalid_params' })
   })
 })

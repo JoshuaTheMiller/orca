@@ -6,6 +6,10 @@ import {
   sidebarCardsSetItemsParams,
   sidebarCardsSetItemsResult
 } from './plugin-host-sidebar-cards-api'
+import {
+  projectItemsSetDetailParams,
+  projectItemsSetDetailResult
+} from './plugin-host-project-items-api'
 import { sidebarNavGetValuesParams, sidebarNavGetValuesResult } from './plugin-host-sidebar-nav-api'
 import { linksOpenParams, linksOpenResult } from './plugin-host-links-schema'
 
@@ -309,6 +313,21 @@ export const PLUGIN_HOST_API = {
     surfaces: WORKER_ONLY,
     params: sidebarCardsSetItemsParams,
     result: sidebarCardsSetItemsResult
+  }),
+  'projectItems.setDetail': spec({
+    summary:
+      'Sets the short text (at most 16 characters) a project item shows on the right of its row under one project; an empty string clears it.',
+    since: 6,
+    scope: 'plugin-private',
+    // Why settings:own and not a capability of its own: the text is display state of the plugin's
+    // own row, kept in memory by the host. It reads and writes no user data, so a new capability
+    // would only add a prompt.
+    capability: 'settings:own',
+    // Why not a mutation: nothing the user owns changes, and a worker may update it often.
+    mutation: false,
+    surfaces: WORKER_ONLY,
+    params: projectItemsSetDetailParams,
+    result: projectItemsSetDetailResult
   })
 }
 

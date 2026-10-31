@@ -23,6 +23,13 @@ export type PluginServiceOptions = {
   }) => void
   /** Called after a plugin sets the rows of one of its sidebar cards, so windows showing it can reload them. */
   onSidebarCardItemsChanged?: (change: { pluginKey: string; cardId: string }) => void
+  /** Called after a worker sets or clears the detail text of a project item row, so windows can follow. */
+  onProjectItemDetailChanged?: (change: {
+    pluginKey: string
+    itemId: string
+    projectId: string
+    text: string
+  }) => void
   getPluginKillListEntry?: (pluginKey: string) => PluginKillListEntry | null
   hostEntryPath?: string
   /** Opens a web link in the window that owns the link settings; false when none can. */

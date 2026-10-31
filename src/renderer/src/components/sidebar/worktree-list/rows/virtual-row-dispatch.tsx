@@ -30,6 +30,7 @@ import {
   type WorktreeItemRowContext
 } from './item-row'
 import { renderWorktreeSectionHeaderRow, type SectionHeaderRowContext } from './SectionHeader'
+import { renderPluginProjectItemVirtualRow } from './plugin-project-item-row'
 import type { WorktreeRowDragState } from '../drag/row-state'
 
 export type WorktreeVirtualRowContext = {
@@ -177,6 +178,14 @@ export function renderWorktreeVirtualRow(
 
   if (row.type === 'lineage-group') {
     return renderLineageGroupVirtualRow(ctx, row, vItem)
+  }
+
+  if (row.type === 'plugin-project-item') {
+    return renderPluginProjectItemVirtualRow({
+      row,
+      vItem,
+      measureVirtualRowElement: ctx.measureVirtualRowElement
+    })
   }
 
   if (row.type === 'imported-worktrees-card') {

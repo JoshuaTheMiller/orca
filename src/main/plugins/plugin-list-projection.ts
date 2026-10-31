@@ -98,6 +98,7 @@ export async function buildPluginList(
           sidebarNavItems: [],
           settings: [],
           sidebarCards: [],
+          projectItems: [],
           commands: [],
           hasWorker: false,
           vmRecipes: [],
@@ -199,6 +200,14 @@ export async function buildPluginList(
           ...(item.setting === undefined ? {} : { setting: item.setting }),
           ...(item.setting === undefined ? {} : { default: item.default ?? false }),
           ...(item.parent === undefined ? {} : { parent: item.parent }),
+          ...(item.when === undefined ? {} : { when: item.when })
+        })),
+        projectItems: plugin.manifest.contributes.projectItems.map((item) => ({
+          id: item.id,
+          title: item.title,
+          ...(item.icon ? { icon: item.icon } : {}),
+          command: item.command,
+          ...(item.titleSetting === undefined ? {} : { titleSetting: item.titleSetting }),
           ...(item.when === undefined ? {} : { when: item.when })
         })),
         settings: plugin.manifest.contributes.settings.map((setting) => ({

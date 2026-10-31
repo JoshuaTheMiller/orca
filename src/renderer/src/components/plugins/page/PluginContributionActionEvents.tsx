@@ -44,6 +44,11 @@ function eventTitle(event: PluginEventName): string {
         'auto.components.settings.PluginContributionActionEvents.sidebarCardsVisibilityChanged',
         'When a sidebar card is shown or hidden'
       )
+    case 'projectItems.visible':
+      return translate(
+        'auto.components.settings.PluginContributionActionEvents.projectItemsVisible',
+        'When its project items show under other projects'
+      )
   }
 }
 

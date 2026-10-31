@@ -567,7 +567,8 @@
             "newFiles",
             "sidebarNavItems",
             "settings",
-            "sidebarCards"
+            "sidebarCards",
+            "projectItems"
           ],
           "description": "Contribution point.",
           "x-orca-since": "1.4.245",

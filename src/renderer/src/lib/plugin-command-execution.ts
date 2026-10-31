@@ -1,10 +1,14 @@
 import type { ActivePluginCommand } from '@/store/plugin-panels'
 import { dispatchAppCommand, type AppCommandSource } from './app-command-dispatch'
 
-/** Resolves with whatever a worker handler returned; built-in actions return nothing. */
+/**
+ * Resolves with whatever a worker handler returned; built-in actions return nothing.
+ * `args` reaches a worker handler only: a built-in action takes none and ignores them.
+ */
 export async function executePluginCommand(
   command: ActivePluginCommand,
-  source: AppCommandSource
+  source: AppCommandSource,
+  args?: unknown
 ): Promise<unknown> {
   if (command.handler.type === 'built-in') {
     if (!dispatchAppCommand(command.handler.action, source)) {
@@ -14,6 +18,7 @@ export async function executePluginCommand(
   }
   return window.api.plugins.invokeCommand({
     pluginKey: command.pluginKey,
-    commandId: command.id
+    commandId: command.id,
+    ...(args === undefined ? {} : { args })
   })
 }

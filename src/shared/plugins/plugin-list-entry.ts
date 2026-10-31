@@ -73,6 +73,19 @@ export type PluginHostSidebarCard = {
   when?: string
 }
 
+export type PluginHostProjectItem = {
+  id: string
+  title: string
+  /** Lucide icon name from the closed panel icon set; absent means the default. */
+  icon?: string
+  /** Id of one of the plugin's own commands. */
+  command: string
+  /** Id of a string entry in `settings` whose value is the row's default title. */
+  titleSetting?: string
+  /** Id of a boolean entry in `settings` that must be true for the item to show. */
+  when?: string
+}
+
 export type PluginHostSetting = {
   id: string
   title: string
@@ -119,6 +132,8 @@ export type PluginHostListEntry = {
   settings?: PluginHostSetting[]
   /** Absent on hosts that predate sidebar cards. */
   sidebarCards?: PluginHostSidebarCard[]
+  /** Absent on hosts that predate project items. */
+  projectItems?: PluginHostProjectItem[]
   commands: {
     id: string
     title: string

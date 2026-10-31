@@ -16,6 +16,7 @@ function createHarness(
     sidebarNavValues: () => ({}),
     setSidebarCardItems: () => ({ ok: true }),
     settings: { getAll: () => ({}), set: () => ({ ok: true }) },
+    projectItems: { setDetail: () => ({ ok: true }) },
     openLink
   })
   const audit = { record: vi.fn().mockResolvedValue(undefined) }

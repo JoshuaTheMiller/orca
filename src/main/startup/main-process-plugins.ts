@@ -40,6 +40,14 @@ const PLUGIN_AUTO_UPDATE_STARTUP_DELAY_MS = 60_000
 // Why: the official catalog fetch must not compete with first paint; opening the marketplace seeds sooner.
 const PLUGIN_MARKETPLACE_SEED_STARTUP_DELAY_MS = 15_000
 
+function sendToAllWindows(channel: string, payload: unknown): void {
+  for (const window of BrowserWindow.getAllWindows()) {
+    if (!window.isDestroyed()) {
+      window.webContents.send(channel, payload)
+    }
+  }
+}
+
 export async function initializeMainProcessPlugins(runtime: OrcaRuntimeService): Promise<void> {
   const store = state.store
   const keybindings = state.keybindings
@@ -105,18 +113,13 @@ export async function initializeMainProcessPlugins(runtime: OrcaRuntimeService):
     getDevPluginPaths: () => normalizePluginIdList(state.store?.getSettings().devPluginPaths),
     getKeybindings: () => state.keybindings?.getOverrides() ?? {},
     onPluginSettingChanged: (change) => {
-      for (const window of BrowserWindow.getAllWindows()) {
-        if (!window.isDestroyed()) {
-          window.webContents.send('plugins:settingChanged', change)
-        }
-      }
+      sendToAllWindows('plugins:settingChanged', change)
     },
     onSidebarCardItemsChanged: (change) => {
-      for (const window of BrowserWindow.getAllWindows()) {
-        if (!window.isDestroyed()) {
-          window.webContents.send('plugins:sidebarCardItemsChanged', change)
-        }
-      }
+      sendToAllWindows('plugins:sidebarCardItemsChanged', change)
+    },
+    onProjectItemDetailChanged: (change) => {
+      sendToAllWindows('plugins:projectItemDetailChanged', change)
     },
     getSidebarNavValues: () => state.store?.getSettings().pluginSidebarNavValues ?? {},
     getPluginKillListEntry: (pluginKey) => state.pluginKillListService?.find(pluginKey) ?? null,

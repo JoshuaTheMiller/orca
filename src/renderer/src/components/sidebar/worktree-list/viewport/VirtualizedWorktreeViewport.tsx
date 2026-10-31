@@ -7,7 +7,6 @@ import { WorktreeListScrollToTopButton } from '../../WorktreeListScrollToTopButt
 import { renderWorktreeSidebarDropIndicators } from './drop-indicators'
 import { useWorktreeListScrollToTop } from './use-scroll-to-top'
 import { getActiveDescendantOptionId } from '../navigation/active-descendant-option'
-import { buildRenderableRows } from '../listing/renderable-rows'
 import { useFolderWorkspacePathStatusRows } from '../listing/use-folder-path-statuses'
 import { useGroupToggleWithScrollAnchor } from './use-group-toggle'
 import { usePendingSidebarReveal } from '../navigation/use-pending-reveal'
@@ -32,6 +31,7 @@ import { buildWorktreeVirtualRowContext } from './virtual-row-context'
 import type { RepoHeaderProjectActions } from '../rows/repo-header-project-actions'
 import { getRepoOwnerWorktreeVisibilityDefaults } from '../../../../store/worktree-visibility-defaults-by-host'
 import { renderWorktreeVirtualRow } from '../rows/virtual-row-dispatch'
+import { useRenderRows } from '../listing/use-render-rows'
 
 const EMPTY_HOST_OPTIONS: NonNullable<VirtualizedWorktreeViewportProps['hostOptions']> = []
 
@@ -111,7 +111,7 @@ export const VirtualizedWorktreeViewport = React.memo(function VirtualizedWorktr
   const scrollSuppression = useWorktreeSidebarScrollSuppression(scrollRef)
   const { markDirectScrollInput, markScrollMovement } = scrollSuppression
 
-  const renderRows = useMemo(() => buildRenderableRows(rows), [rows])
+  const renderRows = useRenderRows(rows, groupBy, collapsedGroups)
   const firstHeaderIndex = useMemo(
     () => renderRows.findIndex((row) => row.type === 'header' || row.type === 'host-header'),
     [renderRows]

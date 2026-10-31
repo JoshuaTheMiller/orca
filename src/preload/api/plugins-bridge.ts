@@ -13,6 +13,7 @@ import type {
   PluginHostInstallSource,
   PluginHostListEntry,
   PluginHostLogLine,
+  PluginProjectItemDetailChange,
   PluginSettingChangedEvent,
   PluginSidebarCardRef,
   PreloadApi
@@ -109,6 +110,19 @@ export const pluginsApi = {
       ipcRenderer.removeListener('plugins:sidebarCardItemsChanged', listener)
     }
   },
+  getProjectItemDetails: () => ipcRenderer.invoke('plugins:getProjectItemDetails'),
+  onProjectItemDetailChanged: (callback): (() => void) => {
+    const listener = (
+      _event: Electron.IpcRendererEvent,
+      change: PluginProjectItemDetailChange
+    ): void => callback(change)
+    ipcRenderer.on('plugins:projectItemDetailChanged', listener)
+    return () => {
+      ipcRenderer.removeListener('plugins:projectItemDetailChanged', listener)
+    }
+  },
+  reportVisibleProjectItems: (items) =>
+    ipcRenderer.send('plugins:reportVisibleProjectItems', items),
   getAutoUpdateState: () => ipcRenderer.invoke('plugins:getAutoUpdateState'),
   takeUpdateReviewNotices: () => ipcRenderer.invoke('plugins:takeUpdateReviewNotices'),
   getInstallCounts: () => ipcRenderer.invoke('plugins:getInstallCounts'),

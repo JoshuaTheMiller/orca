@@ -36,6 +36,10 @@ import {
   pluginSidebarNavItemContributionSchema
 } from './plugin-sidebar-nav-item-contribution'
 import {
+  PLUGIN_PROJECT_ITEM_LIMIT,
+  pluginProjectItemContributionSchema
+} from './plugin-project-item-contribution'
+import {
   PLUGIN_SETTING_LIMIT,
   pluginSettingContributionSchema
 } from './plugin-setting-contribution'
@@ -47,6 +51,7 @@ import { PLUGIN_PANEL_LIMIT, pluginPanelContributionSchema } from './plugin-pane
 import {
   pluginFieldDoc,
   PLUGIN_MANIFEST_V2_SINCE,
+  PLUGIN_PROJECT_ITEMS_SINCE,
   PLUGIN_SCHEMA_SINCE_V1,
   PLUGIN_SETTINGS_SINCE,
   PLUGIN_SIDEBAR_CARDS_SINCE,
@@ -69,7 +74,8 @@ export const PLUGIN_CONTRIBUTION_POINTS = [
   'newFiles',
   'sidebarNavItems',
   'settings',
-  'sidebarCards'
+  'sidebarCards',
+  'projectItems'
 ] as const
 
 export type PluginContributionPoint = (typeof PLUGIN_CONTRIBUTION_POINTS)[number]
@@ -229,6 +235,12 @@ export const pluginContributesFields = {
     PLUGIN_SIDEBAR_CARD_LIMIT,
     'Alternative left-sidebar views, switched to from the Projects header, whose rows the plugin worker sets.',
     PLUGIN_SIDEBAR_CARDS_SINCE
+  ),
+  projectItems: contributionList(
+    pluginProjectItemContributionSchema,
+    PLUGIN_PROJECT_ITEM_LIMIT,
+    'Rows under each project in the left sidebar Projects list that run a command of this plugin.',
+    PLUGIN_PROJECT_ITEMS_SINCE
   )
 } satisfies Record<PluginContributionPoint, z.ZodType>
 
@@ -280,5 +292,8 @@ export const PLUGIN_CONTRIBUTION_POINT_POLICY: Record<
   settings: { execution: 'declarative', catalogType: null, bindsContent: false },
   // Why trusted-worker with no catalog type: the rows come from the plugin's worker, which `main`
   // already declares; the card itself is inert data.
-  sidebarCards: { execution: 'trusted-worker', catalogType: null, bindsContent: false }
+  sidebarCards: { execution: 'trusted-worker', catalogType: null, bindsContent: false },
+  // Why declarative with no catalog type: like a nav item it only names a command the plugin
+  // already declares, though that command receives the user's project (name and local paths).
+  projectItems: { execution: 'declarative', catalogType: null, bindsContent: false }
 }
