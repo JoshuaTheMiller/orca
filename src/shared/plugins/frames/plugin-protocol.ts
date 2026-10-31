@@ -2,15 +2,15 @@ import { z } from 'zod'
 import { isPluginJsonObject } from '../manifest/plugin-json-object'
 
 /**
- * The one wire envelope between Orca and plugin code: worker fork channel, panel frames and custom
- * editor frames. It is internal: frames talk through the shell's `window.orca`, workers through the
+ * The one wire envelope between Orca and plugin code: worker fork channel, panel frames, custom
+ * editor frames and page frames. It is internal: frames talk through the shell's `window.orca`, workers through the
  * `orca` object handed to `activate`, so the envelope can change without breaking plugins.
  * Ids are per direction: a `res` answers the other side's `req` with the same id.
  */
 
 export const PLUGIN_PROTOCOL_VERSION = 1
 
-export const PLUGIN_SURFACES = ['worker', 'panel', 'editor'] as const
+export const PLUGIN_SURFACES = ['worker', 'panel', 'editor', 'page'] as const
 export type PluginSurface = (typeof PLUGIN_SURFACES)[number]
 
 /** Open set on the wire: a plugin treats a code it does not know as `action_failed`. */

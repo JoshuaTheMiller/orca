@@ -106,6 +106,15 @@ export async function initializeMainProcessPlugins(runtime: OrcaRuntimeService):
     hostEntryPath: resolvePluginHostEntryPath(app.getAppPath(), app.isPackaged)
   })
   const pluginService = state.pluginService
+  // Why the focused window: pages.open names no window, and the caller is whatever the user is using.
+  pluginService.panels.pages.setOpener((request) => {
+    const window = BrowserWindow.getFocusedWindow() ?? state.mainWindow
+    if (!window || window.isDestroyed()) {
+      return false
+    }
+    window.webContents.send('plugins:openPageRequested', request)
+    return true
+  })
   const pluginAutoUpdater = new PluginAutoUpdater({
     pluginService,
     installer: state.pluginMarketplaceInstaller,

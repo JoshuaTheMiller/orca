@@ -31,7 +31,8 @@ function bindsExecutableContent(manifest: PluginConsentSubject): boolean {
   return manifest.execution === undefined
     ? manifest.main !== undefined ||
         (manifest.contributes?.panels?.length ?? 0) > 0 ||
-        (manifest.contributes?.customEditors?.length ?? 0) > 0
+        (manifest.contributes?.customEditors?.length ?? 0) > 0 ||
+        (manifest.contributes?.pages?.length ?? 0) > 0
     : pluginExecutionAllows(manifest.execution, 'sandboxed-ui')
 }
 

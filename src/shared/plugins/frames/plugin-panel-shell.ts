@@ -52,7 +52,7 @@ export const PANEL_DESIGN_TOKEN_ALLOWLIST = [
   '--radius'
 ] as const
 
-export type PluginFrameSurface = 'panel' | 'editor'
+export type PluginFrameSurface = 'panel' | 'editor' | 'page'
 
 /** The frozen `window.orca` every frame gets before plugin code runs: the public frame API.
  *  The envelope underneath is internal. `api` and `has` start from this host's table, so they work
@@ -61,6 +61,8 @@ function frameApiScript(surface: PluginFrameSurface): string {
   const config = JSON.stringify({
     protocol: PLUGIN_PROTOCOL_VERSION,
     surface,
+    // Why pages too: a page opened with a path receives that file as a read-only document.
+    document: surface === 'editor' || surface === 'page',
     api: { major: PLUGIN_HOST_API_MAJOR, minor: PLUGIN_HOST_API_MINOR },
     methods: pluginHostMethodsFor(surface),
     codes: PLUGIN_ERROR_CODES,
@@ -141,7 +143,7 @@ function frameApiScript(surface: PluginFrameSurface): string {
       applyTheme(m.payload.theme)
     } else if (m.kind === 'evt' && m.event === E.theme) {
       applyTheme(m.payload)
-    } else if (m.kind === 'evt' && m.event === E.editorDocument && C.surface === 'editor') {
+    } else if (m.kind === 'evt' && m.event === E.editorDocument && C.document) {
       latest = Object.freeze(m.payload)
       waiting.splice(0).forEach(function (resolve) { resolve(latest) })
       emit(E.editorDocument, latest)
@@ -163,7 +165,7 @@ function frameApiScript(surface: PluginFrameSurface): string {
     on: on
   }
   Object.defineProperty(orca, 'api', { get: function () { return api }, enumerable: true })
-  if (C.surface === 'editor') {
+  if (C.document) {
     orca.document = Object.freeze({
       get: function () {
         return latest ? Promise.resolve(latest) : new Promise(function (resolve) { waiting.push(resolve) })
@@ -177,6 +179,8 @@ function frameApiScript(surface: PluginFrameSurface): string {
       },
       applyEdit: function (edit) { return call(C.editor.applyEdit, edit) }
     })
+  }
+  if (C.surface === 'editor') {
     window.addEventListener('keydown', function (event) {
       if (event.repeat || !(event.metaKey || event.ctrlKey)) return
       post({ kind: 'evt', event: E.editorKeydown, payload: {

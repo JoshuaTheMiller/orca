@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import type { PluginCapabilityKind } from '../capabilities/plugin-capabilities'
+import { PLUGIN_ID_MAX_LENGTH } from '../installation/plugin-id-format'
 import type { PluginSurface } from '../frames/plugin-protocol'
 
 /**
@@ -58,6 +59,23 @@ const notificationsShowParams = z.strictObject({
 })
 const notificationsShowResult = z.object({ delivered: z.boolean() })
 
+const PLUGIN_PAGE_PATH_MAX_LENGTH = 4096
+// Why a pattern: this module is shared with the renderer, which has no node:path to test absoluteness.
+const ABSOLUTE_PATH = /^(?:[a-zA-Z]:[\\/]|\\\\|\/)/
+const pagesOpenParams = z.strictObject({
+  pageId: z.string().min(1).max(PLUGIN_ID_MAX_LENGTH),
+  path: z
+    .string()
+    .min(1)
+    .max(PLUGIN_PAGE_PATH_MAX_LENGTH)
+    .refine(
+      (path) => ABSOLUTE_PATH.test(path) && !path.includes('\u0000'),
+      'must be an absolute path'
+    )
+    .optional()
+})
+const pagesOpenResult = z.object({ opened: z.literal(true) })
+
 const RESERVED_STORAGE_KEYS = new Set(['__proto__', 'prototype', 'constructor'])
 const storageKeySchema = z
   .string()
@@ -104,7 +122,8 @@ export type PluginHostMethodSpec<
   deprecatedSince?: number
   /** Machine-readable resource boundary enforced by the host binding. */
   scope: 'active-workspace' | 'explicit-terminal' | 'plugin-private' | 'desktop'
-  capability: PluginCapabilityKind
+  /** Null when the call needs no grant beyond the plugin being enabled with current consent. */
+  capability: PluginCapabilityKind | null
   /** Mutations are audit-logged with actor `plugin:<id>`. */
   mutation: boolean
   /** Where plugin code may call it; any other surface gets `not_permitted`. */
@@ -113,7 +132,7 @@ export type PluginHostMethodSpec<
   result: R
 }
 
-const ALL_SURFACES = ['worker', 'panel', 'editor'] as const
+const ALL_SURFACES = ['worker', 'panel', 'editor', 'page'] as const
 const WORKER_ONLY = ['worker'] as const
 
 const spec = <P extends z.ZodType, R extends z.ZodType>(
@@ -131,6 +150,19 @@ export const PLUGIN_HOST_API = {
     surfaces: ALL_SURFACES,
     params: workspaceReadContextParams,
     result: workspaceReadContextResult
+  }),
+  'pages.open': spec({
+    summary:
+      "Opens one of the plugin's pages in the main area of the focused window, or focuses it. With `path`, the page receives that local file as a read-only text document and live updates while it is open.",
+    since: 1,
+    scope: 'desktop',
+    // Why none: the plugin can only open a page it declared, which the user approved with the
+    // manifest. A path is read like a custom editor's file, but never written.
+    capability: null,
+    mutation: false,
+    surfaces: ALL_SURFACES,
+    params: pagesOpenParams,
+    result: pagesOpenResult
   }),
   'terminal.sendText': spec({
     summary: 'Types text into one terminal named by id, optionally pressing Enter.',

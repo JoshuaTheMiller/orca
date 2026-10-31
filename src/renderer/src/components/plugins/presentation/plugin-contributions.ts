@@ -1,5 +1,4 @@
 import type { PluginCatalogType } from '../../../../../shared/plugins/catalog/plugin-catalog-release'
-import { PLUGIN_LANGUAGE_PACK_MIN_COVERAGE } from '../../../../../shared/plugins/languages/plugin-language-pack-coverage'
 import type { PluginContributionSummaryItem } from '../../../../../shared/plugins/contributions/plugin-contribution-summary'
 import {
   PLUGIN_CONTRIBUTION_POINT_POLICY,
@@ -7,6 +6,7 @@ import {
 } from '../../../../../shared/plugins/contributions/plugin-contribution-points'
 import type { PluginManifest } from '../../../../../shared/plugins/manifest/plugin-manifest'
 import { getIntlLocale, translate } from '@/i18n/i18n'
+import { fileList, languageDetail, withMode } from './plugin-contribution-detail-text'
 
 /** The manifest points shown as named rows; commands, shortcuts and events have their own lists. */
 export type PluginContributionKind = Exclude<
@@ -38,6 +38,7 @@ export type PluginContributionSource = {
   /** Coverage is known only once a pack is installed. */
   languagePacks: readonly { locale: string; coverage?: number }[]
   panels: readonly string[]
+  pages: readonly string[]
   customEditors: readonly {
     title: string
     extensions: readonly string[]
@@ -54,12 +55,11 @@ export const EMPTY_CONTRIBUTION_SOURCE: PluginContributionSource = {
   syntaxes: [],
   languagePacks: [],
   panels: [],
+  pages: [],
   customEditors: [],
   vmRecipes: [],
   newFiles: []
 }
-
-const FILE_LIST_LIMIT = 4
 
 /** "recipes/ubuntu-dev.json" → "Ubuntu dev"; manifests name these files by path only. */
 export function nameFromContributionPath(path: string): string {
@@ -93,6 +93,7 @@ export function manifestContributionSource(manifest: PluginManifest): PluginCont
     syntaxes: contributes.syntaxes.map(titled),
     languagePacks: contributes.languagePacks,
     panels: contributes.panels.map((panel) => panel.title),
+    pages: contributes.pages.map((page) => page.title),
     customEditors: contributes.customEditors,
     vmRecipes: contributes.vmRecipes.map((recipe) => nameFromContributionPath(recipe.path)),
     newFiles: contributes.newFiles
@@ -127,6 +128,7 @@ export function summaryContributionSource(
     })),
     languagePacks: of('languagePacks').map((item) => ({ locale: item.name })),
     panels: of('panels').map((item) => item.name),
+    pages: of('pages').map((item) => item.name),
     customEditors: of('customEditors').map((item) => ({
       title: item.name,
       extensions: item.detail ? item.detail.split(', ') : [],
@@ -134,50 +136,6 @@ export function summaryContributionSource(
     })),
     vmRecipes: of('vmRecipes').map((item) => nameFromContributionPath(item.name)),
     newFiles: of('newFiles').map((item) => ({ title: item.name, extension: item.detail ?? '' }))
-  }
-}
-
-function withMode(kindLabel: string, mode: 'light' | 'dark' | 'unknown' | undefined): string {
-  if (mode === 'dark') {
-    return `${kindLabel} · ${translate('auto.components.settings.pluginContributions.dark', 'Dark')}`
-  }
-  if (mode === 'light') {
-    return `${kindLabel} · ${translate('auto.components.settings.pluginContributions.light', 'Light')}`
-  }
-  return kindLabel
-}
-
-function fileList(extensions: readonly string[], filenames: readonly string[]): string {
-  const files = [...extensions, ...filenames]
-  const shown = files.slice(0, FILE_LIST_LIMIT).join(', ')
-  return files.length > FILE_LIST_LIMIT ? `${shown} +${files.length - FILE_LIST_LIMIT}` : shown
-}
-
-function languageDetail(coverage: number | undefined): Pick<PluginContribution, 'detail' | 'tone'> {
-  const label = translate(
-    'auto.components.settings.PluginDetailSections.typeLanguagePack',
-    'Interface language'
-  )
-  if (coverage === undefined) {
-    return { detail: label, tone: 'default' }
-  }
-  if (coverage < PLUGIN_LANGUAGE_PACK_MIN_COVERAGE) {
-    return {
-      detail: translate(
-        'auto.components.settings.pluginContributions.languageIncomplete',
-        '{{value0}}% translated, too incomplete to use as Orca’s language',
-        { value0: coverage }
-      ),
-      tone: 'warning'
-    }
-  }
-  return {
-    detail: translate(
-      'auto.components.settings.pluginContributions.languageCoverage',
-      'Interface language · {{value0}}% translated',
-      { value0: coverage }
-    ),
-    tone: 'default'
   }
 }
 
@@ -260,6 +218,15 @@ export function describePluginContributions(
       kind: 'panels',
       title,
       detail: translate('auto.components.settings.PluginDetailSections.panel', 'Sidebar panel'),
+      tone: 'default'
+    })
+  }
+  for (const [index, title] of source.pages.entries()) {
+    rows.push({
+      key: `pages:${index}`,
+      kind: 'pages',
+      title,
+      detail: translate('auto.components.settings.PluginDetailSections.page', 'Page'),
       tone: 'default'
     })
   }

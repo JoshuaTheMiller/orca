@@ -3,7 +3,7 @@ import { isPluginJsonObject } from '../manifest/plugin-json-object'
 import { PLUGIN_PROTOCOL_VERSION } from './plugin-protocol'
 
 /**
- * Host side of plugin frames (panels and custom editors). A frame has an opaque origin
+ * Host side of plugin frames (panels, custom editors and pages). A frame has an opaque origin
  * (sandbox="allow-scripts"), so neither side can use origins for trust: the host verifies the
  * sending window and re-validates every envelope; main re-checks capabilities before executing.
  * Frames speak the shared envelope (plugin-protocol.ts) through the shell's `window.orca`.
@@ -39,7 +39,7 @@ export type PluginFrameTheme = { colorScheme: 'light' | 'dark'; tokens: string }
 
 export type PluginFrameHello = {
   protocol: typeof PLUGIN_PROTOCOL_VERSION
-  surface: 'panel' | 'editor'
+  surface: 'panel' | 'editor' | 'page'
   api: { major: number; minor: number }
   methods: string[]
   theme: PluginFrameTheme

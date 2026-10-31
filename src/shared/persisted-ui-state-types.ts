@@ -20,7 +20,7 @@ import type {
   StatusBarItem,
   TaskResumeState,
   ThreadReadFilter,
-  TopLevelView,
+  StaticTopLevelView,
   VisibleWorkspaceHostIds,
   WorkspaceHostOrder,
   WorkspaceHostScope,
@@ -38,7 +38,7 @@ export type PersistedUIState = {
   lastActiveRepoId: string | null
   lastActiveWorktreeId: string | null
   /** Active top-level view at save time, restored on relaunch; sanitized to 'terminal' if unknown or now-gated. */
-  activeView: TopLevelView
+  activeView: StaticTopLevelView
   sidebarWidth: number
   sidebarOpen?: boolean
   rightSidebarOpen: boolean

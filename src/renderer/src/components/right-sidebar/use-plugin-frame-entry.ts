@@ -7,14 +7,14 @@ export type PluginFrameEntryState =
   | { status: 'ready'; html: string; sessionToken: string | null; revision: number }
 
 /**
- * A plugin frame's document (panel or custom editor), reread on every plugin change. Only new
+ * A plugin frame's document (panel, page or custom editor), reread on every plugin change. Only new
  * HTML bumps the revision that remounts the frame; a suspended frame stays suspended until then.
  */
 export function usePluginFrameEntry(
-  surface: 'panel' | 'editor',
+  surface: 'panel' | 'editor' | 'page',
   /** Null while there is no plugin to read from. */
   pluginKey: string | null,
-  /** The panel or custom editor id in the plugin's manifest. */
+  /** The panel, page or custom editor id in the plugin's manifest. */
   contributionId: string | null
 ): { entry: PluginFrameEntryState; markUnresponsive: () => void } {
   const [entry, setEntry] = useState<PluginFrameEntryState>({ status: 'loading' })
@@ -43,7 +43,9 @@ export function usePluginFrameEntry(
       const pending =
         surface === 'panel'
           ? pluginsApi.readPanelEntry({ pluginKey, panelId: contributionId })
-          : pluginsApi.readCustomEditorEntry?.({ pluginKey, editorId: contributionId })
+          : surface === 'page'
+            ? pluginsApi.readPageEntry?.({ pluginKey, pageId: contributionId })
+            : pluginsApi.readCustomEditorEntry?.({ pluginKey, editorId: contributionId })
       if (!pending) {
         fail()
         return

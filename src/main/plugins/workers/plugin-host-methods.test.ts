@@ -11,6 +11,7 @@ function createServices(storageSet: PluginHostServices['storage']['set']): Plugi
     listWorktreeTerminals: vi.fn().mockResolvedValue([]),
     sendTerminalText: vi.fn().mockResolvedValue({ accepted: true }),
     dispatchPluginNotification: vi.fn().mockResolvedValue({ delivered: true }),
+    openPluginPage: vi.fn().mockResolvedValue(undefined),
     storage: {
       get: vi.fn(),
       set: storageSet,
@@ -139,7 +140,8 @@ function createTerminalHarness(terminalHandles: string[]): {
     delegate,
     services: bindPluginHostServices({
       delegate,
-      pluginsDataDir: join(tmpdir(), 'plugin-host-methods-test')
+      pluginsDataDir: join(tmpdir(), 'plugin-host-methods-test'),
+      openPluginPage: vi.fn().mockResolvedValue(undefined)
     })
   }
 }

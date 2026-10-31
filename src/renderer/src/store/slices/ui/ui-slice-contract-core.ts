@@ -13,7 +13,12 @@ import type { TuiAgent } from '../../../../../shared/tui-agent'
 import type { LaunchSource } from '../../../../../shared/telemetry-events'
 import type { TaskSourceContext } from '../../../../../shared/task-source-context'
 import type { ExecutionHostId } from '../../../../../shared/execution-host'
-import type { TaskResumeState, TopLevelView } from '../../../../../shared/ui-chrome-types'
+import type {
+  PluginPageTopLevelView,
+  StaticTopLevelView,
+  TaskResumeState,
+  TopLevelView
+} from '../../../../../shared/ui-chrome-types'
 
 export type PendingSidebarWorktreeReveal = {
   rowKey?: string
@@ -113,16 +118,7 @@ export type NewWorkspaceDraft = {
   compareBaseRef?: string
 }
 
-export type UiViewHistory =
-  | 'terminal'
-  | 'settings'
-  | 'tasks'
-  | 'activity'
-  | 'automations'
-  | 'space'
-  | 'skills'
-  | 'artifacts'
-  | 'mobile'
+export type UiViewHistory = TopLevelView
 
 export type UISliceCore = {
   sidebarOpen: boolean
@@ -163,6 +159,8 @@ export type UISliceCore = {
   previousViewBeforeSkills: Exclude<UiViewHistory, 'skills'>
   previousViewBeforeMobile: Exclude<UiViewHistory, 'mobile'>
   previousViewBeforeArtifacts: Exclude<UiViewHistory, 'artifacts'>
+  /** Never a plugin page: moving between plugin pages keeps the view the first one came from. */
+  previousViewBeforePluginPage: StaticTopLevelView
   setActiveView: (view: UISliceCore['activeView']) => void
   taskPageData: TaskPageData
   taskResumeState: TaskResumeState | undefined
@@ -191,6 +189,8 @@ export type UISliceCore = {
   ) => void
   openAutomationsPage: () => void
   closeAutomationsPage: () => void
+  openPluginPage: (view: PluginPageTopLevelView) => void
+  closePluginPage: () => void
   openSpacePage: () => void
   closeSpacePage: () => void
   openSkillsPage: () => void

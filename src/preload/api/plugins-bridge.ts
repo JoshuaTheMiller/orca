@@ -2,6 +2,11 @@ import { ipcRenderer } from 'electron'
 import type { PluginFrameEntry } from '../../shared/plugins/frames/plugin-frame-bridge'
 import type { PluginHostCallOutcome } from '../../shared/plugins/frames/plugin-protocol'
 import type { PluginConsentRequest } from '../../shared/plugins/approval/plugin-consent-request'
+import type {
+  PluginPageDocumentResult,
+  PluginPageDocumentUpdate,
+  PluginPageOpenRequest
+} from '../../shared/plugins/frames/plugin-page-document-bridge'
 import type { PluginChangeEvent } from '../../shared/plugins/events/plugin-change-event'
 import type {
   PluginAutoUpdateEvent,
@@ -29,6 +34,27 @@ export const pluginsApi = {
     pluginKey: string
     panelId: string
   }): Promise<PluginFrameEntry | null> => ipcRenderer.invoke('plugins:readPanelEntry', args),
+  readPageEntry: (args: { pluginKey: string; pageId: string }): Promise<PluginFrameEntry | null> =>
+    ipcRenderer.invoke('plugins:readPageEntry', args),
+  openPageDocument: (args): Promise<PluginPageDocumentResult> =>
+    ipcRenderer.invoke('plugins:openPageDocument', args),
+  closePageDocument: (args): Promise<void> => ipcRenderer.invoke('plugins:closePageDocument', args),
+  onPageDocumentChanged: (callback): (() => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, update: PluginPageDocumentUpdate): void =>
+      callback(update)
+    ipcRenderer.on('plugins:pageDocumentChanged', listener)
+    return () => {
+      ipcRenderer.removeListener('plugins:pageDocumentChanged', listener)
+    }
+  },
+  onOpenPageRequested: (callback): (() => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, request: PluginPageOpenRequest): void =>
+      callback(request)
+    ipcRenderer.on('plugins:openPageRequested', listener)
+    return () => {
+      ipcRenderer.removeListener('plugins:openPageRequested', listener)
+    }
+  },
   readCustomEditorEntry: (args: {
     pluginKey: string
     editorId: string

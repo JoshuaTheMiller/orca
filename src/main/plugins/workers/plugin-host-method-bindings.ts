@@ -30,6 +30,8 @@ export type PluginHostServices = {
     title: string
     body?: string
   }): Promise<{ delivered: boolean }>
+  /** Throws when the plugin declares no such page or no window can show it. */
+  openPluginPage(input: { pluginId: string; pageId: string; path?: string }): Promise<void>
   storage: {
     get(pluginId: string, key: string): PluginJsonValue | undefined
     set(
@@ -121,6 +123,10 @@ const HANDLERS: Record<PluginHostMethodName, BoundPluginHostMethod> = {
         .slice(0, PLUGIN_WORKSPACE_TERMINAL_LIMIT)
         .map((terminal) => ({ id: terminal.id }))
     }
+  }),
+  'pages.open': bind(api['pages.open'], async ({ pageId, path }, { pluginId, services }) => {
+    await services.openPluginPage({ pluginId, pageId, ...(path === undefined ? {} : { path }) })
+    return { opened: true as const }
   }),
   'terminal.sendText': bind(api['terminal.sendText'], async (params, { services }) => {
     const context = await services.resolveActiveWorktreeContext()

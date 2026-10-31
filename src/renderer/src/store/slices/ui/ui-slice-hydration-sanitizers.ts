@@ -4,13 +4,13 @@ import type { PersistedTrustedOrcaHooks } from '../../../../../shared/orca-yaml-
 import type { PersistedUIState } from '../../../../../shared/persisted-ui-state-types'
 import type {
   TaskViewPresetId,
-  TopLevelView,
+  StaticTopLevelView,
   VisibleWorkspaceHostIds,
   StatusBarItem
 } from '../../../../../shared/ui-chrome-types'
 import type { WorkspaceCleanupDismissal } from '../../../../../shared/workspace-cleanup'
 import { WORKSPACE_CLEANUP_CLASSIFIER_VERSION } from '../../../../../shared/workspace-cleanup'
-import { isTopLevelView } from '../../../../../shared/top-level-view'
+import { isStaticTopLevelView } from '../../../../../shared/top-level-view'
 import { AGENT_STATUS_HYDRATE_MAX_AGE_MS } from '../../../../../shared/agent-status-freshness'
 import { resolveVisibleWorkspaceHostIds } from '../../../../../shared/workspace-view/workspace-host-visibility'
 import { persistedUIValuesEqual } from '../../../../../shared/persisted-ui-equality'
@@ -166,9 +166,11 @@ export function sanitizeWorkspaceCleanupDismissals(
   return out
 }
 
-export function sanitizeHydratedActiveView(value: PersistedUIState['activeView']): TopLevelView {
+export function sanitizeHydratedActiveView(
+  value: PersistedUIState['activeView']
+): StaticTopLevelView {
   // Why: older data (pre-activeView) or a view a different build doesn't have falls back to terminal rather than rendering nothing.
-  if (!isTopLevelView(value)) {
+  if (!isStaticTopLevelView(value)) {
     return 'terminal'
   }
   return value

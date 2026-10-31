@@ -1,13 +1,14 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from 'react'
+import type { PluginFrameSurface } from '../../../../shared/plugins/frames/plugin-panel-shell'
 import { FRAME_EVENTS } from '../../../../shared/plugins/frames/plugin-frame-bridge'
 import { pluginEvent } from '../../../../shared/plugins/frames/plugin-protocol'
 import { createPluginFrameMessageHandler, type PluginFrameEditorChannel } from './plugin-frame-host'
 import { createPanelWatchdog } from './plugin-panel-watchdog'
 import { usePluginFrameThemeSync } from './use-plugin-panel-theme-revision'
 
-/** Wires one plugin frame (panel or editor): message host, watchdog and live theme. */
+/** Wires one plugin frame (panel, editor or page): message host, watchdog and live theme. */
 export function usePluginFrameHost(options: {
-  surface: 'panel' | 'editor'
+  surface: PluginFrameSurface
   iframeRef: RefObject<HTMLIFrameElement | null>
   /** Changes whenever a new document mounts; null while none is ready. */
   frameKey: string | null

@@ -1,6 +1,7 @@
 import type { PluginCatalogType } from './catalog/plugin-catalog-types'
 import type { PluginExecutionProfile } from './contributions/plugin-execution-profile'
 import type { PluginHostImages } from './images/plugin-image-url'
+import type { PluginPageTopLevelView } from '../ui-chrome-types'
 
 /** One installed plugin as main projects it for every client (preload IPC and the `plugins.list`
  *  RPC). Optional fields are absent on older hosts, so paired clients must tolerate them. */
@@ -22,6 +23,15 @@ export type PluginHostStatus =
   | 'disabled'
   | 'errored'
   | 'invalid'
+
+export type PluginHostPage = {
+  id: string
+  title: string
+  /** Lucide icon name declared in the plugin manifest. */
+  icon?: string
+  /** The top-level view that shows it: `plugin:<publisher>.<id>/<pageId>`. */
+  viewKey: PluginPageTopLevelView
+}
 
 export type PluginHostCustomEditor = {
   id: string
@@ -70,6 +80,8 @@ export type PluginHostListEntry = {
   bundled: boolean
   capabilities: { kind: string; description: string }[]
   panels: PluginHostPanel[]
+  /** Absent on hosts that predate plugin pages. */
+  pages?: PluginHostPage[]
   /** Absent on hosts that predate custom editors. */
   customEditors?: PluginHostCustomEditor[]
   /** Absent on hosts that predate new-file templates. */

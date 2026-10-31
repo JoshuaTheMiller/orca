@@ -31,6 +31,7 @@ export type PluginRuntimeDelegate = {
 export function bindPluginHostServices(input: {
   delegate: PluginRuntimeDelegate
   pluginsDataDir: string
+  openPluginPage: PluginHostServices['openPluginPage']
 }): PluginHostServices {
   const { delegate, pluginsDataDir } = input
   return {
@@ -61,6 +62,7 @@ export function bindPluginHostServices(input: {
       return { accepted: result.accepted }
     },
     dispatchPluginNotification: (notification) => delegate.dispatchPluginNotification(notification),
+    openPluginPage: input.openPluginPage,
     storage: {
       get: (key, itemKey) => new PluginKvStore(pluginsDataDir, key, 'storage.json').get(itemKey),
       set: (key, itemKey, value) =>

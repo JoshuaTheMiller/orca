@@ -15,6 +15,7 @@ import {
 import { applyPluginConsent, applyPluginEnablement } from '../plugins/plugin-enablement'
 import { readApprovedPluginNewFileTemplate } from '../plugins/plugin-new-file-template'
 import type { PluginService } from '../plugins/plugin-service'
+import { registerPluginPageHandlers } from './plugin-page-handlers'
 import { bindPluginPanelOwnerLifecycle } from '../plugins/panels/plugin-panel-owner-lifecycle'
 import { isQualifiedPluginKey } from '../../shared/plugins/manifest/plugin-manifest'
 import { pluginConsentRequestSchema } from '../../shared/plugins/approval/plugin-consent-request'
@@ -193,6 +194,8 @@ export function registerPluginHandlers(
       pluginService.panels.open(ownerKey, parsed.pluginKey, parsed.panelId, isCurrent)
     )
   })
+
+  registerPluginPageHandlers(pluginService, openFrameEntry, rendererPanelOwner)
 
   ipcMain.handle('plugins:readCustomEditorEntry', (event, args: unknown) => {
     const parsed = readCustomEditorEntryArgsSchema.parse(args)

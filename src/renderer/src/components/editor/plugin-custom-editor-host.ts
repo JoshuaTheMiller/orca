@@ -42,6 +42,8 @@ export type CustomEditorHostOptions = {
   getFrameWindow: () => Window | null
   /** The buffer as Orca holds it now. */
   getDocument: () => { text: string; readOnly: boolean }
+  /** Pages only: false while there is no document to send yet (a page opened without a file). */
+  hasDocument?: () => boolean
   /** Binary editors only: the document's bytes, or null while they load. */
   getBinaryDocument?: () => CustomEditorBinaryDocument | null
   onEdit: (text: string) => void
@@ -140,7 +142,7 @@ export function createCustomEditorHost(options: CustomEditorHostOptions): Custom
   }
 
   const pushDocument = (force: boolean): void => {
-    if (!ready) {
+    if (!ready || options.hasDocument?.() === false) {
       return
     }
     if (options.getBinaryDocument) {

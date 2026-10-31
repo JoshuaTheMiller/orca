@@ -1,37 +1,37 @@
 import { mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'node:fs'
 import { mkdir, rename, rm, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
-import type { TopLevelView } from '../shared/ui-chrome-types'
-import { isTopLevelView } from '../shared/top-level-view'
+import type { StaticTopLevelView } from '../shared/ui-chrome-types'
+import { isStaticTopLevelView } from '../shared/top-level-view'
 
 const ACTIVE_VIEW_FILE_NAME = 'active-view.json'
 const SAVE_DEBOUNCE_MS = 100
 
 type ActiveViewFile = {
-  activeView: TopLevelView
+  activeView: StaticTopLevelView
 }
 
 export function getActiveViewPreferenceFile(dataFile: string): string {
   return join(dirname(dataFile), ACTIVE_VIEW_FILE_NAME)
 }
 
-function readActiveView(file: string): TopLevelView | null {
+function readActiveView(file: string): StaticTopLevelView | null {
   try {
     const parsed = JSON.parse(readFileSync(file, 'utf-8')) as Partial<ActiveViewFile>
-    return isTopLevelView(parsed.activeView) ? parsed.activeView : null
+    return isStaticTopLevelView(parsed.activeView) ? parsed.activeView : null
   } catch {
     return null
   }
 }
 
-function serializeActiveView(activeView: TopLevelView): string {
+function serializeActiveView(activeView: StaticTopLevelView): string {
   return `${JSON.stringify({ activeView } satisfies ActiveViewFile)}\n`
 }
 
 export class ActiveViewPreference {
   private readonly file: string
-  private activeView: TopLevelView
-  private persistedActiveView: TopLevelView | null
+  private activeView: StaticTopLevelView
+  private persistedActiveView: StaticTopLevelView | null
   private writeTimer: ReturnType<typeof setTimeout> | null = null
   private pendingWrite: Promise<void> | null = null
   private pendingFlush: Promise<void> | null = null
@@ -47,17 +47,19 @@ export class ActiveViewPreference {
   constructor(dataFile: string, legacyActiveView: unknown) {
     this.file = getActiveViewPreferenceFile(dataFile)
     const storedActiveView = readActiveView(this.file)
-    const fallbackActiveView = isTopLevelView(legacyActiveView) ? legacyActiveView : 'terminal'
+    const fallbackActiveView = isStaticTopLevelView(legacyActiveView)
+      ? legacyActiveView
+      : 'terminal'
     this.activeView = storedActiveView ?? fallbackActiveView
     this.persistedActiveView = storedActiveView
   }
 
-  get(): TopLevelView {
+  get(): StaticTopLevelView {
     return this.activeView
   }
 
   set(value: unknown): boolean {
-    if (!isTopLevelView(value)) {
+    if (!isStaticTopLevelView(value)) {
       return false
     }
     const changed = value !== this.activeView
@@ -90,7 +92,7 @@ export class ActiveViewPreference {
     }, SAVE_DEBOUNCE_MS)
   }
 
-  private enqueueWrite(activeView: TopLevelView, generation: number): Promise<void> {
+  private enqueueWrite(activeView: StaticTopLevelView, generation: number): Promise<void> {
     const previousWrite = this.pendingWrite ?? Promise.resolve()
     const nextWrite = previousWrite
       .then(() => this.writeAsync(activeView, generation))
@@ -106,7 +108,7 @@ export class ActiveViewPreference {
     return nextWrite
   }
 
-  private async writeAsync(activeView: TopLevelView, generation: number): Promise<void> {
+  private async writeAsync(activeView: StaticTopLevelView, generation: number): Promise<void> {
     const tmpFile = `${this.file}.${process.pid}.${generation}.tmp`
     let renamed = false
     try {

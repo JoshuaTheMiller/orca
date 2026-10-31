@@ -69,6 +69,7 @@ export function pluginContributionSummary(
     })
   return [
     ...named('panels', c.panels, (panel) => panel.title),
+    ...named('pages', c.pages, (page) => page.title),
     ...named('commands', c.commands, (command) => command.title),
     ...named('events', c.events, (event) => event.on),
     ...named('languagePacks', c.languagePacks, (pack) => pack.locale),

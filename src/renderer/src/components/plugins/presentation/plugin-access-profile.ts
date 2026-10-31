@@ -103,6 +103,7 @@ export function pluginTrust({
   const panel =
     execution === 'sandboxed-ui' ||
     points?.has('panels') === true ||
+    points?.has('pages') === true ||
     points?.has('customEditors') === true
   const declarativePoints = points
     ? [...points].filter(

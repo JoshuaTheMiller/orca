@@ -53,7 +53,7 @@ describe('window.orca', () => {
     expect(Object.isFrozen(orca)).toBe(true)
     expect(Object.isFrozen(orca.host)).toBe(true)
     expect(posted()).toEqual([{ orca: 1, kind: 'evt', event: 'ready', payload: { protocol: 1 } }])
-    expect(orca.api).toEqual({ major: 1, minor: 0 })
+    expect(orca.api).toEqual({ major: 1, minor: 1 })
     expect(orca.host.has('workspace.readContext')).toBe(true)
     expect(orca.host.has('terminal.sendText')).toBe(false)
     expect(orca.document).toBeUndefined()
@@ -200,6 +200,35 @@ describe('window.orca.document', () => {
       event: 'editor.keydown',
       payload: { key: 's', code: 'KeyS', metaKey: true, ctrlKey: false }
     })
+  })
+})
+
+describe('window.orca on a page', () => {
+  it('offers the page surface methods, with a document only a path-opened page receives', async () => {
+    const { orca, fromHost, posted } = mountShell('page')
+    expect(orca.host.has('pages.open')).toBe(true)
+    expect(orca.host.has('workspace.readContext')).toBe(true)
+    expect(orca.host.has('terminal.sendText')).toBe(false)
+    const document = orca.document!
+    const first = document.get()
+    fromHost({
+      orca: 1,
+      kind: 'evt',
+      event: 'editor.document',
+      payload: { version: 1, readOnly: true, content: { kind: 'text', text: 'notes' } }
+    })
+    await expect(first).resolves.toMatchObject({ readOnly: true, content: { text: 'notes' } })
+    // An edit still goes to the host, which answers not_permitted for a read-only page.
+    void document
+      .applyEdit({ baseVersion: 1, content: { kind: 'text', text: 'x' } })
+      .catch(() => {})
+    expect(posted().at(-1)).toMatchObject({ kind: 'req', method: 'editor.applyEdit' })
+  })
+
+  it('does not forward save chords, which only an editor can use', () => {
+    const { posted } = mountShell('page')
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 's', code: 'KeyS', metaKey: true }))
+    expect(posted().some((message) => message.event === 'editor.keydown')).toBe(false)
   })
 })
 

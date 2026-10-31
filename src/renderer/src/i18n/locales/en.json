@@ -13172,7 +13172,8 @@
           "accessFailed": "Couldn’t read its access",
           "retry": "Retry",
           "noAccessReach": "Nothing outside its own files",
-          "customEditor": "Editor"
+          "customEditor": "Editor",
+          "page": "Page"
         },
         "PluginManagerRows": {
           "reinstall": "Reinstall",
@@ -13242,7 +13243,8 @@
           "newContributions": "Features that act for you",
           "allAccess": "See all access",
           "update": "Update",
-          "review": "Review"
+          "review": "Review",
+          "newPages": "Pages"
         },
         "PluginDetailInfo": {
           "previous": "Previous",
@@ -13443,6 +13445,10 @@
           "cancel": "Cancel",
           "addFolder": "Add folder",
           "install": "Install"
+        },
+        "PluginContributionActionPage": {
+          "openName": "Open page: {{value0}}",
+          "open": "Open page"
         }
       },
       "right": {
@@ -18997,6 +19003,21 @@
         },
         "pluginInstallCount": {
           "installs": "{{value0}} installs"
+        }
+      },
+      "plugin": {
+        "page": {
+          "PluginFullPage": {
+            "back": "Back",
+            "unavailable": "This plugin page is no longer available.",
+            "loading": "Loading plugin page...",
+            "unresponsive": "This plugin page stopped responding and was suspended.",
+            "loadFailed": "The plugin page could not be loaded.",
+            "fileMissing": "The file this page shows no longer exists.",
+            "notAFile": "This page was asked to show something that is not a file.",
+            "fileTooLarge": "The file this page shows is too large.",
+            "fileUnreadable": "The file this page shows could not be read."
+          }
         }
       }
     },

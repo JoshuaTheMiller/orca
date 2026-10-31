@@ -1,5 +1,6 @@
 import type { UISlice, UISliceGet, UISliceSet } from './ui-slice-contract'
 import { rewindHistoryIndexPastView } from '../worktree-nav-history'
+import { isPluginPageView } from '../../../../../shared/top-level-view'
 
 export function createUiViewActions(set: UISliceSet, get: UISliceGet): Partial<UISlice> {
   return {
@@ -34,6 +35,19 @@ export function createUiViewActions(set: UISliceSet, get: UISliceGet): Partial<U
         activeView: state.previousViewBeforeAutomations,
         worktreeNavHistoryIndex: rewindHistoryIndexPastView(state, 'automations')
       })),
+    openPluginPage: (view) =>
+      set((state) => ({
+        activeView: view,
+        // Why not recordViewVisit: worktree history entries are for built-in pages; a plugin page
+        // is session-only and closes back to the view it was opened from.
+        previousViewBeforePluginPage: isPluginPageView(state.activeView)
+          ? state.previousViewBeforePluginPage
+          : state.activeView
+      })),
+    closePluginPage: () =>
+      set((state) =>
+        isPluginPageView(state.activeView) ? { activeView: state.previousViewBeforePluginPage } : {}
+      ),
     openSpacePage: () => {
       get().recordFeatureInteraction?.('workspace-cleanup')
       if (typeof window !== 'undefined' && window.api?.workspaceSpace?.openWindow) {

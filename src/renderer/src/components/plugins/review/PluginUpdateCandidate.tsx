@@ -68,6 +68,9 @@ const contributionGrowthLabel = (point: PluginContributionPoint): string => {
   if (point === 'panels') {
     return translate('auto.components.settings.PluginUpdateAllDialog.newPanels', 'Panels')
   }
+  if (point === 'pages') {
+    return translate('auto.components.settings.PluginUpdateAllDialog.newPages', 'Pages')
+  }
   if (point === 'events') {
     return translate('auto.components.settings.PluginUpdateAllDialog.newEvents', 'More events')
   }

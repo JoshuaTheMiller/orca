@@ -42,7 +42,7 @@ const SPECIFIC_PLUGIN_ROUTES = [
     [
       `${UI}(?:catalog\\/|list\\/|page\\/|PluginContributionIcon|dialogs\\/Plugin(?:Install|CatalogLink|MarketplaceSource)Dialog)`,
       `${UI}state\\/use-plugin-(?:catalog|install-link|install-action|marketplace-lifecycle|page-navigation|page-model|hover-prefetch|in-use|art-palettes|contribution-source)`,
-      `${UI}(?:state\\/plugin-preview-cache|presentation\\/plugin-(?:status-presentation|install-source|release-date|contributions|error-presentation))`,
+      `${UI}(?:state\\/plugin-preview-cache|presentation\\/plugin-(?:status-presentation|install-source|release-date|contributions|contribution-detail-text|error-presentation))`,
       `${STORE}content-list-store`,
       'src\\/main\\/plugins\\/(?:installation\\/|catalog\\/plugin-(?:marketplace-|catalog-|one-click-enable|community-marketplace-seed|kill-list-))',
       'src\\/main\\/plugins\\/plugin-(?:list-projection|client-list|image-)',
@@ -107,10 +107,11 @@ const SPECIFIC_PLUGIN_ROUTES = [
     'plugins.panels-and-workers',
     ['plugin-demo', 'plugin-panel-containment'],
     [
-      `${UI}(?:page\\/PluginContributionAction(?:Panel|Command|Events)|state\\/use-plugin-logs)`,
-      `${STORE}panels`,
-      'src\\/main\\/plugins\\/(?:panels\\/|workers\\/|plugin-(?:command-|event-delivery|agent-status-event|storage-store|secrets-store|log-buffer))',
-      'src\\/shared\\/plugins\\/(?:frames\\/|workers\\/|events\\/|capabilities\\/|contributions\\/plugin-(?:command-|event-|panel-|execution-profile))'
+      `${UI}(?:page\\/PluginContributionAction(?:Panel|Page|Command|Events)|state\\/use-plugin-logs)`,
+      `${STORE}(?:panels|pages)`,
+      'src\\/renderer\\/src\\/(?:components\\/plugin-page\\/|app-shell\\/use-plugin-page-routing)',
+      'src\\/main\\/plugins\\/(?:panels\\/|pages\\/|workers\\/|plugin-(?:command-|event-delivery|agent-status-event|storage-store|secrets-store|log-buffer))',
+      'src\\/shared\\/plugins\\/(?:frames\\/|workers\\/|events\\/|capabilities\\/|contributions\\/plugin-(?:command-|event-|panel-|page-|execution-profile))'
     ].join('|'),
     'plugin-panel-navigation-observer'
   ),
