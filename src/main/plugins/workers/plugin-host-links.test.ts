@@ -14,6 +14,7 @@ function createHarness(
     delegate,
     pluginsDataDir: 'unused',
     sidebarNavValues: () => ({}),
+    settings: { getAll: () => ({}), set: () => ({ ok: true }) },
     openLink
   })
   const audit = { record: vi.fn().mockResolvedValue(undefined) }
