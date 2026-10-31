@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { parsePluginManifest } from '../manifest/plugin-manifest'
-import { PLUGIN_PAGES_SINCE } from '../manifest/plugin-schema-field-docs'
+import { PLUGIN_IMAGE_ICONS_SINCE, PLUGIN_PAGES_SINCE } from '../manifest/plugin-schema-field-docs'
 import { PLUGIN_SCHEMA_NEWEST_SINCE } from '../installation/plugin-host-version'
 import { pluginCatalogTypes } from '../catalog/plugin-catalog-types'
 import { pluginContributionSummary } from './plugin-contribution-summary'
@@ -39,9 +39,9 @@ describe('contributes.pages', () => {
     expect(result.contributes.panels).toEqual([])
   })
 
-  it('registers its release as the newest this build reads', () => {
+  it('registers its release, which this build reads along with the newer SVG icons', () => {
     expect(PLUGIN_PAGES_SINCE).toBe('1.4.254')
-    expect(PLUGIN_SCHEMA_NEWEST_SINCE).toBe(PLUGIN_PAGES_SINCE)
+    expect(PLUGIN_SCHEMA_NEWEST_SINCE).toBe(PLUGIN_IMAGE_ICONS_SINCE)
   })
 
   it('allows at most four pages', () => {
