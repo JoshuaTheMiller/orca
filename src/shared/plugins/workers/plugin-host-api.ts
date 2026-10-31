@@ -274,7 +274,7 @@ export const PLUGIN_HOST_API = {
   }),
   'links.open': spec({
     summary:
-      "Opens a web link the way Orca opens a link the user clicks: the user's link setting picks Orca's browser or the system browser, and `external` forces the system browser.",
+      "Opens a web link the way Orca opens a link the user clicks: the user's link setting picks Orca's browser or the system browser, `alternate` picks the other target as Shift with the platform modifier does, and `external` forces the system browser.",
     since: 3,
     scope: 'desktop',
     capability: 'links:open',

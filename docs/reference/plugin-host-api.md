@@ -24,7 +24,7 @@ Every call is checked against the capabilities the user approved, and params are
 | [`settings.set`](#settingsset) | `settings:own` | worker | yes | 1.0 | Writes one setting the plugin owns. |
 | [`editor.openFile`](#editoropenfile) | `editor:open` | worker, panel, editor | yes | 1.1 | Opens a file by absolute path in an editor tab, in its workspace when it is inside one. |
 | [`sidebarNav.getValues`](#sidebarnavgetvalues) | `settings:own` | worker, panel, editor | no | 1.2 | Reads the plugin's own sidebar toggles and checkboxes, keyed by `setting`, with defaults applied. |
-| [`links.open`](#linksopen) | `links:open` | worker, panel, editor | yes | 1.3 | Opens a web link the way Orca opens a link the user clicks: the user's link setting picks Orca's browser or the system browser, and `external` forces the system browser. |
+| [`links.open`](#linksopen) | `links:open` | worker, panel, editor | yes | 1.3 | Opens a web link the way Orca opens a link the user clicks: the user's link setting picks Orca's browser or the system browser, `alternate` picks the other target as Shift with the platform modifier does, and `external` forces the system browser. |
 
 ### `workspace.readContext`
 
@@ -140,10 +140,10 @@ Reads the plugin's own sidebar toggles and checkboxes, keyed by `setting`, with 
 
 ### `links.open`
 
-Opens a web link the way Orca opens a link the user clicks: the user's link setting picks Orca's browser or the system browser, and `external` forces the system browser.
+Opens a web link the way Orca opens a link the user clicks: the user's link setting picks Orca's browser or the system browser, `alternate` picks the other target as Shift with the platform modifier does, and `external` forces the system browser.
 
 ```ts
-(params: { url: string; external?: boolean }) => { opened: boolean }
+(params: { url: string; external?: boolean; alternate?: boolean }) => { opened: boolean }
 ```
 
 ## Errors

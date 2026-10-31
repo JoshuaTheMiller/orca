@@ -10,5 +10,7 @@ export function ensurePluginOpenLinksHandled(): void {
     return
   }
   listening = true
-  plugins.onOpenLink(({ url, external }) => openAppHttpLink(url, { external }))
+  plugins.onOpenLink(({ url, external, alternate }) =>
+    openAppHttpLink(url, { external, alternate })
+  )
 }

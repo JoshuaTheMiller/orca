@@ -11,8 +11,24 @@ describe('ensurePluginOpenLinksHandled', () => {
     ensurePluginOpenLinksHandled()
     ensurePluginOpenLinksHandled()
     expect(onOpenLink).toHaveBeenCalledTimes(1)
-    onOpenLink.mock.calls[0]![0]({ url: 'https://example.com', external: true })
-    expect(openAppHttpLink).toHaveBeenCalledWith('https://example.com', { external: true })
+    onOpenLink.mock.calls[0]![0]({
+      url: 'https://example.com',
+      external: true,
+      alternate: false
+    })
+    expect(openAppHttpLink).toHaveBeenCalledWith('https://example.com', {
+      external: true,
+      alternate: false
+    })
+    onOpenLink.mock.calls[0]![0]({
+      url: 'https://example.com',
+      external: false,
+      alternate: true
+    })
+    expect(openAppHttpLink).toHaveBeenLastCalledWith('https://example.com', {
+      external: false,
+      alternate: true
+    })
     vi.unstubAllGlobals()
   })
 })

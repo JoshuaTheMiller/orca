@@ -23,6 +23,8 @@ export type OpenAppHttpLinkOptions = {
   event?: AppHttpLinkClick
   /** Unconditionally use the system browser, whatever the link setting says. */
   external?: boolean
+  /** The same as a click with the platform modifier plus Shift: the link settings pick the other target. */
+  alternate?: boolean
 }
 
 function isEscapeModifierClick(event: AppHttpLinkClick | undefined): boolean {
@@ -44,7 +46,7 @@ export function openAppHttpLink(url: string, options: OpenAppHttpLinkOptions = {
     worktreeId: host?.worktreeId ?? null,
     sourceOwner: host?.owner ?? LOCAL_OWNER,
     allowRemoteInApp: true,
-    modifierHeld: isEscapeModifierClick(options.event),
+    modifierHeld: options.alternate === true || isEscapeModifierClick(options.event),
     ...(options.external ? { forceSystemBrowser: true } : {})
   })
 }

@@ -39,7 +39,11 @@ export type PluginHostServices = {
   ): Promise<{ opened: boolean }>
   /** The plugin's sidebar toggle and checkbox values, defaults applied. */
   sidebarNavValues(pluginId: string): Record<string, boolean>
-  openLink(request: { url: string; external: boolean }): Promise<{ opened: boolean }>
+  openLink(request: {
+    url: string
+    external: boolean
+    alternate: boolean
+  }): Promise<{ opened: boolean }>
   storage: {
     get(pluginId: string, key: string): PluginJsonValue | undefined
     set(
@@ -149,8 +153,8 @@ const HANDLERS: Record<PluginHostMethodName, BoundPluginHostMethod> = {
   'notifications.show': bind(api['notifications.show'], async (params, { pluginId, services }) =>
     services.dispatchPluginNotification({ pluginId, title: params.title, body: params.body })
   ),
-  'links.open': bind(api['links.open'], async ({ url, external }, { services }) =>
-    services.openLink({ url, external: external === true })
+  'links.open': bind(api['links.open'], async ({ url, external, alternate }, { services }) =>
+    services.openLink({ url, external: external === true, alternate: alternate === true })
   ),
   'storage.get': bind(api['storage.get'], async ({ key }, { pluginId, services }) => ({
     value: services.storage.get(pluginId, key) ?? null

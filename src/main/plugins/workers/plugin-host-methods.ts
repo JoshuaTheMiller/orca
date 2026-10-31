@@ -127,7 +127,7 @@ function summarizeParams(method: string, params: unknown): string {
     }
     case 'links.open':
       // Why host only: a full URL can carry tokens or private paths the audit log should not keep.
-      return `host=${urlHost(record.url)} external=${record.external === true}`
+      return `host=${urlHost(record.url)} external=${record.external === true} alternate=${record.alternate === true}`
     case 'storage.set':
     case 'storage.delete':
     case 'secrets.set':
