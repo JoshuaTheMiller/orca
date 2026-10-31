@@ -91,6 +91,28 @@ both return `{ dispose() }`. A command's `signal` aborts when Orca stops waiting
 `agent.status.changed`, `state` and `mainAgent.state` are one of `working`, `blocked`, `waiting`
 and `done`.
 
+### Opening links
+
+With the `links:open` capability, `orca.host.call('links.open', { url })` opens a web link the way Orca
+opens one the user clicks: their link setting decides between Orca's built-in browser and the
+system browser. Only `http` and `https` URLs are accepted; anything else is refused with
+`invalid_params`. `{ external: true }` always uses the system browser. `opened` is `true` once Orca
+has handed the link to its window, not once the page has loaded.
+
+Follow the same modifier convention for links in your own UI, so they feel like Orca's: a plain
+click opens the link as above, the platform modifier (Cmd on macOS, Ctrl elsewhere) also opens it,
+and the modifier plus Shift passes `external: true`.
+
+```js
+link.addEventListener('click', (event) => {
+  event.preventDefault()
+  const mod = navigator.platform.startsWith('Mac') ? event.metaKey : event.ctrlKey
+  orca.host.call('links.open', { url: link.href, external: mod && event.shiftKey })
+})
+```
+
+Check `orca.host.has('links.open')` first: older Orca versions do not offer it.
+
 ### Custom editors
 
 A custom editor opens files that end in one of its `extensions` (with the dot, such as

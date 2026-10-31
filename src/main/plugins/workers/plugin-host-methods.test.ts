@@ -11,6 +11,7 @@ function createServices(storageSet: PluginHostServices['storage']['set']): Plugi
     listWorktreeTerminals: vi.fn().mockResolvedValue([]),
     sendTerminalText: vi.fn().mockResolvedValue({ accepted: true }),
     dispatchPluginNotification: vi.fn().mockResolvedValue({ delivered: true }),
+    openLink: vi.fn().mockResolvedValue({ opened: true }),
     storage: {
       get: vi.fn(),
       set: storageSet,

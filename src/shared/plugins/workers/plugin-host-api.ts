@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import type { PluginCapabilityKind } from '../capabilities/plugin-capabilities'
 import type { PluginSurface } from '../frames/plugin-protocol'
+import { linksOpenParams, linksOpenResult } from './plugin-host-links-schema'
 
 /**
  * Host API 1 (`pluginApi: 1`) — the separately-versioned public facade plugins call. Every
@@ -242,6 +243,17 @@ export const PLUGIN_HOST_API = {
     surfaces: WORKER_ONLY,
     params: settingsSetParams,
     result: settingsSetResult
+  }),
+  'links.open': spec({
+    summary:
+      "Opens a web link the way Orca opens a link the user clicks: the user's link setting picks Orca's browser or the system browser, and `external` forces the system browser.",
+    since: 1,
+    scope: 'desktop',
+    capability: 'links:open',
+    mutation: true,
+    surfaces: ALL_SURFACES,
+    params: linksOpenParams,
+    result: linksOpenResult
   })
 }
 

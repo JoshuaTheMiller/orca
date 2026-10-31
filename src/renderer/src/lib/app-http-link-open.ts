@@ -21,6 +21,8 @@ export type OpenAppHttpLinkOptions = {
   worktreeId?: string | null
   /** The click, so the setting's Shift escape modifier applies. */
   event?: AppHttpLinkClick
+  /** Unconditionally use the system browser, whatever the link setting says. */
+  external?: boolean
 }
 
 function isEscapeModifierClick(event: AppHttpLinkClick | undefined): boolean {
@@ -42,7 +44,8 @@ export function openAppHttpLink(url: string, options: OpenAppHttpLinkOptions = {
     worktreeId: host?.worktreeId ?? null,
     sourceOwner: host?.owner ?? LOCAL_OWNER,
     allowRemoteInApp: true,
-    modifierHeld: isEscapeModifierClick(options.event)
+    modifierHeld: isEscapeModifierClick(options.event),
+    ...(options.external ? { forceSystemBrowser: true } : {})
   })
 }
 

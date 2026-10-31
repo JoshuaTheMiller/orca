@@ -120,6 +120,9 @@ function summarizeParams(method: string, params: unknown): string {
       const title = typeof record.title === 'string' ? record.title : ''
       return `titleChars=${title.length}`
     }
+    case 'links.open':
+      // Why host only: a full URL can carry tokens or private paths the audit log should not keep.
+      return `host=${urlHost(record.url)} external=${record.external === true}`
     case 'storage.set':
     case 'storage.delete':
     case 'secrets.set':
@@ -128,5 +131,13 @@ function summarizeParams(method: string, params: unknown): string {
       return `key=${String(record.key)}`
     default:
       return ''
+  }
+}
+
+function urlHost(value: unknown): string {
+  try {
+    return typeof value === 'string' ? new URL(value).host : ''
+  } catch {
+    return ''
   }
 }

@@ -5,6 +5,7 @@ import { pluginHostVersion } from '../../shared/plugins/installation/plugin-host
 import { app, BrowserWindow, net } from 'electron'
 import { performance } from 'node:perf_hooks'
 import { PluginService } from '../plugins/plugin-service'
+import { createPluginLinkOpener } from '../plugins/plugin-open-link'
 import { PluginKillListService } from '../plugins/catalog/plugin-kill-list-service'
 import { PluginInstallStatsService } from '../plugins/catalog/plugin-install-stats-service'
 import { PluginMarketplaceService } from '../plugins/catalog/plugin-marketplace-service'
@@ -103,7 +104,8 @@ export async function initializeMainProcessPlugins(runtime: OrcaRuntimeService):
     getDevPluginPaths: () => normalizePluginIdList(state.store?.getSettings().devPluginPaths),
     getKeybindings: () => state.keybindings?.getOverrides() ?? {},
     getPluginKillListEntry: (pluginKey) => state.pluginKillListService?.find(pluginKey) ?? null,
-    hostEntryPath: resolvePluginHostEntryPath(app.getAppPath(), app.isPackaged)
+    hostEntryPath: resolvePluginHostEntryPath(app.getAppPath(), app.isPackaged),
+    openLink: createPluginLinkOpener(() => state.mainWindow)
   })
   const pluginService = state.pluginService
   const pluginAutoUpdater = new PluginAutoUpdater({

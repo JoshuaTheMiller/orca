@@ -2,6 +2,10 @@ import { ipcRenderer } from 'electron'
 import type { PluginFrameEntry } from '../../shared/plugins/frames/plugin-frame-bridge'
 import type { PluginHostCallOutcome } from '../../shared/plugins/frames/plugin-protocol'
 import type { PluginConsentRequest } from '../../shared/plugins/approval/plugin-consent-request'
+import {
+  PLUGIN_OPEN_LINK_CHANNEL,
+  type PluginOpenLinkRequest
+} from '../../shared/plugins/workers/plugin-host-links-schema'
 import type { PluginChangeEvent } from '../../shared/plugins/events/plugin-change-event'
 import type {
   PluginAutoUpdateEvent,
@@ -71,6 +75,14 @@ export const pluginsApi = {
     ipcRenderer.on('plugins:changed', listener)
     return () => {
       ipcRenderer.removeListener('plugins:changed', listener)
+    }
+  },
+  onOpenLink: (callback): (() => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, request: PluginOpenLinkRequest): void =>
+      callback(request)
+    ipcRenderer.on(PLUGIN_OPEN_LINK_CHANNEL, listener)
+    return () => {
+      ipcRenderer.removeListener(PLUGIN_OPEN_LINK_CHANNEL, listener)
     }
   },
   getAutoUpdateState: () => ipcRenderer.invoke('plugins:getAutoUpdateState'),

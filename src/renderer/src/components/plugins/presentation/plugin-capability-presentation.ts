@@ -49,6 +49,11 @@ export function pluginCapabilityDescription(kind: string, fallback: string): str
         'auto.components.settings.PluginConsentDialog.capability.settingsOwn',
         'Read and change its own settings'
       )
+    case 'links:open':
+      return translate(
+        'auto.components.settings.PluginConsentDialog.capability.linksOpen',
+        'Open web links'
+      )
     default:
       return fallback
   }

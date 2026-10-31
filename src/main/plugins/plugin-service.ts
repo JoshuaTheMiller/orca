@@ -259,7 +259,8 @@ export class PluginService {
         services: this.runtimeDelegate
           ? bindPluginHostServices({
               delegate: this.runtimeDelegate,
-              pluginsDataDir: getPluginsDataDir(this.options.userDataPath)
+              pluginsDataDir: getPluginsDataDir(this.options.userDataPath),
+              openLink: this.options.openLink
             })
           : null,
         audit: this.audit
