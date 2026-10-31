@@ -18,6 +18,7 @@ function createHarness(outcome: AgentSessionOpenOutcome = 'resumed') {
     listTerminals: vi.fn().mockResolvedValue({ terminals: [] }),
     sendTerminal: vi.fn().mockResolvedValue({ accepted: true }),
     openAgentSession,
+    openLocalAbsoluteFile: vi.fn().mockResolvedValue({ worktree: 'worktree-1' }),
     dispatchPluginNotification: vi.fn().mockResolvedValue({ delivered: true })
   }
   const record = vi.fn().mockResolvedValue(undefined)
@@ -31,7 +32,14 @@ function createHarness(outcome: AgentSessionOpenOutcome = 'resumed') {
       params,
       surface: options.surface ?? 'worker',
       grantedCapabilities: options.granted === undefined ? ['agents:open'] : options.granted,
-      services: bindPluginHostServices({ delegate, pluginsDataDir: 'unused' }),
+      services: bindPluginHostServices({
+        delegate,
+        pluginsDataDir: 'unused',
+        sidebarNavValues: () => ({}),
+        setSidebarCardItems: () => ({ ok: true }),
+        settings: { getAll: () => ({}), set: () => ({ ok: true }) },
+        projectItems: { setDetail: () => ({ ok: true }) }
+      }),
       audit: { record }
     })
   return { call, openAgentSession, record }
