@@ -17,6 +17,8 @@ export const PLUGIN_SIDEBAR_CARDS_SINCE = '1.4.250'
 export const PLUGIN_PROJECT_ITEMS_SINCE = '1.4.251'
 /** First release with the `dialogs:open` capability and the `dialogs.pickFolder` host method. */
 export const PLUGIN_DIALOGS_SINCE = '1.4.252'
+/** First release with the `agents:open` capability and the `agentSessions.open` host method. */
+export const PLUGIN_AGENT_SESSIONS_OPEN_SINCE = '1.4.253'
 
 type PluginFieldDoc = {
   description: string

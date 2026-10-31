@@ -1,4 +1,8 @@
 import { OrcaRuntimeWithWaitForLeafPtyId } from '../view/renderer-terminal-snapshot'
+import type {
+  AgentSessionOpenOutcome,
+  AgentSessionOpenTarget
+} from '../../../../shared/agent-session-open'
 import type { RuntimeTerminalFocus } from '../../../../shared/runtime-types'
 import type {
   RuntimeTerminalReveal,
@@ -181,6 +185,14 @@ export abstract class OrcaRuntimeWithFocusTerminal extends OrcaRuntimeWithWaitFo
       throw new Error('renderer_unavailable')
     }
     return { ...target, navigated: await notifier.revealTerminalPane(target) }
+  }
+
+  async openAgentSession(target: AgentSessionOpenTarget): Promise<AgentSessionOpenOutcome> {
+    const notifier = this.notifier
+    if (!notifier?.openAgentSession) {
+      throw new Error('renderer_unavailable')
+    }
+    return notifier.openAgentSession(target)
   }
 
   protected getPtyIdsForExplicitTabClose(worktreeId: string, tabId: string): string[] {

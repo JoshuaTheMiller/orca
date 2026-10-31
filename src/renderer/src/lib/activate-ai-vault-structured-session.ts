@@ -7,7 +7,8 @@ import { useAppStore } from '@/store'
 import type { RuntimeClientTarget } from '../../../shared/runtime-client-target'
 import {
   openExistingStructuredSession,
-  type StructuredSessionOpenDeps
+  type StructuredSessionOpenDeps,
+  type StructuredSessionOpenOutcome
 } from './open-existing-structured-session'
 export {
   revealStructuredSession,
@@ -62,8 +63,18 @@ export async function activateAiVaultStructuredSession(
   if (!structured) {
     return false
   }
+  await reopenAiVaultStructuredSession(structured, deps, target)
+  return true
+}
+
+/** Reopens the chat and reports how it ended, after showing the user the matching feedback. */
+export function reopenAiVaultStructuredSession(
+  structured: NonNullable<AiVaultSession['structuredSession']>,
+  deps?: StructuredSessionActivationDeps,
+  target?: RuntimeClientTarget
+): Promise<StructuredSessionOpenOutcome> {
   const feedback = deps ?? structuredSessionOpenFeedback
-  await openExistingStructuredSession(structured, {
+  return openExistingStructuredSession(structured, {
     target,
     deps,
     present: (outcome) => {
@@ -84,5 +95,4 @@ export async function activateAiVaultStructuredSession(
       }
     }
   })
-  return true
 }

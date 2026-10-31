@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import {
+  PLUGIN_HOST_API,
   PLUGIN_HOST_API_MINOR,
   pluginHostMethodsFor
 } from '../../../shared/plugins/workers/plugin-host-api'
@@ -34,7 +35,8 @@ function call(
 
 describe('dialogs.pickFolder host method', () => {
   it('bumps the host API minor and is offered on every surface', () => {
-    expect(PLUGIN_HOST_API_MINOR).toBe(1)
+    expect(PLUGIN_HOST_API['dialogs.pickFolder'].since).toBe(7)
+    expect(PLUGIN_HOST_API_MINOR).toBeGreaterThanOrEqual(7)
     for (const surface of ['worker', 'panel', 'editor'] as const) {
       expect(pluginHostMethodsFor(surface)).toContain('dialogs.pickFolder')
     }

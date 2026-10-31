@@ -4,6 +4,10 @@ import { PluginSecretsStore } from '../plugin-secrets-store'
 import { PluginKvStore } from '../plugin-storage-store'
 import type { RuntimeFileOpenPosition } from '../../../shared/runtime-file-contracts'
 import type { PluginOpenLinkRequest } from '../../../shared/plugins/workers/plugin-host-links-schema'
+import type {
+  AgentSessionOpenOutcome,
+  AgentSessionOpenTarget
+} from '../../../shared/agent-session-open'
 import type { TerminalInputKind } from '../../../shared/terminal-input-kind'
 
 export type PluginRuntimeDelegate = {
@@ -23,6 +27,7 @@ export type PluginRuntimeDelegate = {
     action: { text?: string; enter?: boolean },
     options: { inputKind: TerminalInputKind }
   ): Promise<{ accepted: boolean }>
+  openAgentSession(target: AgentSessionOpenTarget): Promise<AgentSessionOpenOutcome>
   dispatchPluginNotification(input: {
     pluginId: string
     title: string
@@ -78,6 +83,7 @@ export function bindPluginHostServices(input: {
       const result = await delegate.sendTerminal(terminalId, action, { inputKind: 'driving' })
       return { accepted: result.accepted }
     },
+    openAgentSession: (target) => delegate.openAgentSession(target),
     dispatchPluginNotification: (notification) => delegate.dispatchPluginNotification(notification),
     openEditorFile: async (absolutePath, position, placement) => {
       if (placement === 'active-workspace') {

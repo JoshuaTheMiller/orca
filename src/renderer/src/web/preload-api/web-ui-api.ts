@@ -5,6 +5,7 @@ import { savePastedTextAsWebAgentSessionAttachment } from './web-pasted-text-upl
 import { createWebExplorerRootSync } from './web-explorer-root-sync'
 import { createWebJiraFilterStateApi } from './web-jira-filter-state-api'
 import type { PreloadApi } from '../../../../preload/api-types'
+import type { WebUiApiBase } from './web-agent-session-open-api'
 import { assertClipboardTextWithinLimitWithYield } from '../../../../shared/clipboard-text'
 import type { ReadClipboardTextOptions } from '../../../../shared/clipboard-text'
 import { normalizeFeatureInteractions } from '../../../../shared/feature-interactions'
@@ -31,7 +32,7 @@ import { requireActiveEnvironmentOrNull } from './web-runtime-session'
 import { UI_STORAGE_KEY, noopUnsubscribe, writeJson } from './web-storage'
 
 /** Combines browser-local preferences with host persistence; acknowledged writes remain distinct from best-effort writes. */
-export function createWebUiApi(): NonNullable<Partial<PreloadApi>['ui']> {
+export function createWebUiApi(): WebUiApiBase {
   const explorerRoots = createWebExplorerRootSync()
   /** Captures the target host and strips browser-local or unsupported fields before sending a UI update. */
   const prepareHostUpdates = (updates: Parameters<PreloadApi['ui']['set']>[0]) => {

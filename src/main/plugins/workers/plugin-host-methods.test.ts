@@ -10,6 +10,7 @@ function createServices(storageSet: PluginHostServices['storage']['set']): Plugi
     resolveActiveWorktreeContext: vi.fn().mockResolvedValue(null),
     listWorktreeTerminals: vi.fn().mockResolvedValue([]),
     sendTerminalText: vi.fn().mockResolvedValue({ accepted: true }),
+    openAgentSession: vi.fn().mockResolvedValue('not_found'),
     dispatchPluginNotification: vi.fn().mockResolvedValue({ delivered: true }),
     openEditorFile: vi.fn().mockResolvedValue({ opened: true }),
     sidebarNavValues: vi.fn().mockReturnValue({}),
@@ -139,7 +140,8 @@ function createTerminalHarness(terminalHandles: string[]): {
     }),
     sendTerminal: vi.fn().mockResolvedValue({ accepted: true }),
     dispatchPluginNotification: vi.fn().mockResolvedValue({ delivered: true }),
-    openLocalAbsoluteFile: vi.fn().mockResolvedValue({ worktree: 'worktree-1' })
+    openLocalAbsoluteFile: vi.fn().mockResolvedValue({ worktree: 'worktree-1' }),
+    openAgentSession: vi.fn().mockResolvedValue('not_found')
   }
   return {
     delegate,

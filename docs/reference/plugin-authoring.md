@@ -544,6 +544,46 @@ if (path === null) {
 - The picker browses this computer, so while a remote (SSH or paired host) workspace is focused the call fails with `not_permitted`. Remote folders are not supported yet.
 - The audit log records that the picker was shown and its title, never the chosen path.
 
+### Opening agent sessions
+
+Declare the `agents:open` capability (`engines.orca` `>=1.4.253`, host API 1.8) and call
+`agentSessions.open` from a worker, panel or editor to bring an agent session up, for example from
+a session list or a command:
+
+```js
+if (orca.host.has('agentSessions.open')) {
+  const { outcome } = await orca.host.call('agentSessions.open', {
+    agent: 'claude', // an agent id from Session History, such as claude or codex
+    sessionId, // the agent's own conversation id
+    cwd: '/home/me/project' // optional absolute directory that picks the workspace to resume in
+  })
+  // 'focused' | 'resumed' | 'not_found'
+}
+```
+
+- `focused`: a tab already runs that session, in any workspace (a terminal pane, even a sleeping
+  or parked one, or a native chat). Orca switches to its workspace and focuses the tab. Nothing
+  new starts.
+- `resumed`: no tab runs it, but Orca resumed it with its own resume path, in the workspace that
+  contains `cwd` (or, without `cwd`, the directory the session recorded). Orca follows the user's
+  Chat | CLI choice for that agent: a chat when the agent has one that can take the conversation
+  over (Claude, Codex, Grok, OMP, OpenCode, Pi) and the user prefers it, otherwise the agent's
+  own resume command in a new terminal tab. A chat that already owns the conversation is
+  reopened. A failure after that point (for example the agent's CLI is missing) is reported to
+  the user by Orca's own notification, as it is for a resume started from Session History.
+- `not_found`: Orca could not find or resume it, and changed nothing. That covers an unknown
+  agent or session id, a session with no turns, no workspace that contains the directory (or an
+  archived one), a session recorded on another machine (SSH or a paired host), and an agent
+  without a resume command. Agents that can be resumed: claude, codebuddy, codex, qoder, qwen-code,
+  gemini, antigravity, opencode, opencode2, pi, mimo-code, droid, grok, devin, omp, prime-agent,
+  copilot, cursor, kimi, muse, zcode, dsh, jcode, kiro and hermes. Any other agent only ever
+  answers `focused` or `not_found`.
+
+The call never types into a terminal, so it needs only `agents:open`, not `terminal:send`. It
+raises Orca's window when it focuses or resumes, and the audit log records the agent and the first
+8 characters of the session id, never the directory. It fails with `action_failed` when Orca has
+no window to act in (a headless server).
+
 ## 2. Load it while you work
 
 1. Settings → Plugins: click **Turn on plugins**.

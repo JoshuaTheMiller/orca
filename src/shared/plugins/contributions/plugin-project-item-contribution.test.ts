@@ -186,6 +186,7 @@ describe('contributes.projectItems', () => {
     expect(
       method.params.safeParse({ itemId: 'board', projectId: 'p', text: 'x'.repeat(17) }).success
     ).toBe(false)
-    expect(PLUGIN_HOST_API_MINOR).toBe(6)
+    expect(method.since).toBe(6)
+    expect(PLUGIN_HOST_API_MINOR).toBeGreaterThanOrEqual(method.since)
   })
 })

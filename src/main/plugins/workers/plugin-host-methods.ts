@@ -13,6 +13,7 @@ import type {
 } from '../../../shared/plugins/frames/plugin-protocol'
 import { PluginHostError } from './plugin-host-error'
 import type { PluginAuditLog } from '../plugin-audit-log'
+import { PLUGIN_AGENT_SESSION_AUDIT_ID_CHARS } from '../../../shared/plugins/workers/plugin-host-api'
 
 /**
  * Host API 1 handler bindings — the one place plugin-originated calls
@@ -125,6 +126,10 @@ function summarizeParams(method: string, params: unknown): string {
     case 'terminal.sendText': {
       const text = typeof record.text === 'string' ? record.text : ''
       return `terminal=${String(record.terminalId)} bytes=${Buffer.byteLength(text, 'utf8')} enter=${record.enter === true}`
+    }
+    case 'agentSessions.open': {
+      const sessionId = typeof record.sessionId === 'string' ? record.sessionId : ''
+      return `agent=${String(record.agent)} session=${sessionId.slice(0, PLUGIN_AGENT_SESSION_AUDIT_ID_CHARS)}`
     }
     case 'notifications.show': {
       const title = typeof record.title === 'string' ? record.title : ''
