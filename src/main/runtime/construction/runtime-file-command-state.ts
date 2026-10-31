@@ -100,6 +100,7 @@ export abstract class OrcaRuntimeWithFileCommands extends OrcaRuntimeWithPreserv
           }
         : this.resolveRuntimeFileTarget(selector)
     },
+    createFolderWorkspace: (input) => this.createFolderWorkspace(input),
     resolveKnownWorkspaceFileTarget: (absolutePath, executionHostId) =>
       this.resolveKnownWorkspaceFileTarget(absolutePath, executionHostId),
     resolveTerminalCwd: (terminalHandle) => this.resolveTerminalCwd(terminalHandle),

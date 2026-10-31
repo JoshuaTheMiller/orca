@@ -3,6 +3,7 @@ import type { ResolvedRuntimeFileTarget, ResolvedRuntimeFileWorktree } from './f
 import type { ExecutionHostId } from '../../../shared/execution-host'
 import type { RuntimeNavigationTarget } from '../../../shared/runtime-navigation'
 import type { RuntimeFileOpenPosition } from '../../../shared/runtime-file-contracts'
+import type { FolderWorkspace } from '../../../shared/folder-workspace-types'
 
 export type RuntimeFileCommandHost = {
   getRuntimeId(): string
@@ -18,6 +19,8 @@ export type RuntimeFileCommandHost = {
   resolveRuntimeGitTarget(
     selector: string
   ): Promise<{ worktree: ResolvedRuntimeFileWorktree; executionHostId: ExecutionHostId }>
+  /** Creates a folder workspace for a project group, as the sidebar does; used when a plugin opens a file for a project that has none. */
+  createFolderWorkspace?(input: { projectGroupId: string }): Promise<FolderWorkspace>
   openFile(
     worktreeId: string,
     filePath: string,

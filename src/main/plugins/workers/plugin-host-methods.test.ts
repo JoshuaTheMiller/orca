@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
 import { PLUGIN_WORKSPACE_TERMINAL_LIMIT } from '../../../shared/plugins/workers/plugin-host-api'
 import { bindPluginHostServices, type PluginRuntimeDelegate } from './plugin-host-service-bindings'
+import { UnknownProjectError } from '../../runtime/files/unknown-project-error'
 import { executePluginHostCall, type PluginHostServices } from './plugin-host-methods'
 
 function createServices(storageSet: PluginHostServices['storage']['set']): PluginHostServices {
@@ -361,10 +362,27 @@ describe('editor.openFile', () => {
     })
 
     await outcome
-    expect(services.openEditorFile).toHaveBeenCalledWith('/a.md', undefined, 'active-workspace')
+    expect(services.openEditorFile).toHaveBeenCalledWith('/a.md', undefined, {
+      placement: 'active-workspace',
+      projectId: undefined
+    })
     await expect(openFile({ path: '/a.md', placement: 'floating' }).outcome).resolves.toMatchObject(
       { ok: false, code: 'invalid_params' }
     )
+  })
+
+  it('passes the project id on and rejects an empty one', async () => {
+    const { outcome, services } = openFile({ path: '/a.md', projectId: 'repo-1' })
+
+    await outcome
+    expect(services.openEditorFile).toHaveBeenCalledWith('/a.md', undefined, {
+      placement: undefined,
+      projectId: 'repo-1'
+    })
+    await expect(openFile({ path: '/a.md', projectId: '' }).outcome).resolves.toMatchObject({
+      ok: false,
+      code: 'invalid_params'
+    })
   })
 
   it('ignores a column given without a line', async () => {
@@ -442,6 +460,40 @@ describe('editor.openFile', () => {
       error: 'no active workspace is available to open the file in'
     })
     expect(delegate.openLocalAbsoluteFile).not.toHaveBeenCalled()
+  })
+
+  it('hands the project and the active workspace to the runtime, project first', async () => {
+    const { delegate, services } = createTerminalHarness([])
+
+    await openFile({ path: '/w/a.md', projectId: 'repo-1', placement: 'auto' }, { services })
+      .outcome
+    expect(delegate.openLocalAbsoluteFile).toHaveBeenCalledWith('/w/a.md', undefined, {
+      activeWorktreeId: 'worktree-1',
+      projectId: 'repo-1'
+    })
+
+    // Why: with no focused workspace a project open still succeeds, ending in the floating workspace.
+    vi.mocked(delegate.resolveActiveWorktreeContext).mockResolvedValue(null)
+    vi.mocked(delegate.openLocalAbsoluteFile).mockClear()
+    await expect(
+      openFile({ path: '/w/a.md', projectId: 'repo-1' }, { services }).outcome
+    ).resolves.toEqual({ ok: true, value: { opened: true } })
+    expect(delegate.openLocalAbsoluteFile).toHaveBeenCalledWith('/w/a.md', undefined, {
+      projectId: 'repo-1'
+    })
+  })
+
+  it('reports an unknown project as invalid_params', async () => {
+    const { delegate, services } = createTerminalHarness([])
+    vi.mocked(delegate.openLocalAbsoluteFile).mockRejectedValue(new UnknownProjectError('nope'))
+
+    await expect(
+      openFile({ path: '/w/a.md', projectId: 'nope' }, { services }).outcome
+    ).resolves.toEqual({
+      ok: false,
+      code: 'invalid_params',
+      error: 'projectId: unknown project'
+    })
   })
 
   it('keeps auto placement on the default route', async () => {
